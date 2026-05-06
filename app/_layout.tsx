@@ -1,4 +1,8 @@
 import { toastConfig } from "@/components/ToastConfig";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { AppActionSheet } from "@/hooks/useAppActionSheet";
+import { AppConfirmation } from "@/hooks/useAppConfirmation";
+import { store } from "@/store";
 import {
   NunitoSans_400Regular,
   NunitoSans_500Medium,
@@ -12,12 +16,7 @@ import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
-
-import { useColorScheme } from "@/hooks/use-color-scheme";
-
-export const unstable_settings = {
-  anchor: "(tabs)",
-};
+import { Provider } from "react-redux";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -41,44 +40,46 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack>
-          {/* splash screen we built the primary initial route */}
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          {/* login screen full screen without the default header */}
-          <Stack.Screen name="login" options={{ headerShown: false }} />
-          {/* signup screen full screen without the default header */}
-          <Stack.Screen name="signup" options={{ headerShown: false }} />
-          <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
-          <Stack.Screen name="reset-password" options={{ headerShown: false }} />
-          {/* sendotp screen full screen without the default header */}
-          <Stack.Screen name="sendotp" options={{ headerShown: false }} />
-          {/* verification screen full screen without the default header */}
-          <Stack.Screen name="verify" options={{ headerShown: false }} />
-          {/* email verification screen full screen without the default header */}
-          <Stack.Screen name="emailverify" options={{ headerShown: false }} />
-          {/* language screen full screen without the default header */}
-          <Stack.Screen name="language" options={{ headerShown: false }} />
-          {/* fullname screen full screen without the default header */}
-          <Stack.Screen name="fullname" options={{ headerShown: false }} />
-          {/* gender screen full screen without the default header */}
-          <Stack.Screen name="gender" options={{ headerShown: false }} />
-          <Stack.Screen name="experience" options={{ headerShown: false }} />
-          <Stack.Screen name="response" options={{ headerShown: false }} />
-          <Stack.Screen name="support" options={{ headerShown: false }} />
-          <Stack.Screen name="chatstarter" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding_one" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding_two" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
-          <Stack.Screen name="terms" options={{ headerShown: false }} />
-          <Stack.Screen name="conversations" options={{ headerShown: false }} />
-          <Stack.Screen name="chat" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
-        </Stack>
-        <StatusBar style="dark" />
-        <Toast config={toastConfig} />
-      </ThemeProvider>
+      <Provider store={store}>
+        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+          <Stack>
+            {/* splash screen we built the primary initial route */}
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            {/* login screen full screen without the default header */}
+            <Stack.Screen name="login" options={{ headerShown: false }} />
+            {/* signup screen full screen without the default header */}
+            <Stack.Screen name="signup" options={{ headerShown: false }} />
+            <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
+            <Stack.Screen name="reset-password" options={{ headerShown: false }} />
+            {/* sendotp screen full screen without the default header */}
+            <Stack.Screen name="sendotp" options={{ headerShown: false }} />
+            {/* verification screen full screen without the default header */}
+            <Stack.Screen name="verify" options={{ headerShown: false }} />
+            {/* email verification screen full screen without the default header */}
+            <Stack.Screen name="emailverify" options={{ headerShown: false }} />
+            {/* language screen full screen without the default header */}
+            <Stack.Screen name="language" options={{ headerShown: false }} />
+            {/* detailinput screen full screen without the default header */}
+            <Stack.Screen name="userdetailinput" options={{ headerShown: false }} />
+            {/* experience screen full screen without the default header */}
+            <Stack.Screen name="experience" options={{ headerShown: false }} />
+            <Stack.Screen name="response" options={{ headerShown: false }} />
+            <Stack.Screen name="support" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding_one" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding_two" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding_three" options={{ headerShown: false }} />
+            <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+            <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
+            <Stack.Screen name="terms" options={{ headerShown: false }} />
+            <Stack.Screen name="personality-test" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
+          </Stack>
+          <StatusBar style="dark" />
+          <Toast config={toastConfig} />
+        </ThemeProvider>
+        <AppConfirmation />
+        <AppActionSheet />
+      </Provider>
     </GestureHandlerRootView>
   );
 }

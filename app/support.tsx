@@ -50,7 +50,7 @@ export default function SupportScreen() {
     });
 
     if (result.success) {
-      router.replace("/chatstarter");
+      router.replace("/onboarding_three");
     } else {
       if (result.status === 401) {
         toast.error("Session Expired", "Please login again.");

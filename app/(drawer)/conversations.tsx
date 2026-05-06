@@ -7,7 +7,7 @@ import {
 import { Typography } from "@/constants/Typography";
 import { normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import {
   Dimensions,
@@ -29,9 +29,10 @@ export default function ConversationsScreen() {
   const router = useRouter();
   const { initialMessage } = useLocalSearchParams<{ initialMessage: string }>();
 
+  const navigation = useNavigation<any>();
+
   const onPressMenu = () => {
-    // Keep behavior consistent across the app: hamburger returns to the starter screen.
-    router.push("/chatstarter");
+    navigation.openDrawer();
   };
 
   const initialToday = useMemo<Conversation[]>(() => {
@@ -76,9 +77,9 @@ export default function ConversationsScreen() {
 
     const showMenuAt = (x: number, y: number, w: number, h: number) => {
       const { width: screenW, height: screenH } = Dimensions.get("window");
-      const menuW = normalize(240);
-      const menuH = normalize(82);
-      const gap = normalize(12);
+      const menuW = 240;
+      const menuH = 82;
+      const gap = 12;
 
       const preferredTop = y + h + gap;
       const top =
@@ -96,7 +97,7 @@ export default function ConversationsScreen() {
     } else {
       // Fallback: center-ish menu.
       const { width: screenW, height: screenH } = Dimensions.get("window");
-      setContextMenuAnchor({ top: screenH * 0.35, left: screenW * 0.5 - normalize(120) });
+      setContextMenuAnchor({ top: screenH * 0.35, left: screenW * 0.5 - 120 });
       setContextMenuVisible(true);
     }
   };
@@ -148,7 +149,7 @@ export default function ConversationsScreen() {
         {/* Header Bar */}
         <View style={styles.headerBar}>
           <TouchableOpacity onPress={onPressMenu}>
-            <Feather name="menu" size={normalize(26)} color="#333" />
+            <Feather name="menu" size={26} color="#333" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Conversations</Text>
           <TouchableOpacity onPress={() => {}}>
@@ -174,7 +175,7 @@ export default function ConversationsScreen() {
                 activeOpacity={0.7}
               >
                 <View style={styles.quickActionLeft}>
-                  <Feather name={action.icon as any} size={normalize(18)} color={action.color} />
+                  <Feather name={action.icon as any} size={18} color={action.color} />
                   <Text
                     style={[styles.quickActionText, action.id === "sos" && styles.sosActionText]}
                   >
@@ -183,7 +184,7 @@ export default function ConversationsScreen() {
                 </View>
                 <Feather
                   name="chevron-right"
-                  size={normalize(18)}
+                  size={18}
                   color={action.id === "sos" ? "#FF3B30" : "#C7C7CC"}
                 />
               </TouchableOpacity>
@@ -278,7 +279,7 @@ export default function ConversationsScreen() {
                   activeOpacity={0.7}
                   onPress={onPressRename}
                 >
-                  <Feather name="edit-2" size={normalize(18)} color="#1C1C1E" />
+                  <Feather name="edit-2" size={18} color="#1C1C1E" />
                   <Text style={styles.menuActionText}>Rename</Text>
                 </TouchableOpacity>
                 <View style={styles.menuDivider} />
@@ -287,7 +288,7 @@ export default function ConversationsScreen() {
                   activeOpacity={0.7}
                   onPress={onPressDelete}
                 >
-                  <Feather name="trash-2" size={normalize(18)} color="#1C1C1E" />
+                  <Feather name="trash-2" size={18} color="#1C1C1E" />
                   <Text style={styles.menuActionText}>Delete</Text>
                 </TouchableOpacity>
               </Pressable>
@@ -335,7 +336,7 @@ export default function ConversationsScreen() {
 
         {/* FAB: New Chat */}
         <TouchableOpacity style={styles.fab} onPress={() => router.push("/chatstarter")}>
-          <Feather name="plus" size={normalize(24)} color="#FFF" />
+          <Feather name="plus" size={24} color="#FFF" />
           <Text style={styles.fabText}>New chat</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -355,8 +356,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: normalize(20),
-    paddingVertical: normalize(15),
+    paddingHorizontal: 20,
+    paddingVertical: 15,
   },
   headerTitle: {
     fontFamily: Typography.fonts.medium,
@@ -364,9 +365,9 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   avatarContainer: {
-    width: normalize(36),
-    height: normalize(36),
-    borderRadius: normalize(18),
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     overflow: "hidden",
     backgroundColor: "#D1E5FF",
   },
@@ -375,24 +376,24 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   scrollContent: {
-    paddingHorizontal: normalize(20),
-    paddingBottom: normalize(100), // Space for FAB
+    paddingHorizontal: 20,
+    paddingBottom: 100, // Space for FAB
   },
   sectionLabel: {
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(12),
     color: "#8A8A8E",
-    marginBottom: normalize(10),
-    marginTop: normalize(16),
+    marginBottom: 10,
+    marginTop: 16,
     letterSpacing: 1,
   },
   sectionLabelSpacing: {
-    marginTop: normalize(18),
+    marginTop: 18,
   },
   quickActionsCard: {
     backgroundColor: "#FFF",
-    borderRadius: normalize(15),
-    marginBottom: normalize(14),
+    borderRadius: 15,
+    marginBottom: 14,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
@@ -403,15 +404,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: normalize(16),
-    paddingVertical: normalize(16),
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     borderBottomWidth: 0.5,
     borderBottomColor: "#F2F2F2",
   },
   quickActionLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: normalize(12),
+    gap: 12,
   },
   quickActionText: {
     fontFamily: Typography.fonts.medium,
@@ -423,8 +424,8 @@ const styles = StyleSheet.create({
   },
   conversationsCard: {
     backgroundColor: "#FFF",
-    borderRadius: normalize(15),
-    paddingVertical: normalize(5),
+    borderRadius: 15,
+    paddingVertical: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -432,8 +433,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   conversationItem: {
-    paddingHorizontal: normalize(20),
-    paddingVertical: normalize(15),
+    paddingHorizontal: 20,
+    paddingVertical: 15,
     borderBottomWidth: 0.5,
     borderBottomColor: "#F2F2F2",
   },
@@ -447,7 +448,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: normalize(4),
+    marginBottom: 4,
   },
   itemTitle: {
     fontFamily: Typography.fonts.medium,
@@ -466,14 +467,14 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: "absolute",
-    bottom: normalize(30),
-    right: normalize(20),
+    bottom: 30,
+    right: 20,
     backgroundColor: "#3C61DD",
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: normalize(20),
-    paddingVertical: normalize(12),
-    borderRadius: normalize(30),
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 30,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -484,7 +485,7 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(16),
     color: "#FFF",
-    marginLeft: normalize(8),
+    marginLeft: 8,
   },
 
   menuBackdrop: {
@@ -496,13 +497,13 @@ const styles = StyleSheet.create({
   },
   contextMenu: {
     position: "absolute",
-    width: normalize(240),
+    width: 240,
     backgroundColor: "#FFFFFF",
-    borderRadius: normalize(16),
+    borderRadius: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-evenly",
-    paddingVertical: normalize(14),
+    paddingVertical: 14,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
@@ -513,7 +514,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: normalize(6),
+    gap: 6,
   },
   menuActionText: {
     fontFamily: Typography.fonts.medium,
@@ -527,11 +528,11 @@ const styles = StyleSheet.create({
   },
 
   renameCard: {
-    marginHorizontal: normalize(20),
-    marginTop: normalize(220),
+    marginHorizontal: 20,
+    marginTop: 220,
     backgroundColor: "#FFFFFF",
-    borderRadius: normalize(16),
-    padding: normalize(16),
+    borderRadius: 16,
+    padding: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
@@ -542,12 +543,12 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(16),
     color: "#111111",
-    marginBottom: normalize(10),
+    marginBottom: 10,
   },
   renameInput: {
-    height: normalize(46),
-    borderRadius: normalize(12),
-    paddingHorizontal: normalize(12),
+    height: 46,
+    borderRadius: 12,
+    paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.08)",
     fontFamily: Typography.fonts.regular,
@@ -557,14 +558,14 @@ const styles = StyleSheet.create({
   renameButtons: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    gap: normalize(10),
-    marginTop: normalize(14),
+    gap: 10,
+    marginTop: 14,
   },
   renameBtn: {
-    paddingHorizontal: normalize(14),
-    paddingVertical: normalize(10),
-    borderRadius: normalize(12),
-    minWidth: normalize(90),
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    minWidth: 90,
     alignItems: "center",
   },
   renameBtnPrimary: {

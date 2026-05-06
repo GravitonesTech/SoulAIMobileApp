@@ -3,8 +3,7 @@ import { Typography } from "@/constants/Typography";
 import { normalize } from "@/utils/responsive";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import {
   Image,
   KeyboardAvoidingView,
@@ -12,11 +11,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility";
+import { ChatInput } from "@/components/chat/ChatInput";
 
 import { CHAT_PROMPTS, THERAPY_TYPES } from "@/constants/StaticData";
 
@@ -24,11 +25,14 @@ export default function ChatStarterScreen() {
   const router = useRouter();
   const { name } = useLocalSearchParams<{ name: string }>();
   const [inputText, setInputText] = useState("");
+  const isKeyboardVisible = useKeyboardVisibility();
 
   const displayName = name || "Bikash";
 
-  const openChatHistory = () => {
-    router.push("/conversations");
+  const navigation = useNavigation<any>();
+
+  const openMoreOptions = () => {
+    navigation.openDrawer();
   };
 
   const handleSend = () => {
@@ -51,7 +55,7 @@ export default function ChatStarterScreen() {
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right", "bottom"]}>
         <KeyboardAvoidingView
           style={styles.flex1}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          behavior={Platform.OS === "ios" ? "padding" : isKeyboardVisible ? "height" : undefined}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
         >
           {/* Main Content Area */}
@@ -59,12 +63,12 @@ export default function ChatStarterScreen() {
             {/* Top Bar */}
             <View style={styles.topBar}>
               <TouchableOpacity
-                onPress={openChatHistory}
+                onPress={openMoreOptions}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Feather name="menu" size={28} color="#333" />
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => {}}>
+              <TouchableOpacity onPress={() => router.push("/profile")}>
                 <View style={styles.avatarContainer}>
                   <Image source={require("@/assets/images/avatar.png")} style={styles.avatar} />
                 </View>
@@ -111,26 +115,8 @@ export default function ChatStarterScreen() {
               </View>
             </ScrollView>
 
-            {/* Bottom Chat Input Bar - Flex positioned, NOT absolute */}
-            <View style={styles.bottomBarContainer}>
-              <View style={styles.bottomBar}>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Ask me anything..."
-                    placeholderTextColor="#A0A0A0"
-                    value={inputText}
-                    onChangeText={setInputText}
-                  />
-                </View>
-                <TouchableOpacity style={styles.iconButton}>
-                  <Feather name="mic" size={24} color="#333" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.iconButton} onPress={handleSend}>
-                  <Ionicons name="paper-plane-outline" size={24} color="#333" />
-                </TouchableOpacity>
-              </View>
-            </View>
+            {/* Input Bar */}
+            <ChatInput value={inputText} onChangeText={setInputText} onSend={handleSend} />
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -244,35 +230,5 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(14),
     color: "#000000",
-  },
-  bottomBarContainer: {
-    backgroundColor: "transparent",
-    paddingBottom: 10,
-  },
-  bottomBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  inputWrapper: {
-    flex: 1,
-    backgroundColor: Colors.brand.inputBackground,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    marginRight: 10,
-  },
-  input: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(18),
-    color: "#333",
-  },
-  iconButton: {
-    width: 44,
-    height: 44,
-    justifyContent: "center",
-    alignItems: "center",
   },
 });
