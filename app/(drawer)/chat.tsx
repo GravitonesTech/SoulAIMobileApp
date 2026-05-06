@@ -3,19 +3,20 @@ import { Typography } from "@/constants/Typography";
 import { normalize } from "@/utils/responsive";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import React, { useMemo, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility";
+import { ChatInput } from "@/components/chat/ChatInput";
 
 type ChatMessage = {
   id: string;
@@ -36,6 +37,7 @@ export default function ChatScreen() {
   const displayLastUpdate = lastUpdate || "12.02.26";
 
   const [inputText, setInputText] = useState("");
+  const isKeyboardVisible = useKeyboardVisibility();
 
   const initialMessages = useMemo<ChatMessage[]>(
     () => [
@@ -60,8 +62,10 @@ export default function ChatScreen() {
 
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
 
+  const navigation = useNavigation<any>();
+
   const onPressMenu = () => {
-    router.push("/conversations");
+    navigation.openDrawer();
   };
 
   const onSend = () => {
@@ -82,7 +86,7 @@ export default function ChatScreen() {
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         <KeyboardAvoidingView
           style={styles.flex1}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          behavior={Platform.OS === "ios" ? "padding" : isKeyboardVisible ? "height" : undefined}
         >
           {/* Header */}
           <View style={styles.headerRow}>
@@ -90,7 +94,7 @@ export default function ChatScreen() {
               onPress={onPressMenu}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Feather name="menu" size={normalize(24)} color="#333" />
+              <Feather name="menu" size={24} color="#333" />
             </TouchableOpacity>
 
             <View style={styles.headerCenter}>
@@ -130,30 +134,8 @@ export default function ChatScreen() {
             ))}
           </ScrollView>
 
-          {/* Input */}
-          <View style={styles.bottomBarContainer}>
-            <View style={styles.bottomBar}>
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  value={inputText}
-                  onChangeText={setInputText}
-                  placeholder="Ask me anything..."
-                  placeholderTextColor="#A0A0A0"
-                  style={styles.input}
-                  onSubmitEditing={onSend}
-                  returnKeyType="send"
-                />
-              </View>
-
-              <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
-                <Feather name="mic" size={normalize(20)} color="#333" />
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.iconButton} activeOpacity={0.7} onPress={onSend}>
-                <Ionicons name="paper-plane-outline" size={normalize(20)} color="#333" />
-              </TouchableOpacity>
-            </View>
-          </View>
+          {/* Input Bar */}
+          <ChatInput value={inputText} onChangeText={setInputText} onSend={onSend} />
         </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
@@ -187,17 +169,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: normalize(20),
-    paddingTop: normalize(8),
+    paddingHorizontal: 20,
+    paddingTop: 8,
   },
   headerCenter: {
     flex: 1,
     alignItems: "center",
   },
   therapyPill: {
-    paddingHorizontal: normalize(16),
-    paddingVertical: normalize(8),
-    borderRadius: normalize(18),
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: "rgba(60, 97, 221, 0.55)",
     backgroundColor: "rgba(255,255,255,0.85)",
@@ -208,15 +190,15 @@ const styles = StyleSheet.create({
     color: "#1C1C1E",
   },
   avatarStub: {
-    width: normalize(34),
-    height: normalize(34),
-    borderRadius: normalize(17),
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: "#D1E5FF",
   },
   titleBlock: {
-    paddingHorizontal: normalize(20),
-    paddingTop: normalize(18),
-    paddingBottom: normalize(6),
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 6,
   },
   titleText: {
     fontFamily: Typography.fonts.medium,
@@ -224,19 +206,19 @@ const styles = StyleSheet.create({
     color: "#111111",
   },
   updateText: {
-    marginTop: normalize(6),
+    marginTop: 6,
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(12),
     color: "#8A8A8E",
   },
   messagesContent: {
-    paddingHorizontal: normalize(20),
-    paddingTop: normalize(12),
-    paddingBottom: normalize(16),
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 16,
   },
   bubbleRow: {
     flexDirection: "row",
-    marginBottom: normalize(10),
+    marginBottom: 10,
   },
   bubbleRowLeft: {
     justifyContent: "flex-start",
@@ -246,23 +228,23 @@ const styles = StyleSheet.create({
   },
   bubble: {
     maxWidth: "86%",
-    paddingHorizontal: normalize(14),
-    paddingVertical: normalize(12),
-    borderRadius: normalize(14),
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 14,
   },
   userBubble: {
     backgroundColor: "#3C61DD",
-    borderTopRightRadius: normalize(6),
+    borderTopRightRadius: 6,
   },
   assistantBubble: {
     backgroundColor: Colors.brand.cardBackground,
-    borderTopLeftRadius: normalize(6),
+    borderTopLeftRadius: 6,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.04)",
   },
   bubbleText: {
     fontSize: normalize(14),
-    lineHeight: normalize(22),
+    lineHeight: 22,
   },
   userText: {
     fontFamily: Typography.fonts.medium,
@@ -275,8 +257,8 @@ const styles = StyleSheet.create({
   dateDivider: {
     flexDirection: "row",
     alignItems: "center",
-    gap: normalize(10),
-    marginVertical: normalize(10),
+    gap: 10,
+    marginVertical: 10,
     opacity: 0.6,
   },
   dateLine: {
@@ -288,34 +270,5 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(11),
     color: "#8A8A8E",
-  },
-  bottomBarContainer: {
-    paddingHorizontal: normalize(16),
-    paddingBottom: normalize(12),
-  },
-  bottomBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: normalize(10),
-  },
-  inputWrapper: {
-    flex: 1,
-    backgroundColor: Colors.brand.inputBackground,
-    height: normalize(46),
-    borderRadius: normalize(24),
-    justifyContent: "center",
-    paddingHorizontal: normalize(14),
-  },
-  input: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(14),
-    color: "#333",
-  },
-  iconButton: {
-    width: normalize(42),
-    height: normalize(42),
-    borderRadius: normalize(21),
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

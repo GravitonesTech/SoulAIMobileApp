@@ -27,7 +27,11 @@ export default function EmailVerifyScreen() {
 
   const resolvedEmail = typeof email === "string" ? email : email?.[0] || "";
 
-  const { resend, resendLabel, isDisabled: isResendDisabled } = useResendOtpCooldown({
+  const {
+    resend,
+    resendLabel,
+    isDisabled: isResendDisabled,
+  } = useResendOtpCooldown({
     email: resolvedEmail,
     baseLabel: "Resend Verification Code",
     disabled: isLoading,

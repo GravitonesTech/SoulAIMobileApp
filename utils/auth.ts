@@ -4,6 +4,8 @@ import { UserProfile } from "@/types/api";
 import { storage } from "@/utils/storage";
 import { toast } from "@/utils/toast";
 import { router } from "expo-router";
+import { store } from "@/store";
+import { setCredentials, logout as logoutAction } from "@/store/slices/authSlice";
 
 export type SocialProvider = "google" | "apple";
 
@@ -17,6 +19,7 @@ async function checkAuth(): Promise<{ isAuthenticated: boolean; user?: UserProfi
   const result = await apiClient.get<UserProfile>(ENDPOINTS.users.me);
 
   if (result.success && result.data) {
+    store.dispatch(setCredentials({ user: result.data }));
     return {
       isAuthenticated: true,
       user: result.data,
@@ -61,6 +64,7 @@ async function loginWithSocialToken(provider: SocialProvider, token: string) {
 
       const { isAuthenticated, user } = await checkAuth();
       if (isAuthenticated && user) {
+        store.dispatch(setCredentials({ user }));
         navigateToCorrectScreen(user);
       } else {
         router.replace("/onboarding_one");
@@ -96,6 +100,7 @@ async function resendOtp(email: string) {
 async function logout() {
   await storage.removeAccessToken();
   await storage.removeRefreshToken();
+  store.dispatch(logoutAction());
   router.replace("/login");
 }
 

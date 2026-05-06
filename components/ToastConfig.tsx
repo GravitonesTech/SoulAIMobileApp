@@ -1,7 +1,7 @@
-import React from "react";
-import { BaseToast, ErrorToast, ToastConfig as ToastConfigType } from "react-native-toast-message";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
+import React from "react";
+import { BaseToast, ErrorToast, ToastConfig as ToastConfigType } from "react-native-toast-message";
 
 export const toastConfig: ToastConfigType = {
   success: (props) => (

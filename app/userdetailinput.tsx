@@ -5,11 +5,11 @@ import { ENDPOINTS } from "@/constants/endpoints";
 import { apiClient } from "@/utils/api";
 import { toast } from "@/utils/toast";
 import { Feather } from "@expo/vector-icons";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useRouter } from "expo-router";
+import { useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -25,8 +25,10 @@ import { COUNTRIES, GENDERS } from "@/constants/StaticData";
 
 export default function GenderScreen() {
   const router = useRouter();
-  const { fullName } = useLocalSearchParams();
-  const [age, setAge] = useState("");
+  const scrollRef = useRef<GestureScrollView>(null);
+  const [name, setName] = useState("");
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [countrySearch, setCountrySearch] = useState("");
   const [selectedGender, setSelectedGender] = useState("");
 
@@ -40,25 +42,50 @@ export default function GenderScreen() {
     return COUNTRIES.filter((c) => c.toLowerCase().includes(countrySearch.toLowerCase()));
   }, [countrySearch]);
 
-  const handleNext = async () => {
-    if (!age.trim()) {
-      toast.error("Error", "Please enter your age");
-      return;
+  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (selectedDate) {
+      setDate(selectedDate);
     }
-    if (!countrySearch.trim()) {
-      toast.error("Error", "Please select your country");
+  };
+
+  const formatDateForAPI = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
+  const formatDateForDisplay = (date: Date) => {
+    const d = String(date.getDate()).padStart(2, "0");
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const y = String(date.getFullYear()).slice(-2);
+    return `${d}/${m}/${y}`;
+  };
+
+  const handleNext = async () => {
+    if (!name.trim()) {
+      toast.error("Error", "Please enter your full name");
       return;
     }
     if (!selectedGender) {
       toast.error("Error", "Please select your gender");
       return;
     }
+    if (!date) {
+      toast.error("Error", "Please select your date of birth");
+      return;
+    }
+    if (!countrySearch.trim()) {
+      toast.error("Error", "Please select your country");
+      return;
+    }
 
     setIsLoading(true);
     const result = await apiClient.patch(ENDPOINTS.users.me, {
-      full_name: fullName,
-      age: parseInt(age),
+      full_name: name,
       country: countrySearch,
+      date_of_birth: formatDateForAPI(date),
       gender: selectedGender,
       completed_step: 1,
     });
@@ -132,13 +159,14 @@ export default function GenderScreen() {
           </View>
 
           <GestureScrollView
+            ref={scrollRef}
             contentContainerStyle={styles.scrollContainer}
             bounces={false}
             keyboardShouldPersistTaps="handled"
           >
             {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.titleText}>Hi {fullName || "Arjun"}!</Text>
+              <Text style={styles.titleText}>What’s your name?</Text>
               <Text style={styles.subtitleText}>Let us know more about you</Text>
             </View>
 
@@ -146,45 +174,19 @@ export default function GenderScreen() {
             <View style={styles.formContainer}>
               <View style={styles.inputWrapper}>
                 <AppInput
-                  placeholder="Age"
-                  keyboardType="numeric"
-                  value={age}
-                  onChangeText={setAge}
+                  placeholder="Full Name"
+                  value={name}
+                  onChangeText={setName}
                   style={styles.inputStyle}
                 />
               </View>
 
               <View style={[styles.inputWrapper, { zIndex: 10 }]}>
-                <AppInput
-                  placeholder="Country"
-                  value={countrySearch}
-                  onChangeText={(text) => {
-                    setCountrySearch(text);
-                    setShowCountryDropdown(true);
-                  }}
-                  onFocus={() => setShowCountryDropdown(true)}
-                  style={styles.inputStyle}
-                  rightIcon={
-                    <TouchableOpacity onPress={() => setShowCountryDropdown(!showCountryDropdown)}>
-                      <Feather
-                        name={showCountryDropdown ? "chevron-up" : "chevron-down"}
-                        size={20}
-                        color="#8A8A8E"
-                      />
-                    </TouchableOpacity>
-                  }
-                />
-                {renderDropdown(filteredCountries, setCountrySearch, showCountryDropdown, () =>
-                  setShowCountryDropdown(false),
-                )}
-              </View>
-
-              <View style={[styles.inputWrapper, { zIndex: 5 }]}>
                 <TouchableOpacity
                   activeOpacity={0.8}
                   style={styles.fullWidth}
                   onPress={() => {
-                    Keyboard.dismiss(); // Dismiss keyboard to prevent overlap
+                    Keyboard.dismiss();
                     setShowGenderDropdown(!showGenderDropdown);
                     setShowCountryDropdown(false);
                   }}
@@ -209,13 +211,76 @@ export default function GenderScreen() {
                 )}
               </View>
 
+              <View style={styles.inputWrapper}>
+                <TouchableOpacity activeOpacity={1} onPress={() => setShowDatePicker(true)}>
+                  <AppInput
+                    placeholder="Date of Birth (DD/MM/YY)"
+                    value={date ? formatDateForDisplay(date) : ""}
+                    style={styles.inputStyle}
+                    editable={false}
+                    pointerEvents="none"
+                    rightIcon={<Feather name="calendar" size={20} color="#8A8A8E" />}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {showDatePicker && (
+                <DateTimePicker
+                  value={date || new Date()}
+                  mode="date"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  onChange={onDateChange}
+                  maximumDate={new Date()}
+                />
+              )}
+
+              <View style={[styles.inputWrapper, { zIndex: 5 }]}>
+                <AppInput
+                  placeholder="Country"
+                  value={countrySearch}
+                  onChangeText={(text) => {
+                    setCountrySearch(text);
+                    setShowCountryDropdown(true);
+                  }}
+                  onFocus={() => {
+                    setShowCountryDropdown(true);
+                    setTimeout(() => {
+                      scrollRef.current?.scrollToEnd({ animated: true });
+                    }, 100);
+                  }}
+                  style={styles.inputStyle}
+                  rightIcon={
+                    <TouchableOpacity
+                      onPress={() => {
+                        const nextVisible = !showCountryDropdown;
+                        setShowCountryDropdown(nextVisible);
+                        if (nextVisible) {
+                          setTimeout(() => {
+                            scrollRef.current?.scrollToEnd({ animated: true });
+                          }, 100);
+                        }
+                      }}
+                    >
+                      <Feather
+                        name={showCountryDropdown ? "chevron-up" : "chevron-down"}
+                        size={20}
+                        color="#8A8A8E"
+                      />
+                    </TouchableOpacity>
+                  }
+                />
+                {renderDropdown(filteredCountries, setCountrySearch, showCountryDropdown, () =>
+                  setShowCountryDropdown(false),
+                )}
+              </View>
+
               <AppButton
-                title={isLoading ? "" : "Next"}
-                style={styles.nextButton}
+                title="Next"
+                isLoading={isLoading}
                 onPress={handleNext}
-                disabled={isLoading}
-                icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
+                style={{ marginTop: 24 }}
               />
+              {showCountryDropdown && <View style={{ height: 10 }} />}
             </View>
           </GestureScrollView>
         </KeyboardAvoidingView>
@@ -250,30 +315,30 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   progressFill: {
-    width: "39%",
+    width: "45%", // Adjusted to match mockup visual
     height: "100%",
     backgroundColor: "#3C61DD",
   },
   scrollContainer: {
     flexGrow: 1,
     paddingHorizontal: 28,
-    paddingBottom: 150, // Significant bottom padding to ensure the Next button can be scrolled above the keyboard
+    paddingBottom: 60,
   },
   header: {
     alignItems: "center",
-    marginBottom: 40,
-    marginTop: 60,
+    marginBottom: 48,
+    marginTop: 80,
   },
   titleText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 32,
+    fontSize: 34,
     color: "#111111",
     textAlign: "center",
-    marginBottom: 12,
+    marginBottom: 8,
   },
   subtitleText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: Typography.sizes.subtitle,
+    fontSize: 18,
     color: "#8A8A8E",
     textAlign: "center",
   },
@@ -291,19 +356,18 @@ const styles = StyleSheet.create({
   },
   inputStyle: {
     marginBottom: 0,
-    backgroundColor: "#FFFFFF",
-    borderColor: "rgba(0,0,0,0.05)",
-  },
-  nextButton: {
-    marginTop: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    borderColor: "rgba(0,0,0,0.02)",
+    borderRadius: 12,
+    height: 60,
   },
   dropdownContainer: {
     position: "absolute",
-    top: 54,
+    top: 62,
     left: 0,
     right: 0,
     backgroundColor: "#FFFFFF",
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.05)",
     shadowColor: "#000",

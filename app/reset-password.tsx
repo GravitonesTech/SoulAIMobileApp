@@ -27,7 +27,7 @@ export default function ResetPasswordScreen() {
 
   const email = useMemo(() => {
     const raw = (params.email ?? "") as string | string[];
-    return typeof raw === "string" ? raw : raw[0] ?? "";
+    return typeof raw === "string" ? raw : (raw[0] ?? "");
   }, [params.email]);
 
   const [otp, setOtp] = useState("");
@@ -36,7 +36,11 @@ export default function ResetPasswordScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { resend, resendLabel, isDisabled: isResendDisabled } = useResendOtpCooldown({
+  const {
+    resend,
+    resendLabel,
+    isDisabled: isResendDisabled,
+  } = useResendOtpCooldown({
     email,
     baseLabel: "Resend OTP",
     disabled: isLoading,
@@ -90,7 +94,9 @@ export default function ResetPasswordScreen() {
         >
           <View style={styles.header}>
             <Text style={styles.titleText}>Reset Password</Text>
-            <Text style={styles.subtitleText}>Enter the OTP sent to your email and set a new password.</Text>
+            <Text style={styles.subtitleText}>
+              Enter the OTP sent to your email and set a new password.
+            </Text>
           </View>
 
           <Text style={styles.emailLabel}>{email}</Text>
@@ -216,4 +222,3 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
 });
-

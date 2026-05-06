@@ -4,6 +4,8 @@ import { AppInput } from "@/components/ui/AppInput";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
+import { useAppDispatch } from "@/store/hooks";
+import { setCredentials } from "@/store/slices/authSlice";
 import { apiClient } from "@/utils/api";
 import { AuthService } from "@/utils/auth";
 import { storage } from "@/utils/storage";
@@ -25,6 +27,7 @@ import {
 
 export default function LoginScreen() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -51,6 +54,7 @@ export default function LoginScreen() {
 
       const { isAuthenticated, user } = await AuthService.checkAuth();
       if (isAuthenticated && user) {
+        dispatch(setCredentials({ user }));
         AuthService.navigateToCorrectScreen(user);
       } else {
         router.replace("/onboarding_one");

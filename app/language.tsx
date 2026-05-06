@@ -93,7 +93,7 @@ export default function LanguageScreen() {
                 return;
               }
               router.push({
-                pathname: "/fullname",
+                pathname: "/userdetailinput",
                 params: { language: selectedLanguage },
               });
             }}
