@@ -1,9 +1,12 @@
+import { ChatInput } from "@/components/chat/ChatInput";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
-import { normalize } from "@/utils/responsive";
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility";
+import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
+import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -14,10 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility";
-import { ChatInput } from "@/components/chat/ChatInput";
 
 import { CHAT_PROMPTS, THERAPY_TYPES } from "@/constants/StaticData";
 
@@ -66,7 +66,7 @@ export default function ChatStarterScreen() {
                 onPress={openMoreOptions}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Feather name="menu" size={28} color="#333" />
+                <Feather name="menu" size={normalize(28)} color="#333" />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => router.push("/profile")}>
                 <View style={styles.avatarContainer}>
@@ -138,14 +138,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 24,
-    paddingTop: 10,
-    paddingBottom: 20,
+    paddingHorizontal: moderateScale(24),
+    paddingTop: moderateScale(12),
+    paddingBottom: moderateScale(16),
   },
   avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: moderateScale(40),
+    height: moderateScale(40),
+    borderRadius: normalize(20),
     backgroundColor: "#D1E5FF",
     overflow: "hidden",
     borderWidth: 1,
@@ -156,36 +156,37 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingHorizontal: moderateScale(24),
+    paddingBottom: moderateScale(32),
   },
   header: {
     alignItems: "center",
-    marginTop: 10,
-    marginBottom: 50,
+    marginTop: hp(2),
+    marginBottom: hp(4),
   },
   greetingText: {
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(32),
     color: "#000000",
     textAlign: "center",
-    lineHeight: 42,
+    lineHeight: normalize(42),
   },
   updateText: {
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(14),
     color: "#464646",
-    marginTop: 12,
+    marginTop: hp(2),
+    marginBottom: hp(2),
   },
   therapyList: {
     alignItems: "center",
   },
   therapyButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 25,
-    marginBottom: 12,
-    maxWidth: 320,
+    paddingVertical: moderateScale(12),
+    paddingHorizontal: moderateScale(24),
+    borderRadius: normalize(25),
+    marginBottom: hp(1),
+    // width: wp(90),
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -200,19 +201,19 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   promptsContainer: {
-    marginBottom: 20,
+    marginBottom: hp(2),
     alignItems: "center",
-    marginTop: 38,
+    marginTop: hp(4),
   },
   promptCard: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "center",
     backgroundColor: Colors.brand.cardBackground,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 30,
-    marginBottom: 12,
+    paddingVertical: moderateScale(12),
+    paddingHorizontal: moderateScale(20),
+    borderRadius: normalize(30),
+    marginBottom: hp(2),
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
@@ -220,11 +221,11 @@ const styles = StyleSheet.create({
     elevation: 0.5,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: moderateScale(8),
+    height: moderateScale(8),
+    borderRadius: normalize(4),
     backgroundColor: Colors.brand.dotGreen,
-    marginRight: 12,
+    marginRight: wp(3),
   },
   promptText: {
     fontFamily: Typography.fonts.medium,

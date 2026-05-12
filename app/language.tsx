@@ -1,7 +1,9 @@
 import { AppButton } from "@/components/ui/AppButton";
+import { ProgressHeader } from "@/components/ui/ProgressHeader";
+import { LANGUAGES } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
-import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -15,8 +17,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import { LANGUAGES } from "@/constants/StaticData";
 
 export default function LanguageScreen() {
   const router = useRouter();
@@ -35,22 +35,13 @@ export default function LanguageScreen() {
 
   return (
     <LinearGradient
-      // Approximating the radial gradient from the CSS
       colors={["#FFFFFF", "#E2F4FF"]}
       start={{ x: 0.1, y: 0.1 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
       <SafeAreaView style={styles.safeArea}>
-        {/* Top Navigation & Progress */}
-        <View style={styles.topNavContainer}>
-          <TouchableOpacity onPress={() => BackHandler.exitApp()} style={styles.backButton}>
-            <Feather name="arrow-left" size={24} color="#111111" />
-          </TouchableOpacity>
-          <View style={styles.progressTrack}>
-            <View style={styles.progressFill} />
-          </View>
-        </View>
+        <ProgressHeader progress="13%" onBack={() => BackHandler.exitApp()} />
 
         <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
           {/* Header */}
@@ -73,7 +64,7 @@ export default function LanguageScreen() {
                   <Text
                     style={[
                       styles.languageText,
-                      isSelected ? { color: "#8A8A8E" } : { color: "#8A8A8E" }, // In mockup all options look gray, selected has blue border
+                      { color: "#8A8A8E" }, // In mockup all options look gray, selected has blue border
                     ]}
                   >
                     {lang}
@@ -110,46 +101,22 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    paddingTop: Platform.OS === "android" ? 40 : 0,
-  },
-  topNavContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
-  },
-  backButton: {
-    padding: 4,
-    marginRight: 16,
-  },
-  progressTrack: {
-    flex: 1,
-    height: 4,
-    backgroundColor: "rgba(60, 97, 221, 0.1)", // Light blue track
-    borderRadius: 2,
-    overflow: "hidden",
-  },
-  progressFill: {
-    width: "13%", // Adjusted for consistent flow
-    height: "100%",
-    backgroundColor: "#3C61DD", // Primary blue
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingHorizontal: 28,
-    paddingBottom: 40,
+    paddingHorizontal: moderateScale(28),
+    paddingBottom: moderateScale(40),
   },
   header: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: hp(5),
   },
   titleText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 32, // Large title
+    fontSize: Typography.sizes.title,
     color: "#111111",
     textAlign: "center",
-    marginBottom: 12,
+    marginBottom: hp(1.5),
   },
   subtitleText: {
     fontFamily: Typography.fonts.regular,
@@ -159,18 +126,18 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     width: "100%",
-    marginBottom: 15,
+    marginBottom: hp(2),
   },
   languageOption: {
     width: "100%",
-    height: 60, // slightly taller than standard input based on visual weight
+    height: moderateScale(60), // slightly taller than standard input based on visual weight
     backgroundColor: "rgba(255, 255, 255, 0.8)",
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.65)",
-    borderRadius: 8,
+    borderRadius: normalize(8),
     justifyContent: "center",
-    paddingHorizontal: 16,
-    marginBottom: 12,
+    paddingHorizontal: moderateScale(16),
+    marginBottom: hp(1.5),
   },
   languageOptionSelected: {
     borderColor: "#3C61DD", // Blue border for selected state
@@ -178,7 +145,7 @@ const styles = StyleSheet.create({
   },
   languageText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 16,
+    fontSize: normalize(16),
   },
   nextButton: {
     // marginTop: 10,

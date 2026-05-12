@@ -1,4 +1,5 @@
 import { Typography } from "@/constants/Typography";
+import { normalize } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
@@ -93,11 +94,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    height: 52,
+    paddingVertical: normalize(14),
+    paddingHorizontal: normalize(16),
+    height: normalize(52),
     width: "100%",
-    borderRadius: 12,
+    borderRadius: normalize(12),
     overflow: "hidden",
   },
   primaryButton: {
@@ -105,15 +106,15 @@ const styles = StyleSheet.create({
   },
   socialButton: {
     backgroundColor: "rgba(255, 255, 255, 0.95)",
-    borderRadius: 25,
+    borderRadius: normalize(25),
   },
   icon: {
     position: "absolute",
-    left: 24, // Put icon on the left edge as shown in Apple/Google buttons
+    left: normalize(24), // Put icon on the left edge as shown in Apple/Google buttons
   },
   baseText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 16,
+    fontSize: normalize(16),
   },
   primaryText: {
     color: "#FFFFFF",

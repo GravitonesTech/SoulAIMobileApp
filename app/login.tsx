@@ -1,4 +1,3 @@
-import { SocialButtons } from "@/components/auth/SocialButtons";
 import { AppButton } from "@/components/ui/AppButton";
 import { AppInput } from "@/components/ui/AppInput";
 import { ENDPOINTS } from "@/constants/endpoints";
@@ -8,6 +7,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { setCredentials } from "@/store/slices/authSlice";
 import { apiClient } from "@/utils/api";
 import { AuthService } from "@/utils/auth";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { storage } from "@/utils/storage";
 import { toast } from "@/utils/toast";
 import { Feather } from "@expo/vector-icons";
@@ -100,7 +100,11 @@ export default function LoginScreen() {
               style={styles.inputMargin}
               rightIcon={
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                  <Feather name={showPassword ? "eye" : "eye-off"} size={20} color="#555555" />
+                  <Feather
+                    name={showPassword ? "eye" : "eye-off"}
+                    size={normalize(20)}
+                    color="#555555"
+                  />
                 </TouchableOpacity>
               }
             />
@@ -120,18 +124,18 @@ export default function LoginScreen() {
             </View>
 
             {/* Social Divider */}
-            <View style={styles.dividerContainer}>
+            {/* <View style={styles.dividerContainer}>
               <Text style={styles.dividerText}>Or sign in with</Text>
-            </View>
+            </View> */}
 
             {/* Social Buttons */}
-            <SocialButtons style={styles.socialContainer} />
+            {/* <SocialButtons style={styles.socialContainer} /> */}
           </View>
 
           {/* Bottom Link */}
           <View style={styles.bottomLinkContainer}>
             <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/signup")}>
-              <Text style={styles.bottomLinkText}>Don’t have an account? Create one</Text>
+              <Text style={styles.bottomLinkText}>Don't have an account? Create one</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -147,19 +151,16 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     alignItems: "center",
-    paddingHorizontal: 28,
-    paddingTop: 80, // Approximate top padding based on design
-    paddingBottom: 40,
+    paddingHorizontal: moderateScale(28),
+    paddingTop: moderateScale(108),
+    paddingBottom: moderateScale(12),
   },
-  header: {
-    alignItems: "center",
-    marginBottom: 100, // Increased gap to match the screenshot proportions
-  },
+  header: { marginTop: hp(6), alignItems: "center", marginBottom: hp(6) },
   titleText: {
     fontFamily: Typography.fonts.regular,
     fontSize: Typography.sizes.title,
     color: "#FFFFFF",
-    marginBottom: 8,
+    marginBottom: hp(1),
   },
   subtitleText: {
     fontFamily: Typography.fonts.medium,
@@ -172,19 +173,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   inputMargin: {
-    marginBottom: 12,
+    marginBottom: hp(1.5),
   },
   signInBtnMargin: {
-    marginTop: 4, // 12 + 4 = 16 gap roughly
+    marginTop: hp(0.5),
   },
   dividerContainer: {
-    marginTop: 32,
-    marginBottom: 20,
+    marginTop: hp(4),
+    marginBottom: hp(2.5),
     alignItems: "center",
   },
   dividerText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 12,
+    fontSize: normalize(12),
     color: "#DBE7FB",
     opacity: 0.6,
   },
@@ -193,26 +194,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   socialBtnMargin: {
-    marginBottom: 16,
+    marginBottom: hp(2),
   },
   bottomLinkContainer: {
-    marginTop: 32, // Same distance as 'Or Sign In With'
+    marginTop: hp(4),
     alignItems: "center",
   },
   bottomLinkText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#FFFFFF",
   },
   forgotPasswordContainer: {
     width: "100%",
     alignItems: "flex-start",
-    marginTop: 8,
+    marginTop: hp(1),
   },
 
   forgotPasswordText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 13,
+    fontSize: normalize(13),
     color: "#FFFFFF",
   },
 });

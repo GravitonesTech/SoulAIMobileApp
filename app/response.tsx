@@ -15,7 +15,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ProgressHeader } from "@/components/ui/ProgressHeader";
 
 export default function ResponseScreen() {
   const router = useRouter();
@@ -35,15 +37,7 @@ export default function ResponseScreen() {
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          {/* Top Navigation & Progress */}
-          <View style={styles.topNavContainer}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <Feather name="arrow-left" size={24} color="#111111" />
-            </TouchableOpacity>
-            <View style={styles.progressTrack}>
-              <View style={styles.progressFill} />
-            </View>
-          </View>
+          <ProgressHeader progress="78%" onBack={() => router.back()} />
 
           <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
             {/* Header */}
@@ -103,56 +97,32 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    paddingTop: Platform.OS === "android" ? 40 : 0,
-  },
-  topNavContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
-  },
-  backButton: {
-    padding: 4,
-    marginRight: 16,
-  },
-  progressTrack: {
-    flex: 1,
-    height: 4,
-    backgroundColor: "rgba(60, 97, 221, 0.1)", // Light blue track
-    borderRadius: 2,
-    overflow: "hidden",
-  },
-  progressFill: {
-    width: "78%", // Adjusted for consistent flow (65% + 13%)
-    height: "100%",
-    backgroundColor: "#3C61DD", // Primary blue
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingHorizontal: 28,
-    paddingBottom: 40,
+    paddingHorizontal: moderateScale(28),
+    paddingBottom: moderateScale(40),
   },
   header: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: hp(5),
   },
   titleText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 30, // Large title
+    fontSize: normalize(30), // Large title
     color: "#111111",
     textAlign: "center",
-    marginBottom: 12,
+    marginBottom: hp(1.5),
   },
   subtitleText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: Typography.sizes.subtitle,
+    fontSize: normalize(Typography.sizes.subtitle),
     color: "#8A8A8E",
     textAlign: "center",
   },
   optionsContainer: {
     width: "100%",
-    marginBottom: 15,
+    marginBottom: hp(2),
   },
   languageOption: {
     width: "100%",
@@ -160,10 +130,10 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.8)",
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.65)",
-    borderRadius: 8,
+    borderRadius: normalize(8),
     justifyContent: "center",
-    paddingHorizontal: 16,
-    marginBottom: 12,
+    paddingHorizontal: moderateScale(16),
+    marginBottom: hp(1.5),
   },
   languageOptionSelected: {
     borderColor: "#3C61DD", // Blue border for selected state
@@ -171,7 +141,7 @@ const styles = StyleSheet.create({
   },
   languageText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 16,
+    fontSize: normalize(16),
   },
   nextButton: {
     // marginTop: 10,

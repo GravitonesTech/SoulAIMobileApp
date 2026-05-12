@@ -18,6 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 
 export default function EmailVerifyScreen() {
   const router = useRouter();
@@ -118,58 +119,58 @@ const styles = StyleSheet.create({
   centerContainer: {
     flex: 1,
     alignItems: "center",
-    paddingHorizontal: 28,
-    paddingTop: 100,
+    paddingHorizontal: moderateScale(28),
+    paddingTop: moderateScale(100),
   },
   header: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: hp(5),
   },
   titleText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: Typography.sizes.title,
+    fontSize: normalize(Typography.sizes.title),
     color: "#FFFFFF",
-    marginBottom: 8,
+    marginBottom: hp(1),
   },
   subtitleText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: Typography.sizes.subtitle,
+    fontSize: normalize(Typography.sizes.subtitle),
     color: "#FFFFFF",
     opacity: 0.6,
     textAlign: "center",
-    marginBottom: 40,
+    marginBottom: hp(5),
   },
   emailLabel: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#FFFFFF",
     opacity: 0.7,
-    marginBottom: 20,
+    marginBottom: hp(2.5),
   },
   formContainer: {
     width: "100%",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: hp(3),
   },
   verifyBtnMargin: {
-    marginTop: 20,
+    marginTop: hp(2.5),
   },
   resendContainer: {
-    marginTop: 8,
+    marginTop: hp(1),
   },
   resendText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 12,
+    fontSize: normalize(12),
     color: "#FFFFFF",
     opacity: 0.6,
   },
   bottomLinkContainer: {
-    marginTop: 32,
+    marginTop: hp(4),
     alignItems: "center",
   },
   bottomLinkText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 16,
+    fontSize: normalize(16),
     color: "#FFFFFF",
   },
 });

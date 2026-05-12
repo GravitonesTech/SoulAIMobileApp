@@ -1,6 +1,6 @@
 import { AppButton } from "@/components/ui/AppButton";
 import { Typography } from "@/constants/Typography";
-import { normalize } from "@/utils/responsive";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -63,10 +63,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 28,
+    paddingHorizontal: moderateScale(28),
     justifyContent: "space-between",
-    paddingTop: 100,
-    paddingBottom: 40,
+    paddingVertical: moderateScale(196),
   },
   header: {
     alignItems: "center",
@@ -76,32 +75,32 @@ const styles = StyleSheet.create({
     fontSize: normalize(32),
     color: "#3C61DD",
     textAlign: "center",
-    marginBottom: 16,
+    marginBottom: hp(2),
   },
   subtitle: {
     fontFamily: Typography.fonts.regular,
-    fontSize: normalize(18),
-    color: "#8AC9F9",
+    fontSize: normalize(16),
+    color: "#3C61DD",
     textAlign: "center",
-    lineHeight: 24,
+    lineHeight: normalize(24),
   },
   footer: {
     width: "100%",
     alignItems: "center",
   },
   primaryButton: {
-    marginBottom: 16,
+    marginBottom: hp(2),
   },
   secondaryButton: {
     width: "100%",
-    height: 52,
+    height: normalize(52),
     backgroundColor: "#F2F9FF",
     borderWidth: 1,
     borderColor: "#3C61DD",
-    borderRadius: 12,
+    borderRadius: normalize(12),
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: hp(2.5),
   },
   secondaryButtonText: {
     fontFamily: Typography.fonts.medium,
@@ -113,8 +112,8 @@ const styles = StyleSheet.create({
     fontSize: normalize(10),
     color: "#3C61DD",
     textAlign: "center",
-    paddingHorizontal: 10,
-    lineHeight: 14,
+    paddingHorizontal: moderateScale(10),
+    lineHeight: normalize(14),
     opacity: 0.8,
   },
 });

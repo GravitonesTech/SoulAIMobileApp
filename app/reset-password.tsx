@@ -20,6 +20,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
@@ -164,60 +165,60 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     alignItems: "center",
-    paddingHorizontal: 28,
-    paddingTop: 72,
-    paddingBottom: 260,
+    paddingHorizontal: moderateScale(28),
+    paddingTop: moderateScale(72),
+    paddingBottom: moderateScale(260),
   },
   header: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: hp(5),
   },
   titleText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: Typography.sizes.title,
+    fontSize: normalize(Typography.sizes.title),
     color: "#FFFFFF",
-    marginBottom: 8,
+    marginBottom: hp(1),
   },
   subtitleText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: Typography.sizes.subtitle,
+    fontSize: normalize(Typography.sizes.subtitle),
     color: "#FFFFFF",
     opacity: 0.6,
     textAlign: "center",
   },
   emailLabel: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#FFFFFF",
     opacity: 0.75,
-    marginBottom: 20,
+    marginBottom: hp(2.5),
   },
   formContainer: {
     width: "100%",
     alignItems: "center",
   },
   resendContainer: {
-    marginTop: 10,
-    marginBottom: 6,
+    marginTop: hp(1.2),
+    marginBottom: hp(0.8),
   },
   resendText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 12,
+    fontSize: normalize(12),
     color: "#FFFFFF",
     opacity: 0.7,
   },
   inputMargin: {
-    marginTop: 12,
+    marginTop: hp(1.5),
   },
   primaryBtn: {
-    marginTop: 16,
+    marginTop: hp(2),
   },
   backLink: {
-    marginTop: 16,
+    marginTop: hp(2),
   },
   backText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#FFFFFF",
     opacity: 0.9,
   },

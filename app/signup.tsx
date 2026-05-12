@@ -5,6 +5,7 @@ import { ENDPOINTS } from "@/constants/endpoints";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
 import { apiClient } from "@/utils/api";
+import { hp, normalize, moderateScale } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -105,7 +106,11 @@ export default function SignupScreen() {
               style={styles.inputMargin}
               rightIcon={
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                  <Feather name={showPassword ? "eye" : "eye-off"} size={20} color="#555555" />
+                  <Feather
+                    name={showPassword ? "eye" : "eye-off"}
+                    size={normalize(20)}
+                    color="#555555"
+                  />
                 </TouchableOpacity>
               }
             />
@@ -121,7 +126,7 @@ export default function SignupScreen() {
                 <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
                   <Feather
                     name={showConfirmPassword ? "eye" : "eye-off"}
-                    size={20}
+                    size={normalize(20)}
                     color="#555555"
                   />
                 </TouchableOpacity>
@@ -164,19 +169,19 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     alignItems: "center",
-    paddingHorizontal: 28,
-    paddingTop: 80,
-    paddingBottom: 40,
+    paddingHorizontal: moderateScale(28),
+    paddingTop: moderateScale(82),
+    paddingBottom: moderateScale(40),
   },
   header: {
     alignItems: "center",
-    marginBottom: 60,
+    marginBottom: hp(7),
   },
   titleText: {
     fontFamily: Typography.fonts.regular,
     fontSize: Typography.sizes.title,
     color: "#FFFFFF",
-    marginBottom: 8,
+    marginBottom: hp(1),
   },
   subtitleText: {
     fontFamily: Typography.fonts.medium,
@@ -189,19 +194,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   inputMargin: {
-    marginBottom: 12,
+    marginBottom: hp(1.5),
   },
   signInBtnMargin: {
-    marginTop: 4,
+    marginTop: hp(0.5),
   },
   dividerContainer: {
-    marginTop: 32,
-    marginBottom: 20,
+    marginTop: hp(4),
+    marginBottom: hp(2.5),
     alignItems: "center",
   },
   dividerText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 12,
+    fontSize: normalize(12),
     color: "#DBE7FB",
     opacity: 0.6,
   },
@@ -210,12 +215,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   bottomLinkContainer: {
-    marginTop: 32,
+    marginTop: hp(4),
     alignItems: "center",
   },
   bottomLinkText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#FFFFFF",
   },
 });

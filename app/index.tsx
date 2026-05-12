@@ -3,6 +3,7 @@ import { AppButton } from "@/components/ui/AppButton";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
 import { AuthService } from "@/utils/auth";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -41,6 +42,8 @@ export default function AuthOptionsScreen() {
     return (
       <LinearGradient
         colors={[Colors.gradient.start, Colors.gradient.end]}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={[styles.container, { justifyContent: "center", alignItems: "center" }]}
       >
         <ActivityIndicator size="large" color="#FFFFFF" />
@@ -49,7 +52,12 @@ export default function AuthOptionsScreen() {
   }
 
   return (
-    <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
+    <LinearGradient
+      colors={[Colors.gradient.start, Colors.gradient.end]}
+      start={{ x: 1, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.container}
+    >
       <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
         {/* Header (same as first screen) */}
         <View style={styles.header}>
@@ -58,23 +66,24 @@ export default function AuthOptionsScreen() {
 
         {/* Buttons (acts like formContainer) */}
         <View style={styles.formContainer}>
-          <Text style={[styles.subtitleText, { marginBottom: 30 }]}>
+          <Text style={[styles.subtitleText, { marginBottom: hp(3.5) }]}>
             Sign in to Personalize your{"\n"}Therapy AI Companion
           </Text>
 
+          <Text style={styles.continueWithText}>Continue with</Text>
+
           <AppButton
-            title="Continue with Phone Number"
+            title="Phone Number"
             variant="social"
-            icon={<Feather name="message-circle" size={20} color="#000" />}
-            style={[styles.inputMargin, { paddingLeft: 40 }]}
-            // textStyle={{ textAlign: "right", flex: 1 }}
+            icon={<Feather name="message-circle" size={normalize(20)} color="#000" />}
+            style={styles.inputMargin}
             onPress={() => router.push("/sendotp")}
           />
 
           <AppButton
-            title="Continue with Email"
+            title="Email"
             variant="social"
-            icon={<Feather name="mail" size={20} color="#000" />}
+            icon={<Feather name="mail" size={normalize(20)} color="#000" />}
             style={styles.inputMargin}
             onPress={() => router.push("/login")}
           />
@@ -93,7 +102,7 @@ export default function AuthOptionsScreen() {
             <Text style={styles.linkText} onPress={() => router.push("/privacy-policy")}>
               Privacy Policy
             </Text>
-            .
+            , which explains how to opt out of our offers and promos.
           </Text>
         </View>
 
@@ -101,7 +110,7 @@ export default function AuthOptionsScreen() {
         <View style={styles.bottomLinkContainer}>
           <TouchableOpacity onPress={() => router.push("/signup")}>
             <Text style={styles.bottomLinkText}>
-              Don’t have an account? <Text style={styles.boldText}>Create one</Text>
+              Don't have an account? <Text style={styles.boldText}>Create one</Text>
             </Text>
           </TouchableOpacity>
         </View>
@@ -118,32 +127,41 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     alignItems: "center",
-    paddingHorizontal: 28,
-    paddingTop: 80,
-    paddingBottom: 40,
+    paddingHorizontal: moderateScale(28),
+    paddingTop: moderateScale(108),
+    paddingBottom: moderateScale(12),
   },
 
   /* SAME HEADER STRUCTURE */
-  header: {
-    alignItems: "center",
-    marginBottom: 120,
-  },
+  header: { marginTop: hp(6), alignItems: "center", marginBottom: hp(5) },
 
   titleText: {
     fontFamily: Typography.fonts.medium,
     fontSize: Typography.sizes.title,
     color: "#FFFFFF",
-    marginBottom: 10,
+    marginBottom: hp(3),
     textAlign: "center",
+    textShadowColor: "rgba(0, 0, 0, 0.15)",
+    textShadowOffset: { width: 0, height: normalize(2) },
+    textShadowRadius: normalize(4),
   },
 
   subtitleText: {
     fontFamily: Typography.fonts.regular,
     fontSize: Typography.sizes.subtitle,
     color: "#FFFFFF",
-    opacity: 0.7,
+    opacity: 0.9,
     textAlign: "center",
-    lineHeight: 20,
+    lineHeight: normalize(22),
+  },
+
+  continueWithText: {
+    fontFamily: Typography.fonts.medium,
+    fontSize: normalize(16),
+    color: "#FFFFFF",
+    marginTop: hp(5),
+    marginBottom: hp(2),
+    textAlign: "center",
   },
 
   /* SAME AS formContainer */
@@ -153,22 +171,22 @@ const styles = StyleSheet.create({
   },
 
   inputMargin: {
-    marginBottom: 16,
+    marginBottom: hp(1),
   },
 
   /* USED AS TERMS AREA */
   dividerContainer: {
-    marginTop: 32,
-    paddingHorizontal: 10,
+    marginTop: hp(1),
+    paddingHorizontal: moderateScale(10),
     alignItems: "center",
   },
 
   termsText: {
-    fontSize: 12,
+    fontSize: normalize(10),
     color: "#DBE7FB",
     textAlign: "center",
     opacity: 0.7,
-    lineHeight: 18,
+    lineHeight: normalize(12),
   },
 
   linkText: {
@@ -176,17 +194,17 @@ const styles = StyleSheet.create({
   },
 
   bottomLinkContainer: {
-    marginTop: 32,
+    marginTop: hp(4),
     alignItems: "center",
   },
 
   bottomLinkText: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: 14,
+    fontFamily: Typography.fonts.medium,
+    fontSize: normalize(16),
     color: "#FFFFFF",
   },
 
   boldText: {
-    fontFamily: Typography.fonts.medium,
+    fontFamily: Typography.fonts.bold,
   },
 });

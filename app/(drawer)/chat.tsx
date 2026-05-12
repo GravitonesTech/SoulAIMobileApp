@@ -49,12 +49,12 @@ export default function ChatScreen() {
       {
         id: "m2",
         role: "assistant",
-        text: "That sounds exhausting. When everything starts piling up, it can feel like there’s no space to breathe. Do you notice if certain situations or thoughts make that feeling stronger?",
+        text: "That sounds exhausting. When everything starts piling up, it can feel like there's no space to breathe. Do you notice if certain situations or thoughts make that feeling stronger?",
       },
       {
         id: "m3",
         role: "user",
-        text: "Yeah, mostly when I think about all the things I haven’t finished yet. It just makes me feel stuck.",
+        text: "Yeah, mostly when I think about all the things I haven't finished yet. It just makes me feel stuck.",
       },
     ],
     [],
@@ -94,7 +94,7 @@ export default function ChatScreen() {
               onPress={onPressMenu}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Feather name="menu" size={24} color="#333" />
+              <Feather name="menu" size={normalize(24)} color="#333" />
             </TouchableOpacity>
 
             <View style={styles.headerCenter}>
@@ -169,17 +169,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingHorizontal: normalize(20),
+    paddingTop: normalize(8),
   },
   headerCenter: {
     flex: 1,
     alignItems: "center",
   },
   therapyPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 18,
+    paddingHorizontal: normalize(16),
+    paddingVertical: normalize(8),
+    borderRadius: normalize(18),
     borderWidth: 1,
     borderColor: "rgba(60, 97, 221, 0.55)",
     backgroundColor: "rgba(255,255,255,0.85)",
@@ -190,15 +190,15 @@ const styles = StyleSheet.create({
     color: "#1C1C1E",
   },
   avatarStub: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: normalize(34),
+    height: normalize(34),
+    borderRadius: normalize(17),
     backgroundColor: "#D1E5FF",
   },
   titleBlock: {
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 6,
+    paddingHorizontal: normalize(20),
+    paddingTop: normalize(18),
+    paddingBottom: normalize(6),
   },
   titleText: {
     fontFamily: Typography.fonts.medium,
@@ -206,19 +206,19 @@ const styles = StyleSheet.create({
     color: "#111111",
   },
   updateText: {
-    marginTop: 6,
+    marginTop: normalize(6),
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(12),
     color: "#8A8A8E",
   },
   messagesContent: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 16,
+    paddingHorizontal: normalize(20),
+    paddingTop: normalize(12),
+    paddingBottom: normalize(16),
   },
   bubbleRow: {
     flexDirection: "row",
-    marginBottom: 10,
+    marginBottom: normalize(10),
   },
   bubbleRowLeft: {
     justifyContent: "flex-start",
@@ -228,23 +228,23 @@ const styles = StyleSheet.create({
   },
   bubble: {
     maxWidth: "86%",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 14,
+    paddingHorizontal: normalize(14),
+    paddingVertical: normalize(12),
+    borderRadius: normalize(14),
   },
   userBubble: {
     backgroundColor: "#3C61DD",
-    borderTopRightRadius: 6,
+    borderTopRightRadius: normalize(6),
   },
   assistantBubble: {
     backgroundColor: Colors.brand.cardBackground,
-    borderTopLeftRadius: 6,
+    borderTopLeftRadius: normalize(6),
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.04)",
   },
   bubbleText: {
     fontSize: normalize(14),
-    lineHeight: 22,
+    lineHeight: normalize(22),
   },
   userText: {
     fontFamily: Typography.fonts.medium,
@@ -257,8 +257,8 @@ const styles = StyleSheet.create({
   dateDivider: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    marginVertical: 10,
+    gap: normalize(10),
+    marginVertical: normalize(10),
     opacity: 0.6,
   },
   dateLine: {

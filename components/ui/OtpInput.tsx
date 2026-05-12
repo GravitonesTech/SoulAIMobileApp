@@ -1,3 +1,4 @@
+import { normalize } from "@/utils/responsive";
 import React, { useRef, useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 
@@ -69,6 +70,8 @@ export const OtpInput = ({ length = 4, onChange }: OtpInputProps) => {
   );
 };
 
+const BOX_SIZE = normalize(64);
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
@@ -76,17 +79,17 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   box: {
-    width: 64,
-    height: 64,
+    width: BOX_SIZE,
+    height: BOX_SIZE,
     backgroundColor: "rgba(255, 255, 255, 0.9)", // slightly whiter than normal input
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.65)",
-    borderRadius: 8,
+    borderRadius: normalize(8),
     justifyContent: "center",
     alignItems: "center",
   },
   input: {
-    fontSize: 24,
+    fontSize: normalize(24),
     textAlign: "center",
     textAlignVertical: "center",
     color: "#333333",

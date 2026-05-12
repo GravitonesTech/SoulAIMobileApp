@@ -1,5 +1,6 @@
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
+import { moderateScale, normalize, hp, wp } from "@/utils/responsive";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -21,11 +22,11 @@ export default function PrivacyPolicyScreen() {
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
-              <Feather name="arrow-left" size={24} color="#FFF" />
+              <Feather name="arrow-left" size={normalize(24)} color="#FFF" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Privacy Policy</Text>
             <TouchableOpacity onPress={handleClose} style={styles.iconButton}>
-              <Ionicons name="close" size={26} color="#FFF" />
+              <Ionicons name="close" size={normalize(26)} color="#FFF" />
             </TouchableOpacity>
           </View>
 
@@ -178,7 +179,7 @@ export default function PrivacyPolicyScreen() {
               </Text>
 
               {/* Bottom Padding */}
-              <View style={{ height: 40 }} />
+              <View style={{ height: moderateScale(40) }} />
             </ScrollView>
           </View>
         </SafeAreaView>
@@ -214,78 +215,78 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(15),
   },
   headerTitle: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 22,
+    fontSize: normalize(22),
     color: "#FFF",
     textAlign: "center",
   },
   iconButton: {
-    padding: 4,
-    width: 40,
+    padding: moderateScale(4),
+    width: moderateScale(40),
     alignItems: "center",
   },
   contentCard: {
     flex: 1,
     backgroundColor: "#E5F1FF",
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-    marginTop: 10,
+    borderTopLeftRadius: normalize(40),
+    borderTopRightRadius: normalize(40),
+    marginTop: hp(1.2),
     overflow: "hidden",
   },
   scrollContent: {
-    paddingHorizontal: 28,
-    paddingTop: 40,
-    paddingBottom: 20,
+    paddingHorizontal: moderateScale(28),
+    paddingTop: moderateScale(40),
+    paddingBottom: moderateScale(20),
   },
   introText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#333",
-    lineHeight: 22,
-    marginBottom: 24,
+    lineHeight: normalize(22),
+    marginBottom: hp(3),
   },
   section: {
-    marginBottom: 24,
+    marginBottom: hp(3),
   },
   sectionTitle: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 15,
+    fontSize: normalize(15),
     color: "#222",
-    marginBottom: 4,
+    marginBottom: hp(0.5),
   },
   sectionIntro: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#444",
-    lineHeight: 20,
-    marginBottom: 12,
+    lineHeight: normalize(20),
+    marginBottom: hp(1.5),
   },
   bulletList: {
-    marginTop: 4,
+    marginTop: hp(0.5),
   },
   bulletContainer: {
     flexDirection: "row",
-    marginBottom: 12,
-    paddingRight: 10,
+    marginBottom: hp(1.5),
+    paddingRight: moderateScale(10),
   },
   bullet: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: normalize(6),
+    height: normalize(6),
+    borderRadius: normalize(3),
     backgroundColor: "#333",
-    marginTop: 7,
-    marginRight: 12,
+    marginTop: hp(0.8),
+    marginRight: wp(3),
   },
   bulletText: {
     flex: 1,
     fontFamily: Typography.fonts.regular,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#444",
-    lineHeight: 20,
+    lineHeight: normalize(20),
   },
   boldText: {
     fontFamily: Typography.fonts.bold,
@@ -293,17 +294,17 @@ const styles = StyleSheet.create({
   },
   contactText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#444",
-    lineHeight: 20,
-    marginTop: 4,
+    lineHeight: normalize(20),
+    marginTop: hp(0.5),
   },
   disclaimerText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 12,
+    fontSize: normalize(12),
     color: "#666",
     fontStyle: "italic",
-    marginTop: 20,
-    lineHeight: 18,
+    marginTop: hp(2.5),
+    lineHeight: normalize(18),
   },
 });

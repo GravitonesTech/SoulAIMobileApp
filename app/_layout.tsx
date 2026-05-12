@@ -6,6 +6,7 @@ import { store } from "@/store";
 import {
   NunitoSans_400Regular,
   NunitoSans_500Medium,
+  NunitoSans_700Bold,
   useFonts,
 } from "@expo-google-fonts/nunito-sans";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
@@ -26,6 +27,7 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     NunitoSans_400Regular,
     NunitoSans_500Medium,
+    NunitoSans_700Bold,
   });
 
   useEffect(() => {
