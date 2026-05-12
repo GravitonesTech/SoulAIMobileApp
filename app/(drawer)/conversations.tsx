@@ -5,7 +5,7 @@ import {
   type Conversation,
 } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
-import { normalize } from "@/utils/responsive";
+import { moderateScale, normalize, hp, wp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
@@ -77,9 +77,9 @@ export default function ConversationsScreen() {
 
     const showMenuAt = (x: number, y: number, w: number, h: number) => {
       const { width: screenW, height: screenH } = Dimensions.get("window");
-      const menuW = 240;
-      const menuH = 82;
-      const gap = 12;
+      const menuW = moderateScale(240);
+      const menuH = moderateScale(82);
+      const gap = moderateScale(12);
 
       const preferredTop = y + h + gap;
       const top =
@@ -97,7 +97,7 @@ export default function ConversationsScreen() {
     } else {
       // Fallback: center-ish menu.
       const { width: screenW, height: screenH } = Dimensions.get("window");
-      setContextMenuAnchor({ top: screenH * 0.35, left: screenW * 0.5 - 120 });
+      setContextMenuAnchor({ top: screenH * 0.35, left: screenW * 0.5 - moderateScale(120) });
       setContextMenuVisible(true);
     }
   };
@@ -149,7 +149,7 @@ export default function ConversationsScreen() {
         {/* Header Bar */}
         <View style={styles.headerBar}>
           <TouchableOpacity onPress={onPressMenu}>
-            <Feather name="menu" size={26} color="#333" />
+            <Feather name="menu" size={normalize(26)} color="#333" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Conversations</Text>
           <TouchableOpacity onPress={() => {}}>
@@ -175,7 +175,7 @@ export default function ConversationsScreen() {
                 activeOpacity={0.7}
               >
                 <View style={styles.quickActionLeft}>
-                  <Feather name={action.icon as any} size={18} color={action.color} />
+                  <Feather name={action.icon as any} size={normalize(18)} color={action.color} />
                   <Text
                     style={[styles.quickActionText, action.id === "sos" && styles.sosActionText]}
                   >
@@ -184,7 +184,7 @@ export default function ConversationsScreen() {
                 </View>
                 <Feather
                   name="chevron-right"
-                  size={18}
+                  size={normalize(18)}
                   color={action.id === "sos" ? "#FF3B30" : "#C7C7CC"}
                 />
               </TouchableOpacity>
@@ -279,7 +279,7 @@ export default function ConversationsScreen() {
                   activeOpacity={0.7}
                   onPress={onPressRename}
                 >
-                  <Feather name="edit-2" size={18} color="#1C1C1E" />
+                  <Feather name="edit-2" size={normalize(18)} color="#1C1C1E" />
                   <Text style={styles.menuActionText}>Rename</Text>
                 </TouchableOpacity>
                 <View style={styles.menuDivider} />
@@ -288,7 +288,7 @@ export default function ConversationsScreen() {
                   activeOpacity={0.7}
                   onPress={onPressDelete}
                 >
-                  <Feather name="trash-2" size={18} color="#1C1C1E" />
+                  <Feather name="trash-2" size={normalize(18)} color="#1C1C1E" />
                   <Text style={styles.menuActionText}>Delete</Text>
                 </TouchableOpacity>
               </Pressable>
@@ -336,7 +336,7 @@ export default function ConversationsScreen() {
 
         {/* FAB: New Chat */}
         <TouchableOpacity style={styles.fab} onPress={() => router.push("/chatstarter")}>
-          <Feather name="plus" size={24} color="#FFF" />
+          <Feather name="plus" size={normalize(24)} color="#FFF" />
           <Text style={styles.fabText}>New chat</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -347,7 +347,7 @@ export default function ConversationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#EEF7FF", // Light blue background from screenshot
+    backgroundColor: "#EEF7FF",
   },
   safeArea: {
     flex: 1,
@@ -356,8 +356,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(15),
   },
   headerTitle: {
     fontFamily: Typography.fonts.medium,
@@ -365,9 +365,9 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   avatarContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: moderateScale(36),
+    height: moderateScale(36),
+    borderRadius: normalize(18),
     overflow: "hidden",
     backgroundColor: "#D1E5FF",
   },
@@ -376,24 +376,24 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 100, // Space for FAB
+    paddingHorizontal: moderateScale(20),
+    paddingBottom: moderateScale(96),
   },
   sectionLabel: {
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(12),
     color: "#8A8A8E",
-    marginBottom: 10,
-    marginTop: 16,
+    marginBottom: hp(1),
+    marginTop: hp(2),
     letterSpacing: 1,
   },
   sectionLabelSpacing: {
-    marginTop: 18,
+    marginTop: hp(2.5),
   },
   quickActionsCard: {
     backgroundColor: "#FFF",
-    borderRadius: 15,
-    marginBottom: 14,
+    borderRadius: normalize(15),
+    marginBottom: hp(1.7),
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
@@ -404,15 +404,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: moderateScale(16),
+    paddingVertical: moderateScale(16),
     borderBottomWidth: 0.5,
     borderBottomColor: "#F2F2F2",
   },
   quickActionLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: moderateScale(12),
   },
   quickActionText: {
     fontFamily: Typography.fonts.medium,
@@ -424,8 +424,8 @@ const styles = StyleSheet.create({
   },
   conversationsCard: {
     backgroundColor: "#FFF",
-    borderRadius: 15,
-    paddingVertical: 5,
+    borderRadius: normalize(15),
+    paddingVertical: moderateScale(5),
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -433,8 +433,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   conversationItem: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(15),
     borderBottomWidth: 0.5,
     borderBottomColor: "#F2F2F2",
   },
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: hp(0.5),
   },
   itemTitle: {
     fontFamily: Typography.fonts.medium,
@@ -467,14 +467,14 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: "absolute",
-    bottom: 30,
-    right: 20,
+    bottom: hp(4),
+    right: moderateScale(20),
     backgroundColor: "#3C61DD",
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 30,
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(12),
+    borderRadius: normalize(30),
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(16),
     color: "#FFF",
-    marginLeft: 8,
+    marginLeft: wp(2),
   },
 
   menuBackdrop: {
@@ -497,13 +497,13 @@ const styles = StyleSheet.create({
   },
   contextMenu: {
     position: "absolute",
-    width: 240,
+    width: moderateScale(240),
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: normalize(16),
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-evenly",
-    paddingVertical: 14,
+    paddingVertical: moderateScale(14),
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
+    gap: moderateScale(6),
   },
   menuActionText: {
     fontFamily: Typography.fonts.medium,
@@ -528,11 +528,11 @@ const styles = StyleSheet.create({
   },
 
   renameCard: {
-    marginHorizontal: 20,
-    marginTop: 220,
+    marginHorizontal: wp(5.3),
+    marginTop: hp(27),
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: normalize(16),
+    padding: moderateScale(16),
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
@@ -543,12 +543,12 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(16),
     color: "#111111",
-    marginBottom: 10,
+    marginBottom: hp(1),
   },
   renameInput: {
-    height: 46,
-    borderRadius: 12,
-    paddingHorizontal: 12,
+    height: moderateScale(46),
+    borderRadius: normalize(12),
+    paddingHorizontal: moderateScale(12),
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.08)",
     fontFamily: Typography.fonts.regular,
@@ -558,14 +558,14 @@ const styles = StyleSheet.create({
   renameButtons: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    gap: 10,
-    marginTop: 14,
+    gap: moderateScale(8),
+    marginTop: hp(1.7),
   },
   renameBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
-    minWidth: 90,
+    paddingHorizontal: moderateScale(14),
+    paddingVertical: moderateScale(10),
+    borderRadius: normalize(12),
+    minWidth: moderateScale(90),
     alignItems: "center",
   },
   renameBtnPrimary: {

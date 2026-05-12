@@ -1,4 +1,5 @@
 import { Typography } from "@/constants/Typography";
+import { moderateScale, normalize, hp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "expo-router";
@@ -20,13 +21,13 @@ export default function ComingSoonScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuButton}>
-            <Feather name="menu" size={26} color="#333" />
+            <Feather name="menu" size={normalize(26)} color="#333" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.content}>
           <View style={styles.iconCircle}>
-            <Feather name="clock" size={48} color="#3C61DD" />
+            <Feather name="clock" size={normalize(48)} color="#3C61DD" />
           </View>
           <Text style={styles.title}>Coming Soon</Text>
           <Text style={styles.description}>
@@ -46,39 +47,39 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(15),
   },
   menuButton: {
-    padding: 4,
+    padding: moderateScale(4),
   },
   content: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 40,
-    marginTop: -50, // Offset for header
+    paddingHorizontal: moderateScale(40),
+    marginTop: hp(-6.2), // Offset for header
   },
   iconCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: moderateScale(100),
+    height: moderateScale(100),
+    borderRadius: normalize(50),
     backgroundColor: "rgba(60, 97, 221, 0.1)",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 24,
+    marginBottom: hp(3),
   },
   title: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 28,
+    fontSize: normalize(28),
     color: "#111111",
-    marginBottom: 12,
+    marginBottom: hp(1.5),
   },
   description: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 16,
+    fontSize: normalize(16),
     color: "#8A8A8E",
     textAlign: "center",
-    lineHeight: 24,
+    lineHeight: normalize(24),
   },
 });

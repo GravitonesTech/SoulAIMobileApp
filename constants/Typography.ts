@@ -1,3 +1,5 @@
+import { normalize } from "@/utils/responsive";
+
 export const Typography = {
   fonts: {
     regular: "NunitoSans_400Regular",
@@ -5,8 +7,8 @@ export const Typography = {
     bold: "NunitoSans_700Bold",
   },
   sizes: {
-    splashText: 20,
-    title: 32, // Soul AI
-    subtitle: 16, // A personalized therapy AI Companion
+    splashText: normalize(20),
+    title: normalize(32),
+    subtitle: normalize(16),
   },
 };

@@ -1,6 +1,6 @@
 import { AppButton } from "@/components/ui/AppButton";
 import { Typography } from "@/constants/Typography";
-import { normalize } from "@/utils/responsive";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
@@ -66,52 +66,52 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    paddingTop: Platform.OS === "android" ? 40 : 0,
+    paddingTop: Platform.OS === "android" ? normalize(40) : 0,
   },
   content: {
     flex: 1,
     alignItems: "center",
-    paddingHorizontal: 30,
-    paddingBottom: 40,
+    paddingHorizontal: moderateScale(30),
+    paddingBottom: moderateScale(40),
   },
   headerContainer: {
     alignItems: "center",
-    marginTop: 150,
+    marginTop: hp(18),
   },
   title: {
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(32),
     color: "#FFFFFF",
     textAlign: "center",
-    marginBottom: 16,
+    marginBottom: hp(2),
   },
   subtitle: {
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(16),
     color: "rgba(255, 255, 255, 0.7)",
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: normalize(22),
   },
   bottomContainer: {
     width: "100%",
     alignItems: "center",
-    gap: 30,
-    marginBottom: 20,
-    marginTop: 140,
+    gap: normalize(30),
+    marginBottom: hp(2.5),
+    marginTop: hp(17),
   },
   button: {
     width: "100%",
     backgroundColor: "#3C61DD",
-    borderRadius: 12,
-    height: 56,
+    borderRadius: normalize(12),
+    height: normalize(56),
   },
   footerText: {
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(12),
     color: "#FFFFFF",
     textAlign: "center",
-    lineHeight: 18,
-    paddingHorizontal: 20,
+    lineHeight: normalize(18),
+    paddingHorizontal: moderateScale(20),
     opacity: 0.9,
   },
 });

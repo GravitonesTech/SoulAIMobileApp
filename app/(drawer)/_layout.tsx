@@ -19,7 +19,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
       {/* Drawer Header */}
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.closeDrawer()}>
-          <Feather name="menu" size={26} color="#333" />
+          <Feather name="menu" size={normalize(26)} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>More Options</Text>
         <TouchableOpacity
@@ -53,14 +53,14 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
               }}
             >
               <View style={styles.itemLeft}>
-                <Feather name={item.icon as any} size={22} color={item.color} />
+                <Feather name={item.icon as any} size={normalize(22)} color={item.color} />
                 <Text style={[styles.itemText, item.id === "sos" && styles.sosText]}>
                   {item.label}
                 </Text>
               </View>
               <Feather
                 name="chevron-right"
-                size={18}
+                size={normalize(18)}
                 color={item.id === "sos" ? "#FFC1C1" : "#D1D1D1"}
               />
             </TouchableOpacity>
@@ -77,7 +77,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
             navigation.closeDrawer();
           }}
         >
-          <Feather name="plus" size={24} color="#FFF" />
+          <Feather name="plus" size={normalize(24)} color="#FFF" />
           <Text style={styles.fabText}>New chat</Text>
         </TouchableOpacity>
       </View>
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: normalize(20),
+    paddingVertical: normalize(15),
   },
   headerTitle: {
     fontFamily: Typography.fonts.medium,
@@ -127,9 +127,9 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   avatarContainer: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: normalize(38),
+    height: normalize(38),
+    borderRadius: normalize(19),
     overflow: "hidden",
     backgroundColor: "#D1E5FF",
   },
@@ -138,18 +138,18 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: normalize(20),
+    paddingBottom: normalize(20),
   },
   itemsCard: {
     backgroundColor: "transparent",
-    marginTop: 10,
+    marginTop: normalize(10),
   },
   itemRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 18,
+    paddingVertical: normalize(18),
     borderBottomWidth: 1,
     borderBottomColor: "rgba(0,0,0,0.03)",
   },
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   itemLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 15,
+    gap: normalize(15),
   },
   itemText: {
     fontFamily: Typography.fonts.medium,
@@ -170,17 +170,17 @@ const styles = StyleSheet.create({
     color: "#FF3B30",
   },
   footer: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: normalize(20),
+    paddingBottom: normalize(40),
     alignItems: "flex-end",
   },
   fab: {
     backgroundColor: "#3C61DD",
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 30,
+    paddingHorizontal: normalize(20),
+    paddingVertical: normalize(12),
+    borderRadius: normalize(30),
     shadowColor: "#3C61DD",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -191,6 +191,6 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(16),
     color: "#FFF",
-    marginLeft: 8,
+    marginLeft: normalize(8),
   },
 });

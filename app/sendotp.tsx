@@ -2,6 +2,7 @@ import { AppButton } from "@/components/ui/AppButton";
 import { AppInput } from "@/components/ui/AppInput";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -86,23 +87,24 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     alignItems: "center",
-    paddingHorizontal: 28,
-    paddingTop: 80,
-    paddingBottom: 40,
+    paddingHorizontal: moderateScale(28),
+    paddingTop: moderateScale(108),
+    paddingBottom: moderateScale(12),
   },
   header: {
     alignItems: "center",
-    marginBottom: 100,
+    marginTop: hp(6),
+    marginBottom: hp(12.5),
   },
   titleText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: Typography.sizes.title,
+    fontSize: normalize(Typography.sizes.title),
     color: "#FFFFFF",
-    marginBottom: 8,
+    marginBottom: hp(1),
   },
   subtitleText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: Typography.sizes.subtitle,
+    fontSize: normalize(Typography.sizes.subtitle),
     color: "#FFFFFF",
     opacity: 0.6,
   },
@@ -111,18 +113,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   inputMargin: {
-    marginBottom: 12,
+    marginBottom: hp(1.5),
   },
   signInBtnMargin: {
-    marginTop: 4,
+    marginTop: hp(0.5),
   },
   bottomLinkContainer: {
-    marginTop: 32,
+    marginTop: hp(4),
     alignItems: "center",
   },
   bottomLinkText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#FFFFFF",
   },
 });

@@ -1,6 +1,6 @@
 import { AppButton } from "@/components/ui/AppButton";
 import { Typography } from "@/constants/Typography";
-import { normalize } from "@/utils/responsive";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
@@ -32,7 +32,7 @@ export default function OnboardingOneScreen() {
         <View style={styles.content}>
           {/* Header Section */}
           <View style={styles.headerContainer}>
-            <Text style={styles.title}>Hey, I’m Soul AI</Text>
+            <Text style={styles.title}>Hey, I'm Soul AI</Text>
             <Text style={styles.subtitle}>A personalized therapy{"\n"}AI Companion</Text>
           </View>
 
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 28,
+    paddingHorizontal: moderateScale(28),
     justifyContent: "space-evenly",
     alignItems: "center",
   },
@@ -84,15 +84,15 @@ const styles = StyleSheet.create({
     fontSize: normalize(32),
     color: "#FFFFFF",
     textAlign: "center",
-    marginBottom: 29,
-    lineHeight: 46,
+    marginBottom: hp(3.5),
+    lineHeight: normalize(46),
   },
   subtitle: {
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(16),
     color: "rgba(255, 255, 255, 0.7)",
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: normalize(22),
   },
   bottomContainer: {
     width: "100%",
@@ -101,9 +101,9 @@ const styles = StyleSheet.create({
   button: {
     width: "100%",
     backgroundColor: "#3C61DD",
-    borderRadius: 10,
-    height: 56,
-    marginBottom: 30,
+    borderRadius: normalize(10),
+    height: normalize(56),
+    marginBottom: hp(3.7),
   },
   buttonText: {
     fontSize: normalize(16),
@@ -115,8 +115,8 @@ const styles = StyleSheet.create({
     fontSize: normalize(12),
     color: "#FFFFFF",
     textAlign: "center",
-    lineHeight: 16,
-    paddingHorizontal: 15,
+    lineHeight: normalize(16),
+    paddingHorizontal: moderateScale(15),
     opacity: 0.8,
   },
   linkText: {

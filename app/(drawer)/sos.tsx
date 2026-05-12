@@ -1,5 +1,6 @@
 import { EMERGENCY_SERVICES, SOS_CONTACTS } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
+import { moderateScale, normalize, hp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -25,7 +26,7 @@ export default function SOSScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Feather name="arrow-left" size={24} color="#111111" />
+            <Feather name="arrow-left" size={normalize(24)} color="#111111" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>SOS!</Text>
           <TouchableOpacity onPress={() => {}} style={styles.avatarButton}>
@@ -52,7 +53,7 @@ export default function SOSScreen() {
                 <Text style={styles.contactName}>{contact.name}</Text>
                 <View style={styles.contactRight}>
                   <Text style={styles.contactPhone}>{contact.phone}</Text>
-                  <Feather name="arrow-right" size={18} color="#D1D1D1" />
+                  <Feather name="arrow-right" size={normalize(18)} color="#D1D1D1" />
                 </View>
               </TouchableOpacity>
             ))}
@@ -86,7 +87,12 @@ export default function SOSScreen() {
 
           {/* Footer Disclaimer */}
           <View style={styles.footer}>
-            <Feather name="alert-circle" size={20} color="#3C61DD" style={styles.alertIcon} />
+            <Feather
+              name="alert-circle"
+              size={normalize(20)}
+              color="#3C61DD"
+              style={styles.alertIcon}
+            />
             <Text style={styles.footerText}>
               SOS phone call answers to a human therapist for your immediate attention
             </Text>
@@ -111,24 +117,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(10),
   },
   backButton: {
-    padding: 4,
+    padding: moderateScale(4),
   },
   headerTitle: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 22,
+    fontSize: normalize(22),
     color: "#FF3B30", // Red title as per design
   },
   avatarButton: {
-    padding: 2,
+    padding: moderateScale(2),
   },
   avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: moderateScale(40),
+    height: moderateScale(40),
+    borderRadius: normalize(20),
     backgroundColor: "#D1E5FF",
     overflow: "hidden",
     borderWidth: 1,
@@ -139,41 +145,40 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   scrollContent: {
-    paddingHorizontal: 28,
-    // paddingTop: 5,
-    paddingBottom: 20,
+    paddingHorizontal: moderateScale(28),
+    paddingBottom: moderateScale(20),
   },
   contactsList: {
-    marginBottom: 130,
+    marginBottom: hp(16),
   },
   contactItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 18,
+    paddingVertical: moderateScale(18),
     borderBottomWidth: 1,
     borderBottomColor: "rgba(0,0,0,0.04)",
   },
   contactName: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 16,
+    fontSize: normalize(16),
     color: "#111111",
   },
   contactRight: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: moderateScale(12),
   },
   contactPhone: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#D1D1D1",
   },
   emergencyCard: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    marginBottom: 24,
+    borderRadius: normalize(16),
+    paddingHorizontal: moderateScale(16),
+    marginBottom: hp(3),
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
@@ -184,7 +189,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 18,
+    paddingVertical: moderateScale(18),
     borderBottomWidth: 1,
     borderBottomColor: "rgba(0,0,0,0.05)",
   },
@@ -193,50 +198,50 @@ const styles = StyleSheet.create({
   },
   serviceName: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 15,
+    fontSize: normalize(15),
     color: "#333",
   },
   serviceRight: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: moderateScale(12),
   },
   serviceNumber: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 15,
+    fontSize: normalize(15),
     color: "#333",
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: normalize(8),
+    height: normalize(8),
+    borderRadius: normalize(4),
   },
   sosButton: {
     borderWidth: 1.5,
     borderColor: "#FF3B30",
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: normalize(12),
+    paddingVertical: moderateScale(16),
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 40,
+    marginBottom: hp(5),
   },
   sosButtonText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 18,
+    fontSize: normalize(18),
     color: "#FF3B30",
   },
   footer: {
     alignItems: "center",
-    paddingHorizontal: 10,
+    paddingHorizontal: moderateScale(10),
   },
   alertIcon: {
-    marginBottom: 12,
+    marginBottom: hp(1.5),
   },
   footerText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#3C61DD",
     textAlign: "center",
-    lineHeight: 20,
+    lineHeight: normalize(20),
   },
 });

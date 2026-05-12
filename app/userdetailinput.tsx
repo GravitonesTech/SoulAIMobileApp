@@ -21,7 +21,9 @@ import {
 import { ScrollView as GestureScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { COUNTRIES, GENDERS } from "@/constants/StaticData";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 
 export default function GenderScreen() {
   const router = useRouter();
@@ -114,7 +116,7 @@ export default function GenderScreen() {
     return (
       <View style={styles.dropdownContainer}>
         <GestureScrollView
-          style={{ maxHeight: 250 }}
+          style={{ maxHeight: moderateScale(250) }}
           keyboardShouldPersistTaps="handled"
           nestedScrollEnabled={true}
         >
@@ -148,15 +150,7 @@ export default function GenderScreen() {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 40}
         >
-          {/* Top Navigation & Progress */}
-          <View style={styles.topNavContainer}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <Feather name="arrow-left" size={24} color="#111111" />
-            </TouchableOpacity>
-            <View style={styles.progressTrack}>
-              <View style={styles.progressFill} />
-            </View>
-          </View>
+          <ProgressHeader progress="45%" onBack={() => router.back()} />
 
           <GestureScrollView
             ref={scrollRef}
@@ -200,7 +194,7 @@ export default function GenderScreen() {
                     rightIcon={
                       <Feather
                         name={showGenderDropdown ? "chevron-up" : "chevron-down"}
-                        size={20}
+                        size={normalize(20)}
                         color="#8A8A8E"
                       />
                     }
@@ -219,7 +213,7 @@ export default function GenderScreen() {
                     style={styles.inputStyle}
                     editable={false}
                     pointerEvents="none"
-                    rightIcon={<Feather name="calendar" size={20} color="#8A8A8E" />}
+                    rightIcon={<Feather name="calendar" size={normalize(20)} color="#8A8A8E" />}
                   />
                 </TouchableOpacity>
               </View>
@@ -263,7 +257,7 @@ export default function GenderScreen() {
                     >
                       <Feather
                         name={showCountryDropdown ? "chevron-up" : "chevron-down"}
-                        size={20}
+                        size={normalize(20)}
                         color="#8A8A8E"
                       />
                     </TouchableOpacity>
@@ -278,9 +272,9 @@ export default function GenderScreen() {
                 title="Next"
                 isLoading={isLoading}
                 onPress={handleNext}
-                style={{ marginTop: 24 }}
+                style={{ marginTop: hp(3) }}
               />
-              {showCountryDropdown && <View style={{ height: 10 }} />}
+              {showCountryDropdown && <View style={{ height: moderateScale(10) }} />}
             </View>
           </GestureScrollView>
         </KeyboardAvoidingView>
@@ -296,60 +290,37 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  topNavContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
-  },
-  backButton: {
-    padding: 4,
-    marginRight: 16,
-  },
-  progressTrack: {
-    flex: 1,
-    height: 4,
-    backgroundColor: "rgba(60, 97, 221, 0.1)",
-    borderRadius: 2,
-    overflow: "hidden",
-  },
-  progressFill: {
-    width: "45%", // Adjusted to match mockup visual
-    height: "100%",
-    backgroundColor: "#3C61DD",
-  },
   scrollContainer: {
     flexGrow: 1,
-    paddingHorizontal: 28,
-    paddingBottom: 60,
+    paddingHorizontal: moderateScale(28),
+    paddingBottom: moderateScale(56),
   },
   header: {
     alignItems: "center",
-    marginBottom: 48,
-    marginTop: 80,
+    marginBottom: hp(6),
+    // marginTop: hp(10),
   },
   titleText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 34,
+    fontSize: normalize(34),
     color: "#111111",
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: hp(1),
   },
   subtitleText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 18,
+    fontSize: normalize(18),
     color: "#8A8A8E",
     textAlign: "center",
   },
   formContainer: {
     width: "100%",
-    paddingBottom: 40,
+    paddingBottom: moderateScale(40),
   },
   inputWrapper: {
     width: "100%",
     position: "relative",
-    marginBottom: 16,
+    marginBottom: hp(2),
   },
   fullWidth: {
     width: "100%",
@@ -358,35 +329,35 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     backgroundColor: "rgba(255, 255, 255, 0.9)",
     borderColor: "rgba(0,0,0,0.02)",
-    borderRadius: 12,
-    height: 60,
+    borderRadius: normalize(12),
+    height: moderateScale(60),
   },
   dropdownContainer: {
     position: "absolute",
-    top: 62,
+    top: moderateScale(62),
     left: 0,
     right: 0,
     backgroundColor: "#FFFFFF",
-    borderRadius: 12,
+    borderRadius: normalize(12),
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.05)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 10,
     zIndex: 1000,
     overflow: "hidden",
   },
   dropdownOption: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: moderateScale(14),
+    paddingHorizontal: moderateScale(16),
     borderBottomWidth: 1,
     borderBottomColor: "#F2F2F7",
   },
   dropdownOptionText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 16,
+    fontSize: normalize(16),
     color: "#333333",
   },
 });

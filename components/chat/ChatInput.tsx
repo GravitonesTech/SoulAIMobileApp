@@ -34,11 +34,11 @@ export const ChatInput = ({
         </View>
 
         <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
-          <Feather name="mic" size={24} color="#333" />
+          <Feather name="mic" size={normalize(24)} color="#333" />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.iconButton} activeOpacity={0.7} onPress={onSend}>
-          <Ionicons name="paper-plane-outline" size={24} color="#333" />
+          <Ionicons name="paper-plane-outline" size={normalize(24)} color="#333" />
         </TouchableOpacity>
       </View>
     </View>
@@ -47,23 +47,23 @@ export const ChatInput = ({
 
 const styles = StyleSheet.create({
   bottomBarContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    marginTop: 6,
-    marginBottom: 4,
+    paddingHorizontal: normalize(16),
+    paddingBottom: normalize(12),
+    marginTop: normalize(6),
+    marginBottom: normalize(4),
   },
   bottomBar: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: normalize(4),
   },
   inputWrapper: {
     flex: 1,
     backgroundColor: Colors.brand.inputBackground,
-    height: 50,
-    borderRadius: 25,
+    height: normalize(50),
+    borderRadius: normalize(25),
     justifyContent: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: normalize(20),
   },
   input: {
     fontFamily: Typography.fonts.regular,
@@ -71,9 +71,9 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: normalize(40),
+    height: normalize(40),
+    borderRadius: normalize(20),
     alignItems: "center",
     justifyContent: "center",
   },

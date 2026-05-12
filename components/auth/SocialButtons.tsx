@@ -1,5 +1,6 @@
 import { AppButton } from "@/components/ui/AppButton";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
+import { normalize } from "@/utils/responsive";
 import { AntDesign } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
@@ -21,19 +22,19 @@ export const SocialButtons = ({ style, buttonStyle }: SocialButtonsProps) => {
     <View style={[styles.container, style]}>
       {Platform.OS === "ios" && (
         <AppButton
-          title="Continue with Apple"
+          title="Apple"
           variant="social"
-          icon={<AntDesign name="apple" size={20} color="#000" />}
+          icon={<AntDesign name="apple" size={normalize(20)} color="#000" />}
           style={[styles.button, buttonStyle]}
           onPress={handleAppleSignIn}
         />
       )}
 
       <AppButton
-        title="Continue with Google"
+        title="Google"
         variant="social"
-        icon={<AntDesign name="google" size={20} color="#DB4437" />}
-        style={buttonStyle}
+        icon={<AntDesign name="google" size={normalize(20)} color="#DB4437" />}
+        style={[styles.button, buttonStyle]}
         onPress={googleSignIn}
         disabled={isGoogleLoading}
       />
@@ -47,6 +48,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   button: {
-    marginBottom: 16,
+    marginBottom: normalize(12),
   },
 });

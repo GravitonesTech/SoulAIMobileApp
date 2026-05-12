@@ -7,7 +7,7 @@ import { Typography } from "@/constants/Typography";
 import { useAppConfirmation } from "@/hooks/useAppConfirmation";
 import { useImagePicker } from "@/hooks/useImagePicker";
 import { AuthService } from "@/utils/auth";
-import { normalize } from "@/utils/responsive";
+import { moderateScale, normalize, hp } from "@/utils/responsive";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -41,11 +41,11 @@ export default function ProfileScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-          <Feather name="arrow-left" size={24} color="#000" />
+          <Feather name="arrow-left" size={normalize(24)} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Arjun Chakraborty</Text>
         <TouchableOpacity style={styles.headerButton} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout-variant" size={24} color="#000" />
+          <MaterialCommunityIcons name="logout-variant" size={normalize(24)} color="#000" />
         </TouchableOpacity>
       </View>
 
@@ -106,7 +106,7 @@ export default function ProfileScreen() {
                   <Text style={styles.paymentDetails}>Ends in ****-{method.last4}</Text>
                 </View>
                 <TouchableOpacity>
-                  <Feather name="trash-2" size={22} color="#464646" />
+                  <Feather name="trash-2" size={normalize(22)} color="#464646" />
                 </TouchableOpacity>
               </View>
             ))}
@@ -153,12 +153,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(15),
   },
   headerButton: {
-    width: 40,
-    height: 40,
+    width: moderateScale(40),
+    height: moderateScale(40),
     justifyContent: "center",
     alignItems: "center",
   },
@@ -168,13 +168,13 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingHorizontal: moderateScale(24),
+    paddingBottom: moderateScale(40),
   },
   therapyInfo: {
-    marginTop: 10,
-    marginBottom: 20,
-    paddingHorizontal: 4,
+    marginTop: hp(1),
+    marginBottom: hp(2.5),
+    paddingHorizontal: moderateScale(4),
   },
   sessionsText: {
     fontFamily: Typography.fonts.medium,
@@ -185,14 +185,14 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(15),
     color: "#8E8E8E",
-    marginTop: 4,
+    marginTop: hp(0.5),
   },
   imageCard: {
     backgroundColor: "#FFF",
     width: "100%",
     aspectRatio: 1,
-    borderRadius: 16,
-    padding: 6,
+    borderRadius: normalize(16),
+    padding: moderateScale(6),
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.08,
@@ -202,13 +202,13 @@ const styles = StyleSheet.create({
   profileImage: {
     width: "100%",
     height: "100%",
-    borderRadius: 16,
+    borderRadius: normalize(16),
     resizeMode: "cover",
   },
   changePhotoButton: {
     alignSelf: "flex-end",
-    marginBottom: 20,
-    marginTop: 4,
+    marginBottom: hp(2.5),
+    marginTop: hp(0.5),
   },
   changePhotoText: {
     fontFamily: Typography.fonts.medium,
@@ -217,24 +217,24 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   section: {
-    marginBottom: 30,
+    marginBottom: hp(3.7),
   },
   sectionTitle: {
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(13),
     color: "#464646",
-    marginBottom: 12,
+    marginBottom: hp(1.5),
     letterSpacing: 0.5,
   },
   card: {
     backgroundColor: "#FFF",
-    borderRadius: 15,
+    borderRadius: normalize(15),
     overflow: "hidden",
-    marginBottom: 12,
+    marginBottom: hp(1.5),
   },
   cardItem: {
-    paddingVertical: 18,
-    paddingHorizontal: 20,
+    paddingVertical: moderateScale(18),
+    paddingHorizontal: moderateScale(20),
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
   },
@@ -259,8 +259,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+    paddingVertical: moderateScale(15),
+    paddingHorizontal: moderateScale(20),
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
   },
@@ -273,11 +273,11 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(13),
     color: "#8E8E8E",
-    marginTop: 2,
+    marginTop: hp(0.25),
   },
   addPaymentButton: {
     alignSelf: "flex-end",
-    marginTop: -4,
+    marginTop: hp(-0.5),
   },
   addPaymentText: {
     fontFamily: Typography.fonts.medium,
@@ -285,8 +285,8 @@ const styles = StyleSheet.create({
     color: "#3C61DD",
   },
   sessionItem: {
-    paddingVertical: 15,
-    paddingHorizontal: 18,
+    paddingVertical: moderateScale(15),
+    paddingHorizontal: moderateScale(18),
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
   },
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: hp(0.5),
   },
   sessionDoctor: {
     fontFamily: Typography.fonts.medium,

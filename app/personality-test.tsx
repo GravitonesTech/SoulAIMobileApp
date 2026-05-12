@@ -5,7 +5,7 @@ import {
   DIFFICULTY_OPTIONS,
 } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
-import { normalize } from "@/utils/responsive";
+import { moderateScale, normalize, hp, wp } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -61,7 +61,7 @@ export default function PersonalityTestScreen() {
         {/* Top Navigation & Progress */}
         <View style={styles.topNavContainer}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <Feather name="arrow-left" size={24} color="#111111" />
+            <Feather name="arrow-left" size={normalize(24)} color="#111111" />
           </TouchableOpacity>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
@@ -138,19 +138,19 @@ const styles = StyleSheet.create({
   topNavContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
+    paddingHorizontal: moderateScale(24),
+    paddingTop: moderateScale(16),
+    paddingBottom: moderateScale(24),
   },
   backButton: {
-    padding: 4,
-    marginRight: 16,
+    padding: moderateScale(4),
+    marginRight: wp(4),
   },
   progressTrack: {
     flex: 1,
-    height: 4,
+    height: normalize(4),
     backgroundColor: "rgba(60, 97, 221, 0.1)",
-    borderRadius: 2,
+    borderRadius: normalize(2),
     overflow: "hidden",
   },
   progressFill: {
@@ -159,17 +159,17 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingHorizontal: moderateScale(24),
+    paddingBottom: moderateScale(40),
   },
   sectionBadge: {
     alignSelf: "center",
     backgroundColor: "rgba(60, 97, 221, 0.1)",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 16,
-    marginTop: 10,
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: moderateScale(4),
+    borderRadius: normalize(12),
+    marginBottom: hp(2),
+    marginTop: hp(1.2),
   },
   sectionBadgeText: {
     fontFamily: Typography.fonts.medium,
@@ -180,44 +180,44 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: hp(4),
   },
   titleText: {
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(26),
     color: "#111111",
     textAlign: "center",
-    marginBottom: 12,
-    lineHeight: 34,
+    marginBottom: hp(1.5),
+    lineHeight: normalize(34),
   },
   subtitleText: {
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(16),
     color: "#666666",
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: normalize(22),
   },
   optionsContainer: {
     width: "100%",
-    marginBottom: 30,
+    marginBottom: hp(3.5),
   },
   optionCard: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
-    minHeight: 64,
+    minHeight: moderateScale(64),
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    marginBottom: 16,
+    borderRadius: normalize(16),
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(12),
+    marginBottom: hp(2),
     borderWidth: 1,
     borderColor: "transparent",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowRadius: normalize(4),
     elevation: 2,
   },
   optionCardSelected: {
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(17),
     color: "#8E8E93",
-    marginLeft: 12,
+    marginLeft: wp(3),
   },
   optionValueSelected: {
     color: "#3C61DD",
@@ -247,21 +247,21 @@ const styles = StyleSheet.create({
     marginTop: "auto",
   },
   whoFooter: {
-    marginTop: 32,
+    marginTop: hp(4),
     alignItems: "center",
   },
   whoDivider: {
     width: "40%",
-    height: 1,
+    height: normalize(1),
     backgroundColor: "rgba(60, 97, 221, 0.15)",
-    marginBottom: 16,
+    marginBottom: hp(2),
   },
   whoFooterText: {
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(11),
     color: "#8E8E93",
     textAlign: "center",
-    lineHeight: 18,
+    lineHeight: normalize(18),
     opacity: 0.8,
   },
   whoHighlight: {

@@ -1,35 +1,21 @@
 import { FAQ_DATA } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
+import { moderateScale, normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import {
-  Image,
-  LayoutAnimation,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  UIManager,
-  View,
-} from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-
-// Enable LayoutAnimation for Android
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 export default function FAQScreen() {
   const router = useRouter();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggleExpand = (id: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedId(expandedId === id ? null : id);
   };
 
@@ -53,7 +39,7 @@ export default function FAQScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Feather name="arrow-left" size={24} color="#111111" />
+            <Feather name="arrow-left" size={normalize(24)} color="#111111" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>FAQ</Text>
           <TouchableOpacity onPress={() => {}} style={styles.avatarButton}>
@@ -71,7 +57,7 @@ export default function FAQScreen() {
           {FAQ_DATA.map((item) => {
             const isExpanded = expandedId === item.id;
             return (
-              <View key={item.id} style={styles.faqItem}>
+              <Animated.View layout={LinearTransition} key={item.id} style={styles.faqItem}>
                 <TouchableOpacity
                   style={styles.questionRow}
                   onPress={() => toggleExpand(item.id)}
@@ -80,13 +66,17 @@ export default function FAQScreen() {
                   <Text style={styles.questionText}>{item.question}</Text>
                   <Feather
                     name={isExpanded ? "chevron-up" : "chevron-down"}
-                    size={20}
+                    size={normalize(20)}
                     color="#8A8A8E"
                   />
                 </TouchableOpacity>
 
                 {isExpanded && (
-                  <View style={styles.answerContainer}>
+                  <Animated.View
+                    entering={FadeIn.duration(200)}
+                    exiting={FadeOut.duration(200)}
+                    style={styles.answerContainer}
+                  >
                     <Text style={styles.answerText}>{item.answer}</Text>
                     {/* {item.isPromptList && ( */}
                     <TouchableOpacity
@@ -96,9 +86,9 @@ export default function FAQScreen() {
                       <Text style={styles.copyButtonText}>copy</Text>
                     </TouchableOpacity>
                     {/* )} */}
-                  </View>
+                  </Animated.View>
                 )}
-              </View>
+              </Animated.View>
             );
           })}
         </ScrollView>
@@ -121,24 +111,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(15),
   },
   backButton: {
-    padding: 4,
+    padding: moderateScale(4),
   },
   headerTitle: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 22,
+    fontSize: normalize(22),
     color: "#111111",
   },
   avatarButton: {
-    padding: 2,
+    padding: moderateScale(2),
   },
   avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: normalize(40),
+    height: normalize(40),
+    borderRadius: normalize(20),
     backgroundColor: "#D1E5FF",
     overflow: "hidden",
     borderWidth: 1,
@@ -149,9 +139,9 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 40,
+    paddingHorizontal: moderateScale(20),
+    paddingTop: moderateScale(10),
+    paddingBottom: moderateScale(40),
   },
   faqItem: {
     borderBottomWidth: 1,
@@ -161,34 +151,34 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 24,
+    paddingVertical: moderateScale(24),
   },
   questionText: {
     flex: 1,
     fontFamily: Typography.fonts.medium,
-    fontSize: 16,
+    fontSize: normalize(16),
     color: "#111111",
-    lineHeight: 22,
-    paddingRight: 20,
+    lineHeight: normalize(22),
+    paddingRight: moderateScale(20),
   },
   answerContainer: {
-    paddingBottom: 24,
-    paddingTop: 4,
+    paddingBottom: moderateScale(24),
+    paddingTop: moderateScale(4),
   },
   answerText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#8A8A8E",
-    lineHeight: 22,
+    lineHeight: normalize(22),
   },
   copyButton: {
     alignSelf: "flex-end",
-    marginTop: 10,
-    padding: 4,
+    marginTop: moderateScale(10),
+    padding: moderateScale(4),
   },
   copyButtonText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#3C61DD",
   },
 });

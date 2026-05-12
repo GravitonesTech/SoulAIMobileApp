@@ -3,6 +3,7 @@ import { AppInput } from "@/components/ui/AppInput";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
 import { AuthService } from "@/utils/auth";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -96,23 +97,24 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     alignItems: "center",
-    paddingHorizontal: 28,
-    paddingTop: 80,
-    paddingBottom: 40,
+    paddingHorizontal: moderateScale(28),
+    paddingTop: moderateScale(108),
+    paddingBottom: moderateScale(40),
   },
   header: {
     alignItems: "center",
-    marginBottom: 60,
+    marginTop: hp(6),
+    marginBottom: hp(7.5),
   },
   titleText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: Typography.sizes.title,
+    fontSize: normalize(Typography.sizes.title),
     color: "#FFFFFF",
-    marginBottom: 8,
+    marginBottom: hp(1),
   },
   subtitleText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: Typography.sizes.subtitle,
+    fontSize: normalize(Typography.sizes.subtitle),
     color: "#FFFFFF",
     opacity: 0.6,
     textAlign: "center",
@@ -122,17 +124,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   inputMargin: {
-    marginBottom: 12,
+    marginBottom: hp(1.5),
   },
   primaryBtn: {
-    marginTop: 4,
+    marginTop: hp(0.5),
   },
   backLink: {
-    marginTop: 16,
+    marginTop: hp(2),
   },
   backText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 14,
+    fontSize: normalize(14),
     color: "#FFFFFF",
     opacity: 0.9,
   },
