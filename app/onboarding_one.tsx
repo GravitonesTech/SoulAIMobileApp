@@ -32,7 +32,7 @@ export default function OnboardingOneScreen() {
         <View style={styles.content}>
           {/* Header Section */}
           <View style={styles.headerContainer}>
-            <Text style={styles.title}>Hey, I'm Soul AI</Text>
+            <Text style={styles.title}>Hey, I&apos;m Soul AI</Text>
             <Text style={styles.subtitle}>A personalized therapy{"\n"}AI Companion</Text>
           </View>
 

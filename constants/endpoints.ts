@@ -37,4 +37,13 @@ export const ENDPOINTS = {
     /** GET / PATCH — Current authenticated user's profile */
     me: "/users/me",
   },
+
+  chat: {
+    /** POST — Send message to AI */
+    send: "/chat/chat",
+  },
+  master: {
+    /** GET — Fetch available therapies */
+    therapies: "/master/therapies",
+  },
 } as const;

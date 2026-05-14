@@ -1,3 +1,4 @@
+import { AppHeader } from "@/components/ui/AppHeader";
 import { MORE_OPTIONS_ITEMS } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
 import { normalize } from "@/utils/responsive";
@@ -6,7 +7,7 @@ import { DrawerContentComponentProps } from "@react-navigation/drawer";
 import { useRouter } from "expo-router";
 import { Drawer } from "expo-router/drawer";
 import React from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function CustomDrawerContent(props: DrawerContentComponentProps) {
@@ -17,22 +18,14 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
   return (
     <View style={[styles.drawerContainer, { paddingTop: insets.top }]}>
       {/* Drawer Header */}
-      <View style={styles.headerBar}>
-        <TouchableOpacity onPress={() => navigation.closeDrawer()}>
-          <Feather name="menu" size={normalize(26)} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>More Options</Text>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.closeDrawer();
-            router.push("/profile");
-          }}
-        >
-          <View style={styles.avatarContainer}>
-            <Image source={require("@/assets/images/avatar.png")} style={styles.avatar} />
-          </View>
-        </TouchableOpacity>
-      </View>
+      <AppHeader
+        title="More Options"
+        onLeftPress={() => navigation.closeDrawer()}
+        onAvatarPress={() => {
+          navigation.closeDrawer();
+          router.push("/profile");
+        }}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.itemsCard}>
@@ -44,9 +37,9 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
               onPress={() => {
                 const route = item.route.replace("/", "");
                 // If the route is global (privacy/terms), use router.push, else navigate in drawer
-                if (route === "privacy-policy" || route === "terms") {
+                if (route === "privacy-policy" || route === "terms" || route === "profile") {
                   navigation.closeDrawer();
-                  navigation.navigate(route as any);
+                  router.push(`/${route}` as any);
                 } else {
                   navigation.navigate(route as any);
                 }
@@ -104,7 +97,8 @@ export default function DrawerLayout() {
       <Drawer.Screen name="faq" options={{ title: "FAQ" }} />
       <Drawer.Screen name="coming-soon" options={{ title: "Coming Soon" }} />
       <Drawer.Screen name="sos" options={{ title: "SOS" }} />
-      <Drawer.Screen name="profile" options={{ title: "Profile" }} />
+      <Drawer.Screen name="human-therapists" options={{ title: "Human Therapists" }} />
+      <Drawer.Screen name="breathing" options={{ title: "Breathing Exercise" }} />
     </Drawer>
   );
 }
@@ -113,29 +107,6 @@ const styles = StyleSheet.create({
   drawerContainer: {
     flex: 1,
     backgroundColor: "#F2F9FF",
-  },
-  headerBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: normalize(20),
-    paddingVertical: normalize(15),
-  },
-  headerTitle: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(20),
-    color: "#000",
-  },
-  avatarContainer: {
-    width: normalize(38),
-    height: normalize(38),
-    borderRadius: normalize(19),
-    overflow: "hidden",
-    backgroundColor: "#D1E5FF",
-  },
-  avatar: {
-    width: "100%",
-    height: "100%",
   },
   scrollContent: {
     paddingHorizontal: normalize(20),

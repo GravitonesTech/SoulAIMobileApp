@@ -1,16 +1,14 @@
+import { AppHeader } from "@/components/ui/AppHeader";
 import { EMERGENCY_SERVICES, SOS_CONTACTS } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
-import { moderateScale, normalize, hp } from "@/utils/responsive";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
 import React from "react";
-import { Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SOSScreen() {
-  const router = useRouter();
-
   const makeCall = (number: string) => {
     Linking.openURL(`tel:${number.replace(/\s/g, "")}`);
   };
@@ -24,17 +22,7 @@ export default function SOSScreen() {
     >
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Feather name="arrow-left" size={normalize(24)} color="#111111" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>SOS!</Text>
-          <TouchableOpacity onPress={() => {}} style={styles.avatarButton}>
-            <View style={styles.avatarContainer}>
-              <Image source={require("@/assets/images/avatar.png")} style={styles.avatar} />
-            </View>
-          </TouchableOpacity>
-        </View>
+        <AppHeader leftIcon="arrow-left" title="SOS!" titleColor="#FF3B30" />
 
         <ScrollView
           style={styles.flex1}
@@ -43,7 +31,7 @@ export default function SOSScreen() {
         >
           {/* Contacts Section */}
           <View style={styles.contactsList}>
-            {SOS_CONTACTS.map((contact, index) => (
+            {SOS_CONTACTS.map((contact, _index) => (
               <TouchableOpacity
                 key={contact.id}
                 style={styles.contactItem}
@@ -112,37 +100,6 @@ const styles = StyleSheet.create({
   },
   flex1: {
     flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: moderateScale(20),
-    paddingVertical: moderateScale(10),
-  },
-  backButton: {
-    padding: moderateScale(4),
-  },
-  headerTitle: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(22),
-    color: "#FF3B30", // Red title as per design
-  },
-  avatarButton: {
-    padding: moderateScale(2),
-  },
-  avatarContainer: {
-    width: moderateScale(40),
-    height: moderateScale(40),
-    borderRadius: normalize(20),
-    backgroundColor: "#D1E5FF",
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.05)",
-  },
-  avatar: {
-    width: "100%",
-    height: "100%",
   },
   scrollContent: {
     paddingHorizontal: moderateScale(28),

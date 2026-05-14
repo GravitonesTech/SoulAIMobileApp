@@ -31,7 +31,7 @@ export default function ComingSoonScreen() {
           </View>
           <Text style={styles.title}>Coming Soon</Text>
           <Text style={styles.description}>
-            We're working hard to bring this feature to you. Stay tuned for updates!
+            We{"'"}re working hard to bring you more amazing features. Stay tuned!
           </Text>
         </View>
       </SafeAreaView>

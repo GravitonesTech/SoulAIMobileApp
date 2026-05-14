@@ -3,7 +3,6 @@ import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
 import { apiClient } from "@/utils/api";
 import { toast } from "@/utils/toast";
-import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -21,7 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { SUPPORT_OPTIONS } from "@/constants/StaticData";
-import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 
 export default function SupportScreen() {
   const router = useRouter();

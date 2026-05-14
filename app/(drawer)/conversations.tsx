@@ -1,3 +1,4 @@
+import { AppHeader } from "@/components/ui/AppHeader";
 import {
   CONVERSATIONS_QUICK_ACTIONS,
   TODAY_CONVERSATIONS_SEED,
@@ -5,13 +6,12 @@ import {
   type Conversation,
 } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
-import { moderateScale, normalize, hp, wp } from "@/utils/responsive";
+import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter, useNavigation } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import {
   Dimensions,
-  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -28,12 +28,6 @@ type ConversationSection = "today" | "yesterday";
 export default function ConversationsScreen() {
   const router = useRouter();
   const { initialMessage } = useLocalSearchParams<{ initialMessage: string }>();
-
-  const navigation = useNavigation<any>();
-
-  const onPressMenu = () => {
-    navigation.openDrawer();
-  };
 
   const initialToday = useMemo<Conversation[]>(() => {
     if (!initialMessage?.trim()) return TODAY_CONVERSATIONS_SEED;
@@ -147,17 +141,7 @@ export default function ConversationsScreen() {
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         {/* Header Bar */}
-        <View style={styles.headerBar}>
-          <TouchableOpacity onPress={onPressMenu}>
-            <Feather name="menu" size={normalize(26)} color="#333" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Conversations</Text>
-          <TouchableOpacity onPress={() => {}}>
-            <View style={styles.avatarContainer}>
-              <Image source={require("@/assets/images/avatar.png")} style={styles.avatar} />
-            </View>
-          </TouchableOpacity>
-        </View>
+        <AppHeader title="Conversations" />
 
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -173,6 +157,7 @@ export default function ConversationsScreen() {
                   index === quickActions.length - 1 && styles.noBorder,
                 ]}
                 activeOpacity={0.7}
+                onPress={() => action.route && router.push(action.route as any)}
               >
                 <View style={styles.quickActionLeft}>
                   <Feather name={action.icon as any} size={normalize(18)} color={action.color} />

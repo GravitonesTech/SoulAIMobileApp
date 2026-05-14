@@ -34,22 +34,7 @@ export const SUPPORT_OPTIONS = [
   "Other",
 ];
 
-export const THERAPY_TYPES = [
-  { id: "1", title: "Cognitive Therapy", color: Colors.therapy.orange },
-  {
-    id: "2",
-    title: "Acceptance and Commitment Therapy",
-    color: Colors.therapy.blue,
-  },
-  {
-    id: "3",
-    title: "Dialectical Behavior Therapy",
-    color: Colors.therapy.purple,
-  },
-  { id: "4", title: "Mindfulness Based", color: Colors.therapy.orange },
-  { id: "5", title: "Psychodynamic", color: Colors.therapy.blue },
-  { id: "6", title: "Solution focused", color: Colors.therapy.purple },
-];
+export const THERAPY_COLORS = [Colors.therapy.orange, Colors.therapy.blue, Colors.therapy.purple];
 
 export const CHAT_PROMPTS = ["I want to talk about my mood", "I wish to talk about my day"];
 
@@ -65,12 +50,19 @@ export type QuickAction = {
   label: string;
   icon: "user" | "users" | "alert-circle";
   color: string;
+  route?: string;
 };
 
 export const CONVERSATIONS_QUICK_ACTIONS: QuickAction[] = [
-  { id: "human", label: "Human Therapist", icon: "user", color: "#333" },
-  { id: "group", label: "Group Chat", icon: "users", color: "#333" },
-  { id: "sos", label: "SOS!", icon: "alert-circle", color: "#FF3B30" },
+  {
+    id: "human",
+    label: "Human Therapist",
+    icon: "user",
+    color: "#333",
+    route: "/human-therapists",
+  },
+  { id: "group", label: "Group Chat", icon: "users", color: "#333", route: "/coming-soon" },
+  { id: "sos", label: "SOS!", icon: "alert-circle", color: "#FF3B30", route: "/sos" },
 ];
 
 export const TODAY_CONVERSATIONS_SEED: Conversation[] = [
@@ -110,7 +102,13 @@ export const YESTERDAY_CONVERSATIONS_SEED: Conversation[] = [
 ];
 
 export const MORE_OPTIONS_ITEMS = [
-  { id: "human", label: "Human Therapist", icon: "user", color: "#333", route: "/coming-soon" },
+  {
+    id: "human",
+    label: "Human Therapist",
+    icon: "user",
+    color: "#333",
+    route: "/human-therapists",
+  },
   { id: "group", label: "Group Chat", icon: "layers", color: "#333", route: "/coming-soon" },
   {
     id: "conversations",
@@ -125,7 +123,7 @@ export const MORE_OPTIONS_ITEMS = [
     label: "Breathing Exercise",
     icon: "sun",
     color: "#333",
-    route: "/coming-soon",
+    route: "/breathing",
   },
   { id: "faq", label: "FAQ", icon: "help-circle", color: "#333", route: "/faq" },
   { id: "sos", label: "SOS!", icon: "alert-circle", color: "#FF3B30", route: "/sos" },
@@ -370,5 +368,43 @@ export const ASSESSMENT_QUESTIONS = [
       "If you checked off any problems, how difficult have these problems made it for you to do your work, take care of things at home, or get along with other people?",
     subtitle: "Overall impact on your daily life",
     type: "difficulty",
+  },
+];
+
+export const TOP_THERAPISTS = [
+  {
+    id: "1",
+    name: "Dr. John Nolan",
+    rating: "4.1 Rating",
+    specialization: "Specialized in Cognitive Therapy",
+    image: require("@/assets/images/avatar.png"),
+  },
+  {
+    id: "2",
+    name: "Dr. Sarah Jenkins",
+    rating: "4.8 Rating",
+    specialization: "Specialized in Mindfulness Based",
+    image: require("@/assets/images/avatar.png"),
+  },
+  {
+    id: "3",
+    name: "Dr. Michael Chen",
+    rating: "4.5 Rating",
+    specialization: "Specialized in Psychodynamic",
+    image: require("@/assets/images/avatar.png"),
+  },
+  {
+    id: "4",
+    name: "Dr. Emily Rodriguez",
+    rating: "4.9 Rating",
+    specialization: "Specialized in Solution focused",
+    image: require("@/assets/images/avatar.png"),
+  },
+  {
+    id: "5",
+    name: "Dr. David Smith",
+    rating: "4.2 Rating",
+    specialization: "Specialized in Dialectical Behavior",
+    image: require("@/assets/images/avatar.png"),
   },
 ];

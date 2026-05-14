@@ -71,6 +71,7 @@ export default function RootLayout() {
             <Stack.Screen name="onboarding_two" options={{ headerShown: false }} />
             <Stack.Screen name="onboarding_three" options={{ headerShown: false }} />
             <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+            <Stack.Screen name="profile" options={{ headerShown: false }} />
             <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
             <Stack.Screen name="terms" options={{ headerShown: false }} />
             <Stack.Screen name="personality-test" options={{ headerShown: false }} />
