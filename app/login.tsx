@@ -135,7 +135,7 @@ export default function LoginScreen() {
           {/* Bottom Link */}
           <View style={styles.bottomLinkContainer}>
             <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/signup")}>
-              <Text style={styles.bottomLinkText}>Don't have an account? Create one</Text>
+              <Text style={styles.bottomLinkText}>Don&apos;t have an account? Create one</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

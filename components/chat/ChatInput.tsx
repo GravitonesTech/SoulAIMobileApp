@@ -1,4 +1,3 @@
-import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
 import { normalize } from "@/utils/responsive";
 import { Feather, Ionicons } from "@expo/vector-icons";
@@ -10,6 +9,7 @@ interface ChatInputProps {
   onChangeText: (text: string) => void;
   onSend: () => void;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export const ChatInput = ({
@@ -17,6 +17,7 @@ export const ChatInput = ({
   onChangeText,
   onSend,
   placeholder = "Ask me anything...",
+  disabled = false,
 }: ChatInputProps) => {
   return (
     <View style={styles.bottomBarContainer}>
@@ -26,19 +27,29 @@ export const ChatInput = ({
             value={value}
             onChangeText={onChangeText}
             placeholder={placeholder}
-            placeholderTextColor="#A0A0A0"
+            placeholderTextColor="#8E8E93"
             style={styles.input}
-            onSubmitEditing={onSend}
+            onSubmitEditing={!disabled ? onSend : undefined}
             returnKeyType="send"
+            editable={true}
           />
         </View>
 
-        <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
-          <Feather name="mic" size={normalize(24)} color="#333" />
+        <TouchableOpacity style={styles.iconButton} activeOpacity={0.7} disabled={disabled}>
+          <Feather name="mic" size={normalize(26)} color={disabled ? "#A0A0A0" : "#1C1C1E"} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.iconButton} activeOpacity={0.7} onPress={onSend}>
-          <Ionicons name="paper-plane-outline" size={normalize(24)} color="#333" />
+        <TouchableOpacity
+          style={styles.iconButton}
+          activeOpacity={0.7}
+          onPress={onSend}
+          disabled={disabled}
+        >
+          <Ionicons
+            name="paper-plane-outline"
+            size={normalize(26)}
+            color={disabled ? "#A0A0A0" : "#1C1C1E"}
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -48,32 +59,31 @@ export const ChatInput = ({
 const styles = StyleSheet.create({
   bottomBarContainer: {
     paddingHorizontal: normalize(16),
-    paddingBottom: normalize(12),
-    marginTop: normalize(6),
-    marginBottom: normalize(4),
+    paddingBottom: normalize(20),
+    paddingTop: normalize(8),
+    backgroundColor: "transparent",
   },
   bottomBar: {
     flexDirection: "row",
     alignItems: "center",
-    gap: normalize(4),
+    gap: normalize(6),
   },
   inputWrapper: {
     flex: 1,
-    backgroundColor: Colors.brand.inputBackground,
-    height: normalize(50),
-    borderRadius: normalize(25),
+    backgroundColor: "#D9E3F0", // Adjusted to match the light blue-gray tone in the image
+    height: normalize(48),
+    borderRadius: normalize(24),
     justifyContent: "center",
-    paddingHorizontal: normalize(20),
+    paddingHorizontal: normalize(18),
   },
   input: {
     fontFamily: Typography.fonts.regular,
-    fontSize: normalize(16),
-    color: "#333",
+    fontSize: normalize(15),
+    color: "#1C1C1E",
   },
   iconButton: {
     width: normalize(40),
     height: normalize(40),
-    borderRadius: normalize(20),
     alignItems: "center",
     justifyContent: "center",
   },

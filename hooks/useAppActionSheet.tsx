@@ -117,7 +117,7 @@ export const useAppActionSheet = () => {
 
   const showActionSheet = useCallback(
     (title: string, options: ActionSheetOptionWithCallback[]) => {
-      const serializableOptions = options.map(({ onPress, ...rest }) => rest);
+      const serializableOptions = options.map(({ onPress: _onPress, ...rest }) => rest);
       actionSheetCallbacks = options.map((o) => o.onPress);
       dispatch(setActionSheet({ title, options: serializableOptions }));
     },

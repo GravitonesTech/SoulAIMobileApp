@@ -1,14 +1,13 @@
 import { ChatInput } from "@/components/chat/ChatInput";
+import { AppHeader } from "@/components/ui/AppHeader";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility";
 import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
-import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -19,17 +18,39 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { CHAT_PROMPTS, THERAPY_TYPES } from "@/constants/StaticData";
+import { ENDPOINTS } from "@/constants/endpoints";
+import { CHAT_PROMPTS, THERAPY_COLORS } from "@/constants/StaticData";
+import { Therapy } from "@/types/therapy";
+import { apiClient } from "@/utils/api";
 
 export default function ChatStarterScreen() {
   const router = useRouter();
   const { name } = useLocalSearchParams<{ name: string }>();
   const [inputText, setInputText] = useState("");
+  const [therapies, setTherapies] = useState<Therapy[]>([]);
+  const [isLoadingTherapies, setIsLoadingTherapies] = useState(true);
   const isKeyboardVisible = useKeyboardVisibility();
 
   const displayName = name || "Bikash";
 
   const navigation = useNavigation<any>();
+
+  React.useEffect(() => {
+    fetchTherapies();
+  }, []);
+
+  const fetchTherapies = async () => {
+    try {
+      const response = await apiClient.get(ENDPOINTS.master.therapies);
+      if (response.success && response.data) {
+        setTherapies(response.data);
+      }
+    } catch (error) {
+      console.error("[ChatStarter] Error fetching therapies:", error);
+    } finally {
+      setIsLoadingTherapies(false);
+    }
+  };
 
   const openMoreOptions = () => {
     navigation.openDrawer();
@@ -38,8 +59,11 @@ export default function ChatStarterScreen() {
   const handleSend = () => {
     if (inputText.trim()) {
       router.push({
-        pathname: "/conversations",
-        params: { initialMessage: inputText.trim() },
+        pathname: "/chat",
+        params: {
+          initialMessage: inputText.trim(),
+          sessionId: Date.now().toString(),
+        },
       } as any);
       setInputText("");
     }
@@ -60,20 +84,7 @@ export default function ChatStarterScreen() {
         >
           {/* Main Content Area */}
           <View style={styles.flex1}>
-            {/* Top Bar */}
-            <View style={styles.topBar}>
-              <TouchableOpacity
-                onPress={openMoreOptions}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Feather name="menu" size={normalize(28)} color="#333" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push("/profile")}>
-                <View style={styles.avatarContainer}>
-                  <Image source={require("@/assets/images/avatar.png")} style={styles.avatar} />
-                </View>
-              </TouchableOpacity>
-            </View>
+            <AppHeader onLeftPress={openMoreOptions} />
 
             <ScrollView
               style={styles.flex1}
@@ -92,16 +103,34 @@ export default function ChatStarterScreen() {
 
               {/* Therapy Type Buttons */}
               <View style={styles.therapyList}>
-                {THERAPY_TYPES.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    activeOpacity={0.8}
-                    onPress={() => {}}
-                    style={[styles.therapyButton, { backgroundColor: item.color }]}
-                  >
-                    <Text style={styles.therapyButtonText}>{item.title}</Text>
-                  </TouchableOpacity>
-                ))}
+                {isLoadingTherapies ? (
+                  <View style={{ paddingVertical: 20 }}>
+                    <Text style={styles.updateText}>Loading therapies...</Text>
+                  </View>
+                ) : (
+                  therapies.map((item, index) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        router.push({
+                          pathname: "/chat",
+                          params: {
+                            therapy: item.name,
+                            sessionId: Date.now().toString(),
+                            selected_therapy: item.short_name,
+                          },
+                        } as any);
+                      }}
+                      style={[
+                        styles.therapyButton,
+                        { backgroundColor: THERAPY_COLORS[index % THERAPY_COLORS.length] },
+                      ]}
+                    >
+                      <Text style={styles.therapyButtonText}>{item.name}</Text>
+                    </TouchableOpacity>
+                  ))
+                )}
               </View>
 
               {/* Chat Prompts */}
@@ -133,27 +162,6 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-  },
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: moderateScale(24),
-    paddingTop: moderateScale(12),
-    paddingBottom: moderateScale(16),
-  },
-  avatarContainer: {
-    width: moderateScale(40),
-    height: moderateScale(40),
-    borderRadius: normalize(20),
-    backgroundColor: "#D1E5FF",
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.05)",
-  },
-  avatar: {
-    width: "100%",
-    height: "100%",
   },
   scrollContent: {
     paddingHorizontal: moderateScale(24),

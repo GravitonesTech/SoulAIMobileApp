@@ -4,10 +4,10 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // Base design size (iPhone 14 / 15 — 375 × 812 points)
 const guidelineBaseWidth = 375;
-const guidelineBaseHeight = 812;
+// const guidelineBaseHeight = 812;
 
 const widthScale = SCREEN_WIDTH / guidelineBaseWidth;
-const heightScale = SCREEN_HEIGHT / guidelineBaseHeight;
+// const heightScale = SCREEN_HEIGHT / guidelineBaseHeight;
 
 /**
  * Normalizes font and element sizes based on screen width.

@@ -1,3 +1,4 @@
+import { AppHeader } from "@/components/ui/AppHeader";
 import {
   PAST_THERAPY_SESSIONS,
   PERSONALITY_RESULTS,
@@ -39,15 +40,15 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-          <Feather name="arrow-left" size={normalize(24)} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Arjun Chakraborty</Text>
-        <TouchableOpacity style={styles.headerButton} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout-variant" size={normalize(24)} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <AppHeader
+        leftIcon="arrow-left"
+        title="Arjun Chakraborty"
+        rightContent={
+          <TouchableOpacity onPress={handleLogout}>
+            <MaterialCommunityIcons name="logout-variant" size={normalize(24)} color="#000" />
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Therapy Info - Now distinct from the image card */}
@@ -148,24 +149,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f0f9ff",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: moderateScale(20),
-    paddingVertical: moderateScale(15),
-  },
-  headerButton: {
-    width: moderateScale(40),
-    height: moderateScale(40),
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  headerTitle: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(20),
-    color: "#000",
   },
   scrollContent: {
     paddingHorizontal: moderateScale(24),

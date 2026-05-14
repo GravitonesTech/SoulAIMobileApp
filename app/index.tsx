@@ -110,7 +110,7 @@ export default function AuthOptionsScreen() {
         <View style={styles.bottomLinkContainer}>
           <TouchableOpacity onPress={() => router.push("/signup")}>
             <Text style={styles.bottomLinkText}>
-              Don't have an account? <Text style={styles.boldText}>Create one</Text>
+              Don{"'"}t have an account? <Text style={styles.boldText}>Create one</Text>
             </Text>
           </TouchableOpacity>
         </View>
