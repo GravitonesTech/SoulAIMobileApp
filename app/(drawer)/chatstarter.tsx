@@ -3,9 +3,10 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility";
+import { useAppSelector } from "@/store/hooks";
 import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -22,20 +23,22 @@ import { ENDPOINTS } from "@/constants/endpoints";
 import { CHAT_PROMPTS, THERAPY_COLORS } from "@/constants/StaticData";
 import { Therapy } from "@/types/therapy";
 import { apiClient } from "@/utils/api";
+import { AuthService } from "@/utils/auth";
 
 export default function ChatStarterScreen() {
   const router = useRouter();
-  const { name } = useLocalSearchParams<{ name: string }>();
+  const user = useAppSelector((state) => state.auth.user);
   const [inputText, setInputText] = useState("");
   const [therapies, setTherapies] = useState<Therapy[]>([]);
   const [isLoadingTherapies, setIsLoadingTherapies] = useState(true);
   const isKeyboardVisible = useKeyboardVisibility();
 
-  const displayName = name || "Bikash";
+  const displayName = user?.full_name?.split(" ")[0] || "User";
 
   const navigation = useNavigation<any>();
 
   React.useEffect(() => {
+    AuthService.checkAuth();
     fetchTherapies();
   }, []);
 

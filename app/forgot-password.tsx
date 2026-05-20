@@ -18,6 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -46,48 +47,50 @@ export default function ForgotPasswordScreen() {
 
   return (
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-          <View style={styles.header}>
-            <Text style={styles.titleText}>Forgot Password</Text>
-            <Text style={styles.subtitleText}>
-              Enter your email and we’ll send you an OTP if your account is eligible.
-            </Text>
-          </View>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+            <View style={styles.header}>
+              <Text style={styles.titleText}>Forgot Password</Text>
+              <Text style={styles.subtitleText}>
+                Enter your email and we’ll send you an OTP if your account is eligible.
+              </Text>
+            </View>
 
-          <View style={styles.formContainer}>
-            <AppInput
-              iconName="mail"
-              placeholder="Email*"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-              style={styles.inputMargin}
-            />
+            <View style={styles.formContainer}>
+              <AppInput
+                iconName="mail"
+                placeholder="Email*"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.inputMargin}
+              />
 
-            <AppButton
-              title={isLoading ? "" : "Send OTP"}
-              style={styles.primaryBtn}
-              onPress={handleSendOtp}
-              disabled={isLoading}
-              icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
-            />
+              <AppButton
+                title={isLoading ? "" : "Send OTP"}
+                style={styles.primaryBtn}
+                onPress={handleSendOtp}
+                disabled={isLoading}
+                icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
+              />
 
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => router.back()}
-              style={styles.backLink}
-              disabled={isLoading}
-            >
-              <Text style={styles.backText}>Back to login</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.back()}
+                style={styles.backLink}
+                disabled={isLoading}
+              >
+                <Text style={styles.backText}>Back to login</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -98,8 +101,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: "center",
     paddingHorizontal: moderateScale(28),
-    paddingTop: moderateScale(108),
+    paddingTop: moderateScale(48),
     paddingBottom: moderateScale(40),
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     alignItems: "center",

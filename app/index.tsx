@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AuthOptionsScreen() {
   const router = useRouter();
@@ -58,63 +59,65 @@ export default function AuthOptionsScreen() {
       end={{ x: 0, y: 1 }}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-        {/* Header (same as first screen) */}
-        <View style={styles.header}>
-          <Text style={styles.titleText}>Welcome to Soul AI</Text>
-        </View>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+          {/* Header (same as first screen) */}
+          <View style={styles.header}>
+            <Text style={styles.titleText}>Welcome to Soul AI</Text>
+          </View>
 
-        {/* Buttons (acts like formContainer) */}
-        <View style={styles.formContainer}>
-          <Text style={[styles.subtitleText, { marginBottom: hp(3.5) }]}>
-            Sign in to Personalize your{"\n"}Therapy AI Companion
-          </Text>
-
-          <Text style={styles.continueWithText}>Continue with</Text>
-
-          <AppButton
-            title="Phone Number"
-            variant="social"
-            icon={<Feather name="message-circle" size={normalize(20)} color="#000" />}
-            style={styles.inputMargin}
-            onPress={() => router.push("/sendotp")}
-          />
-
-          <AppButton
-            title="Email"
-            variant="social"
-            icon={<Feather name="mail" size={normalize(20)} color="#000" />}
-            style={styles.inputMargin}
-            onPress={() => router.push("/login")}
-          />
-
-          <SocialButtons />
-        </View>
-
-        {/* Divider (same position as first screen) */}
-        <View style={styles.dividerContainer}>
-          <Text style={styles.termsText}>
-            By tapping Continue or logging into an existing Soul account, you agree to our{" "}
-            <Text style={styles.linkText} onPress={() => router.push("/terms" as any)}>
-              Terms
-            </Text>{" "}
-            and acknowledge that you have read our{" "}
-            <Text style={styles.linkText} onPress={() => router.push("/privacy-policy")}>
-              Privacy Policy
+          {/* Buttons (acts like formContainer) */}
+          <View style={styles.formContainer}>
+            <Text style={[styles.subtitleText, { marginBottom: hp(3.5) }]}>
+              Sign in to Personalize your{"\n"}Therapy AI Companion
             </Text>
-            , which explains how to opt out of our offers and promos.
-          </Text>
-        </View>
 
-        {/* Bottom Link (same as first screen) */}
-        <View style={styles.bottomLinkContainer}>
-          <TouchableOpacity onPress={() => router.push("/signup")}>
-            <Text style={styles.bottomLinkText}>
-              Don{"'"}t have an account? <Text style={styles.boldText}>Create one</Text>
+            <Text style={styles.continueWithText}>Continue with</Text>
+
+            <AppButton
+              title="Phone Number"
+              variant="social"
+              icon={<Feather name="message-circle" size={normalize(20)} color="#000" />}
+              style={styles.inputMargin}
+              onPress={() => router.push("/sendotp")}
+            />
+
+            <AppButton
+              title="Email"
+              variant="social"
+              icon={<Feather name="mail" size={normalize(20)} color="#000" />}
+              style={styles.inputMargin}
+              onPress={() => router.push("/login")}
+            />
+
+            <SocialButtons />
+          </View>
+
+          {/* Divider (same position as first screen) */}
+          <View style={styles.dividerContainer}>
+            <Text style={styles.termsText}>
+              By tapping Continue or logging into an existing Soul account, you agree to our{" "}
+              <Text style={styles.linkText} onPress={() => router.push("/terms" as any)}>
+                Terms
+              </Text>{" "}
+              and acknowledge that you have read our{" "}
+              <Text style={styles.linkText} onPress={() => router.push("/privacy-policy")}>
+                Privacy Policy
+              </Text>
+              , which explains how to opt out of our offers and promos.
             </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+          </View>
+
+          {/* Bottom Link (same as first screen) */}
+          <View style={styles.bottomLinkContainer}>
+            <TouchableOpacity onPress={() => router.push("/signup")}>
+              <Text style={styles.bottomLinkText}>
+                Don{"'"}t have an account? <Text style={styles.boldText}>Create one</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -128,8 +131,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: "center",
     paddingHorizontal: moderateScale(28),
-    paddingTop: moderateScale(108),
+    paddingTop: moderateScale(48),
     paddingBottom: moderateScale(12),
+  },
+  safeArea: {
+    flex: 1,
   },
 
   /* SAME HEADER STRUCTURE */

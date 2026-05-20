@@ -4,6 +4,7 @@ import { Feather } from "@expo/vector-icons";
 import { useNavigation, useRouter } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useAppSelector } from "@/store/hooks";
 
 interface AppHeaderProps {
   leftIcon?: keyof typeof Feather.glyphMap;
@@ -32,6 +33,7 @@ export const AppHeader = ({
 }: AppHeaderProps) => {
   const router = useRouter();
   const navigation = useNavigation();
+  const user = useAppSelector((state) => state.auth.user);
 
   const handleLeftPress = () => {
     if (onLeftPress) {
@@ -110,7 +112,14 @@ export const AppHeader = ({
         ) : showAvatar ? (
           <TouchableOpacity onPress={handleAvatarPress}>
             <View style={styles.avatarContainer}>
-              <Image source={require("@/assets/images/avatar.png")} style={styles.avatar} />
+              <Image
+                source={
+                  user?.profile_photo
+                    ? { uri: user.profile_photo }
+                    : require("@/assets/images/avatar.png")
+                }
+                style={styles.avatar}
+              />
             </View>
           </TouchableOpacity>
         ) : (

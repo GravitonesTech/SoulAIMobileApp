@@ -5,7 +5,6 @@ import { ENDPOINTS } from "@/constants/endpoints";
 import { apiClient } from "@/utils/api";
 import { toast } from "@/utils/toast";
 import { Feather } from "@expo/vector-icons";
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
@@ -29,8 +28,7 @@ export default function GenderScreen() {
   const router = useRouter();
   const scrollRef = useRef<GestureScrollView>(null);
   const [name, setName] = useState("");
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dob, setDob] = useState("");
   const [countrySearch, setCountrySearch] = useState("");
   const [selectedGender, setSelectedGender] = useState("");
 
@@ -44,28 +42,109 @@ export default function GenderScreen() {
     return COUNTRIES.filter((c) => c.toLowerCase().includes(countrySearch.toLowerCase()));
   }, [countrySearch]);
 
-  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === "ios");
-    if (selectedDate) {
-      setDate(selectedDate);
+  const handleNameChange = (text: string) => {
+    // Keep only alphabetic characters and spaces
+    const filtered = text.replace(/[^a-zA-Z\s]/g, "");
+    setName(filtered);
+  };
+
+  const handleDobChange = (text: string) => {
+    // Remove all non-numeric characters
+    const cleaned = text.replace(/[^0-9]/g, "");
+
+    let dayPart = cleaned.slice(0, 2);
+    if (dayPart.length === 2) {
+      const dayVal = parseInt(dayPart, 10);
+      if (dayVal > 31) {
+        dayPart = "31";
+      } else if (dayVal === 0) {
+        dayPart = "01";
+      }
     }
+
+    let monthPart = cleaned.slice(2, 4);
+    if (monthPart.length === 2) {
+      const monthVal = parseInt(monthPart, 10);
+      if (monthVal > 12) {
+        monthPart = "12";
+      } else if (monthVal === 0) {
+        monthPart = "01";
+      }
+    }
+
+    let yearPart = cleaned.slice(4, 8);
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    if (yearPart.length === 4) {
+      const yearVal = parseInt(yearPart, 10);
+      if (yearVal > currentYear) {
+        yearPart = currentYear.toString();
+      }
+    }
+
+    // Re-assemble formatted text
+    let formatted = dayPart;
+    if (cleaned.length > 2) {
+      formatted = `${dayPart}/${monthPart}`;
+    }
+    if (cleaned.length > 4) {
+      formatted = `${dayPart}/${monthPart}/${yearPart}`;
+    }
+
+    // Limit to DD/MM/YYYY length
+    formatted = formatted.slice(0, 10);
+
+    // If fully entered (10 characters), cap to latest valid date (today) if in the future
+    if (formatted.length === 10) {
+      const [day, month, year] = formatted.split("/").map(Number);
+      const typedDate = new Date(year, month - 1, day);
+      if (typedDate > today) {
+        const dd = String(today.getDate()).padStart(2, "0");
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const yyyy = today.getFullYear();
+        formatted = `${dd}/${mm}/${yyyy}`;
+      }
+    }
+
+    setDob(formatted);
   };
 
-  const formatDateForAPI = (date: Date) => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
+  const validateDate = (dateString: string) => {
+    if (dateString.length !== 10) return false;
+    const [day, month, year] = dateString.split("/").map(Number);
+    const d = new Date(year, month - 1, day);
+    return (
+      d.getFullYear() === year &&
+      d.getMonth() === month - 1 &&
+      d.getDate() === day &&
+      d <= new Date()
+    );
   };
 
-  const formatDateForDisplay = (date: Date) => {
-    const d = String(date.getDate()).padStart(2, "0");
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const y = String(date.getFullYear()).slice(-2);
-    return `${d}/${m}/${y}`;
+  const is18Plus = (dateString: string) => {
+    if (dateString.length !== 10) return false;
+    const [day, month, year] = dateString.split("/").map(Number);
+    const birthDate = new Date(year, month - 1, day);
+    const today = new Date();
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age >= 18;
+  };
+
+  const formatDobForAPI = (dateString: string) => {
+    const [day, month, year] = dateString.split("/");
+    return `${year}-${month}-${day}`;
   };
 
   const handleNext = async () => {
+    Keyboard.dismiss();
+
     if (!name.trim()) {
       toast.error("Error", "Please enter your full name");
       return;
@@ -74,8 +153,16 @@ export default function GenderScreen() {
       toast.error("Error", "Please select your gender");
       return;
     }
-    if (!date) {
-      toast.error("Error", "Please select your date of birth");
+    if (!dob.trim()) {
+      toast.error("Error", "Please enter your date of birth");
+      return;
+    }
+    if (!validateDate(dob)) {
+      toast.error("Error", "Please enter a valid date of birth (DD/MM/YYYY)");
+      return;
+    }
+    if (!is18Plus(dob)) {
+      toast.error("Age Restriction", "You must be 18 years or older to use Soul AI.");
       return;
     }
     if (!countrySearch.trim()) {
@@ -87,7 +174,7 @@ export default function GenderScreen() {
     const result = await apiClient.patch(ENDPOINTS.users.me, {
       full_name: name,
       country: countrySearch,
-      date_of_birth: formatDateForAPI(date),
+      date_of_birth: formatDobForAPI(dob),
       gender: selectedGender,
       completed_step: 1,
     });
@@ -170,7 +257,7 @@ export default function GenderScreen() {
                 <AppInput
                   placeholder="Full Name"
                   value={name}
-                  onChangeText={setName}
+                  onChangeText={handleNameChange}
                   style={styles.inputStyle}
                 />
               </View>
@@ -206,27 +293,16 @@ export default function GenderScreen() {
               </View>
 
               <View style={styles.inputWrapper}>
-                <TouchableOpacity activeOpacity={1} onPress={() => setShowDatePicker(true)}>
-                  <AppInput
-                    placeholder="Date of Birth (DD/MM/YY)"
-                    value={date ? formatDateForDisplay(date) : ""}
-                    style={styles.inputStyle}
-                    editable={false}
-                    pointerEvents="none"
-                    rightIcon={<Feather name="calendar" size={normalize(20)} color="#8A8A8E" />}
-                  />
-                </TouchableOpacity>
-              </View>
-
-              {showDatePicker && (
-                <DateTimePicker
-                  value={date || new Date()}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                  onChange={onDateChange}
-                  maximumDate={new Date()}
+                <AppInput
+                  placeholder="Date of Birth (DD/MM/YYYY)"
+                  value={dob}
+                  onChangeText={handleDobChange}
+                  keyboardType="numeric"
+                  style={styles.inputStyle}
+                  maxLength={10}
+                  // rightIcon={<Feather name="calendar" size={normalize(20)} color="#8A8A8E" />}
                 />
-              )}
+              </View>
 
               <View style={[styles.inputWrapper, { zIndex: 5 }]}>
                 <AppInput

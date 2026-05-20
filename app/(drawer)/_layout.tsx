@@ -8,15 +8,14 @@ import { useRouter } from "expo-router";
 import { Drawer } from "expo-router/drawer";
 import React from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 function CustomDrawerContent(props: DrawerContentComponentProps) {
-  const insets = useSafeAreaInsets();
   const { navigation } = props;
   const router = useRouter();
 
   return (
-    <View style={[styles.drawerContainer, { paddingTop: insets.top }]}>
+    <SafeAreaView style={styles.drawerContainer} edges={["top", "bottom"]}>
       {/* Drawer Header */}
       <AppHeader
         title="More Options"
@@ -74,7 +73,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
           <Text style={styles.fabText}>New chat</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -99,6 +98,7 @@ export default function DrawerLayout() {
       <Drawer.Screen name="sos" options={{ title: "SOS" }} />
       <Drawer.Screen name="human-therapists" options={{ title: "Human Therapists" }} />
       <Drawer.Screen name="breathing" options={{ title: "Breathing Exercise" }} />
+      {/* <Drawer.Screen name="demo" options={{ title: "Interactive Demo" }} /> */}
     </Drawer>
   );
 }

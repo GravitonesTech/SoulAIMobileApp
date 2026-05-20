@@ -24,6 +24,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -68,78 +69,83 @@ export default function LoginScreen() {
 
   return (
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.titleText}>Soul AI</Text>
-            <Text style={styles.subtitleText}>Sign in to your Soul AI account</Text>
-          </View>
-
-          {/* Form */}
-          <View style={styles.formContainer}>
-            <AppInput
-              iconName="user"
-              placeholder="Email*"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-              style={styles.inputMargin}
-            />
-
-            <AppInput
-              iconName="lock"
-              placeholder="Password*"
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={setPassword}
-              style={styles.inputMargin}
-              rightIcon={
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                  <Feather
-                    name={showPassword ? "eye" : "eye-off"}
-                    size={normalize(20)}
-                    color="#555555"
-                  />
-                </TouchableOpacity>
-              }
-            />
-
-            <AppButton
-              title={isLoading ? "" : "Sign In"}
-              style={styles.signInBtnMargin}
-              onPress={handleLogin}
-              disabled={isLoading}
-              icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
-            />
-
-            <View style={styles.forgotPasswordContainer}>
-              <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/forgot-password")}>
-                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-              </TouchableOpacity>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.titleText}>Soul AI</Text>
+              <Text style={styles.subtitleText}>Sign in to your Soul AI account</Text>
             </View>
 
-            {/* Social Divider */}
-            {/* <View style={styles.dividerContainer}>
+            {/* Form */}
+            <View style={styles.formContainer}>
+              <AppInput
+                iconName="user"
+                placeholder="Email*"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.inputMargin}
+              />
+
+              <AppInput
+                iconName="lock"
+                placeholder="Password*"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+                style={styles.inputMargin}
+                rightIcon={
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                    <Feather
+                      name={showPassword ? "eye" : "eye-off"}
+                      size={normalize(20)}
+                      color="#555555"
+                    />
+                  </TouchableOpacity>
+                }
+              />
+
+              <AppButton
+                title={isLoading ? "" : "Sign In"}
+                style={styles.signInBtnMargin}
+                onPress={handleLogin}
+                disabled={isLoading}
+                icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
+              />
+
+              <View style={styles.forgotPasswordContainer}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => router.push("/forgot-password")}
+                >
+                  <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Social Divider */}
+              {/* <View style={styles.dividerContainer}>
               <Text style={styles.dividerText}>Or sign in with</Text>
             </View> */}
 
-            {/* Social Buttons */}
-            {/* <SocialButtons style={styles.socialContainer} /> */}
-          </View>
+              {/* Social Buttons */}
+              {/* <SocialButtons style={styles.socialContainer} /> */}
+            </View>
 
-          {/* Bottom Link */}
-          <View style={styles.bottomLinkContainer}>
-            <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/signup")}>
-              <Text style={styles.bottomLinkText}>Don&apos;t have an account? Create one</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            {/* Bottom Link */}
+            <View style={styles.bottomLinkContainer}>
+              <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/signup")}>
+                <Text style={styles.bottomLinkText}>Don&apos;t have an account? Create one</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -152,8 +158,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: "center",
     paddingHorizontal: moderateScale(28),
-    paddingTop: moderateScale(108),
+    paddingTop: moderateScale(48),
     paddingBottom: moderateScale(12),
+  },
+  safeArea: {
+    flex: 1,
   },
   header: { marginTop: hp(6), alignItems: "center", marginBottom: hp(6) },
   titleText: {

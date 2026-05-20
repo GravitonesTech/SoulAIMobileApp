@@ -1,4 +1,5 @@
 import { AppHeader } from "@/components/ui/AppHeader";
+import { ENDPOINTS } from "@/constants/endpoints";
 import {
   PAST_THERAPY_SESSIONS,
   PERSONALITY_RESULTS,
@@ -7,18 +8,104 @@ import {
 import { Typography } from "@/constants/Typography";
 import { useAppConfirmation } from "@/hooks/useAppConfirmation";
 import { useImagePicker } from "@/hooks/useImagePicker";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { updateUser } from "@/store/slices/authSlice";
+import { apiClient } from "@/utils/api";
 import { AuthService } from "@/utils/auth";
-import { moderateScale, normalize, hp } from "@/utils/responsive";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
+import { toast } from "@/utils/toast";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useRouter, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { imageUri, pickImage } = useImagePicker();
+  const [isUploading, setIsUploading] = useState(false);
   const { showConfirmation } = useAppConfirmation();
+  const user = useAppSelector((state) => state.auth.user);
+  const [assessmentStatus, setAssessmentStatus] = useState<{
+    phq9Submitted: boolean;
+    gad7Submitted: boolean;
+  }>({ phq9Submitted: false, gad7Submitted: false });
+  const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+      const fetchStatus = async () => {
+        try {
+          const response = await apiClient.get<
+            Array<{
+              form_code: string;
+              submitted: boolean;
+            }>
+          >(ENDPOINTS.users.assessmentStatus);
+
+          if (response.success && response.data && isMounted) {
+            const phq9 = response.data.find((f) => f.form_code === "PHQ-9");
+            const gad7 = response.data.find((f) => f.form_code === "GAD-7");
+            setAssessmentStatus({
+              phq9Submitted: !!phq9?.submitted,
+              gad7Submitted: !!gad7?.submitted,
+            });
+          }
+        } catch (error) {
+          console.error("[ProfileScreen] Error fetching assessment status:", error);
+        } finally {
+          if (isMounted) {
+            setIsLoadingStatus(false);
+          }
+        }
+      };
+
+      fetchStatus();
+      return () => {
+        isMounted = false;
+      };
+    }, []),
+  );
+
+  const handleUpdateProfilePhoto = async (base64: string) => {
+    setIsUploading(true);
+    try {
+      const response = await apiClient.patch(ENDPOINTS.users.me, {
+        profile_photo: `data:image/jpeg;base64,${base64}`,
+      });
+
+      if (response.success && response.data) {
+        toast.success("Success", "Profile photo updated successfully!");
+        dispatch(updateUser(response.data));
+      } else {
+        console.error("[ProfileScreen] API Error updating photo:", response.message, response);
+        toast.error("Update Failed", response.message || "Failed to update profile photo");
+      }
+    } catch (error) {
+      console.error("[ProfileScreen] Error uploading photo:", error);
+      toast.error("Error", "A network error occurred. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handlePickImage = () => {
+    pickImage((data) => {
+      if (data.base64) {
+        handleUpdateProfilePhoto(data.base64);
+      }
+    });
+  };
 
   const personalityResults = PERSONALITY_RESULTS;
   const paymentMethods = SAVED_PAYMENT_METHODS;
@@ -42,7 +129,7 @@ export default function ProfileScreen() {
       {/* Header */}
       <AppHeader
         leftIcon="arrow-left"
-        title="Arjun Chakraborty"
+        title={user?.full_name || "Profile"}
         rightContent={
           <TouchableOpacity onPress={handleLogout}>
             <MaterialCommunityIcons name="logout-variant" size={normalize(24)} color="#000" />
@@ -60,12 +147,23 @@ export default function ProfileScreen() {
         {/* Profile Image Card */}
         <View style={styles.imageCard}>
           <Image
-            source={imageUri ? { uri: imageUri } : require("@/assets/images/therapist.png")}
+            source={
+              imageUri
+                ? { uri: imageUri }
+                : user?.profile_photo
+                  ? { uri: user.profile_photo }
+                  : require("@/assets/images/therapist.png")
+            }
             style={styles.profileImage}
           />
+          {isUploading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#3C61DD" />
+            </View>
+          )}
         </View>
 
-        <TouchableOpacity onPress={pickImage} style={styles.changePhotoButton}>
+        <TouchableOpacity onPress={handlePickImage} style={styles.changePhotoButton}>
           <Text style={styles.changePhotoText}>Change Profile Photo</Text>
         </TouchableOpacity>
 
@@ -89,7 +187,13 @@ export default function ProfileScreen() {
             style={styles.linkButton}
             onPress={() => router.push("/personality-test")}
           >
-            <Text style={styles.linkText}>Retake Personality Test</Text>
+            <Text style={styles.linkText}>
+              {isLoadingStatus
+                ? "Checking Status..."
+                : assessmentStatus.phq9Submitted && assessmentStatus.gad7Submitted
+                  ? "Retake Personality Test"
+                  : "Take Personality Test"}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -198,6 +302,14 @@ const styles = StyleSheet.create({
     fontSize: normalize(13),
     color: "#3C61DD",
     textAlign: "right",
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    borderRadius: normalize(16),
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
   },
   section: {
     marginBottom: hp(3.7),
