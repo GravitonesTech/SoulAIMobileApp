@@ -31,6 +31,7 @@ export default function ChatStarterScreen() {
   const [inputText, setInputText] = useState("");
   const [therapies, setTherapies] = useState<Therapy[]>([]);
   const [isLoadingTherapies, setIsLoadingTherapies] = useState(true);
+  const [isStartingSession, setIsStartingSession] = useState(false);
   const isKeyboardVisible = useKeyboardVisibility();
 
   const displayName = user?.full_name?.split(" ")[0] || "User";
@@ -59,16 +60,57 @@ export default function ChatStarterScreen() {
     navigation.openDrawer();
   };
 
-  const handleSend = () => {
-    if (inputText.trim()) {
-      router.push({
-        pathname: "/chat",
-        params: {
-          initialMessage: inputText.trim(),
-          sessionId: Date.now().toString(),
-        },
-      } as any);
-      setInputText("");
+  const handleStartTherapy = async (item: Therapy) => {
+    if (isStartingSession) return;
+    setIsStartingSession(true);
+    try {
+      const response = await apiClient.post(ENDPOINTS.chat.sessions, {
+        therapy_type: item.short_name?.toLowerCase() || "supportive",
+        title: "New Chat",
+      });
+      if (response.success && response.data?.session_id) {
+        router.push({
+          pathname: "/chat",
+          params: {
+            therapy: item.name,
+            sessionId: response.data.session_id,
+            selected_therapy: item.short_name,
+          },
+        } as any);
+      }
+    } catch (e) {
+      console.error("[ChatStarter] Error starting session for therapy:", e);
+    } finally {
+      setIsStartingSession(false);
+    }
+  };
+
+  const handleSend = async () => {
+    const text = inputText.trim();
+    if (!text || isStartingSession) return;
+    setIsStartingSession(true);
+    try {
+      const response = await apiClient.post(ENDPOINTS.chat.sessions, {
+        // therapy_type: "supportive",
+        title: text.length > 25 ? text.substring(0, 25) + "..." : text,
+      });
+      if (response.success && response.data?.session_id) {
+        const therapyType = response.data.therapy_type;
+        router.push({
+          pathname: "/chat",
+          params: {
+            initialMessage: text,
+            sessionId: response.data.session_id,
+            selected_therapy: therapyType,
+            showNewChatButton: "true",
+          },
+        } as any);
+        setInputText("");
+      }
+    } catch (e) {
+      console.error("[ChatStarter] Error starting session:", e);
+    } finally {
+      setIsStartingSession(false);
     }
   };
 
@@ -115,20 +157,12 @@ export default function ChatStarterScreen() {
                     <TouchableOpacity
                       key={item.id}
                       activeOpacity={0.8}
-                      onPress={() => {
-                        router.push({
-                          pathname: "/chat",
-                          params: {
-                            therapy: item.name,
-                            sessionId: Date.now().toString(),
-                            selected_therapy: item.short_name,
-                          },
-                        } as any);
-                      }}
+                      onPress={() => handleStartTherapy(item)}
                       style={[
                         styles.therapyButton,
                         { backgroundColor: THERAPY_COLORS[index % THERAPY_COLORS.length] },
                       ]}
+                      disabled={isStartingSession}
                     >
                       <Text style={styles.therapyButtonText}>{item.name}</Text>
                     </TouchableOpacity>
@@ -139,7 +173,12 @@ export default function ChatStarterScreen() {
               {/* Chat Prompts */}
               <View style={styles.promptsContainer}>
                 {CHAT_PROMPTS.map((prompt, index) => (
-                  <TouchableOpacity key={index} style={styles.promptCard} activeOpacity={0.7}>
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.promptCard}
+                    activeOpacity={0.7}
+                    disabled={isStartingSession}
+                  >
                     <View style={styles.dot} />
                     <Text style={styles.promptText}>{prompt}</Text>
                   </TouchableOpacity>
@@ -148,7 +187,12 @@ export default function ChatStarterScreen() {
             </ScrollView>
 
             {/* Input Bar */}
-            <ChatInput value={inputText} onChangeText={setInputText} onSend={handleSend} />
+            <ChatInput
+              value={inputText}
+              onChangeText={setInputText}
+              onSend={handleSend}
+              disabled={isStartingSession}
+            />
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>

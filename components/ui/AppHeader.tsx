@@ -1,10 +1,10 @@
 import { Typography } from "@/constants/Typography";
+import { useAppSelector } from "@/store/hooks";
 import { moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation, useRouter } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useAppSelector } from "@/store/hooks";
 
 interface AppHeaderProps {
   leftIcon?: keyof typeof Feather.glyphMap;
@@ -40,7 +40,6 @@ export const AppHeader = ({
       onLeftPress();
     } else if (leftIcon === "arrow-left") {
       // if (navigation.canGoBack()) {
-      console.log("Go Back", navigation.getState());
       navigation.goBack();
       // } else {
       // router.replace("/chatstarter");

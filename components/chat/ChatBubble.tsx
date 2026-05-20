@@ -8,15 +8,22 @@ interface ChatBubbleProps {
   role: "user" | "assistant";
   text: string;
   onAnimationComplete?: () => void;
+  shouldAnimate?: boolean;
 }
 
-export const ChatBubble = ({ role, text, onAnimationComplete }: ChatBubbleProps) => {
+export const ChatBubble = ({
+  role,
+  text,
+  onAnimationComplete,
+  shouldAnimate = true,
+}: ChatBubbleProps) => {
   const isUser = role === "user";
-  const [displayedText, setDisplayedText] = useState(isUser ? text : "");
+  const [displayedText, setDisplayedText] = useState(isUser || !shouldAnimate ? text : "");
 
   useEffect(() => {
-    if (isUser) {
+    if (isUser || !shouldAnimate) {
       setDisplayedText(text);
+      if (onAnimationComplete) onAnimationComplete();
       return;
     }
 
@@ -31,7 +38,7 @@ export const ChatBubble = ({ role, text, onAnimationComplete }: ChatBubbleProps)
     }, 25);
 
     return () => clearInterval(interval);
-  }, [isUser, text]);
+  }, [isUser, text, shouldAnimate]);
 
   if (isUser) {
     return (

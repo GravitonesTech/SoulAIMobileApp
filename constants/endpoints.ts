@@ -45,6 +45,10 @@ export const ENDPOINTS = {
   chat: {
     /** POST — Send message to AI */
     send: "/chat/chat",
+    /** GET — Fetch active chat sessions */
+    sessions: "/chat/sessions",
+    /** GET — Retrieve session details (Chat History) */
+    sessionDetails: (sessionId: string) => `/chat/sessions/${sessionId}`,
   },
   master: {
     /** GET — Fetch available therapies */
