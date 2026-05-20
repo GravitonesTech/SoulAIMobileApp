@@ -47,10 +47,10 @@ export default function ProfileScreen() {
       const fetchStatus = async () => {
         try {
           const response = await apiClient.get<
-            Array<{
+            {
               form_code: string;
               submitted: boolean;
-            }>
+            }[]
           >(ENDPOINTS.users.assessmentStatus);
 
           if (response.success && response.data && isMounted) {
@@ -184,8 +184,9 @@ export default function ProfileScreen() {
             ))}
           </View>
           <TouchableOpacity
-            style={styles.linkButton}
+            style={[styles.linkButton, isLoadingStatus && { opacity: 0.5 }]}
             onPress={() => router.push("/personality-test")}
+            disabled={isLoadingStatus}
           >
             <Text style={styles.linkText}>
               {isLoadingStatus

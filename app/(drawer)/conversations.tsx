@@ -1,46 +1,40 @@
+import { ContextMenuModal } from "@/components/conversations/ContextMenuModal";
+import { ConversationItem } from "@/components/conversations/ConversationItem";
+import { QuickActionsCard } from "@/components/conversations/QuickActionsCard";
+import { RenameModal } from "@/components/conversations/RenameModal";
 import { AppHeader } from "@/components/ui/AppHeader";
-import {
-  CONVERSATIONS_QUICK_ACTIONS,
-  TODAY_CONVERSATIONS_SEED,
-  YESTERDAY_CONVERSATIONS_SEED,
-  type Conversation,
-} from "@/constants/StaticData";
+import { ENDPOINTS } from "@/constants/endpoints";
+import { type Conversation } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
+import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
+import { toast } from "@/utils/toast";
 import { Feather } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo, useRef, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
-  Modal,
-  Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type ConversationSection = "today" | "yesterday";
+type ConversationSection = "today" | "yesterday" | "older";
 
 export default function ConversationsScreen() {
   const router = useRouter();
   const { initialMessage } = useLocalSearchParams<{ initialMessage: string }>();
 
-  const initialToday = useMemo<Conversation[]>(() => {
-    if (!initialMessage?.trim()) return TODAY_CONVERSATIONS_SEED;
-    const next = [...TODAY_CONVERSATIONS_SEED];
-    if (next[0]) next[0] = { ...next[0], title: initialMessage.trim() };
-    return next;
-  }, [initialMessage]);
-
-  const initialYesterday = useMemo<Conversation[]>(() => YESTERDAY_CONVERSATIONS_SEED, []);
-
-  const [todayConversations, setTodayConversations] = useState<Conversation[]>(initialToday);
-  const [yesterdayConversations, setYesterdayConversations] =
-    useState<Conversation[]>(initialYesterday);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [todayConversations, setTodayConversations] = useState<Conversation[]>([]);
+  const [yesterdayConversations, setYesterdayConversations] = useState<Conversation[]>([]);
+  const [olderConversations, setOlderConversations] = useState<Conversation[]>([]);
 
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [contextMenuAnchor, setContextMenuAnchor] = useState<{ top: number; left: number }>({
@@ -54,6 +48,8 @@ export default function ConversationsScreen() {
 
   const [renameVisible, setRenameVisible] = useState(false);
   const [renameValue, setRenameValue] = useState("");
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const rowNodesRef = useRef<Record<string, View | null>>({});
 
@@ -62,7 +58,107 @@ export default function ConversationsScreen() {
   };
 
   const getSectionSetter = (section: ConversationSection) => {
-    return section === "today" ? setTodayConversations : setYesterdayConversations;
+    if (section === "today") return setTodayConversations;
+    if (section === "yesterday") return setYesterdayConversations;
+    return setOlderConversations;
+  };
+
+  const formatTimestamp = (dateStr?: string): string => {
+    if (!dateStr) return "";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "";
+
+      let hours = d.getHours();
+      const minutes = d.getMinutes();
+      const ampm = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const minutesStr = minutes < 10 ? "0" + minutes : minutes;
+      return `${hours}:${minutesStr} ${ampm}`;
+    } catch {
+      return "";
+    }
+  };
+
+  const fetchSessions = async (showLoadingIndicator = true) => {
+    if (showLoadingIndicator) setIsLoading(true);
+    try {
+      const response = await apiClient.get<any[]>(ENDPOINTS.chat.sessions);
+      if (response.success && Array.isArray(response.data)) {
+        const now = new Date();
+        const todayDate = now.toDateString();
+
+        const yesterday = new Date();
+        yesterday.setDate(now.getDate() - 1);
+        const yesterdayDate = yesterday.toDateString();
+
+        const todayList: Conversation[] = [];
+        const yesterdayList: Conversation[] = [];
+        const olderList: Conversation[] = [];
+
+        response.data.forEach((session: any) => {
+          const mapped: Conversation = {
+            id: session.session_id,
+            title: session.title || "New Chat",
+            timestamp: formatTimestamp(session.updated_at || session.created_at),
+            subtitle: `${
+              session.therapy_type
+                ? session.therapy_type.charAt(0).toUpperCase() + session.therapy_type.slice(1)
+                : "Supportive"
+            } Therapy`,
+          };
+
+          const sessionDate = new Date(session.updated_at || session.created_at);
+          if (isNaN(sessionDate.getTime())) {
+            todayList.push(mapped);
+          } else if (sessionDate.toDateString() === todayDate) {
+            todayList.push(mapped);
+          } else if (sessionDate.toDateString() === yesterdayDate) {
+            yesterdayList.push(mapped);
+          } else {
+            try {
+              const options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
+              mapped.timestamp = sessionDate.toLocaleDateString(undefined, options);
+            } catch {}
+            olderList.push(mapped);
+          }
+        });
+
+        // Add optimistic/temporary initialMessage conversation if present
+        if (initialMessage?.trim()) {
+          const matched = todayList.find((c) => c.title === initialMessage.trim());
+          if (!matched) {
+            todayList.unshift({
+              id: Date.now().toString(),
+              title: initialMessage.trim(),
+              timestamp: formatTimestamp(new Date().toISOString()),
+              subtitle: "Supportive Therapy",
+            });
+          }
+        }
+
+        setTodayConversations(todayList);
+        setYesterdayConversations(yesterdayList);
+        setOlderConversations(olderList);
+      }
+    } catch (error) {
+      console.error("[Conversations] Error loading chat sessions:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchSessions();
+    }, [initialMessage]),
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchSessions(false);
+    setRefreshing(false);
   };
 
   const onLongPressConversation = (section: ConversationSection, item: Conversation) => {
@@ -103,29 +199,62 @@ export default function ConversationsScreen() {
     setRenameVisible(true);
   };
 
-  const commitRename = () => {
+  const commitRename = async () => {
     if (!selectedConversation) return;
     const nextTitle = renameValue.trim();
     if (!nextTitle) return;
 
     const setSection = getSectionSetter(selectedConversation.section);
-    setSection((prev) =>
-      prev.map((c) => (c.id === selectedConversation.item.id ? { ...c, title: nextTitle } : c)),
-    );
+    const sessionId = selectedConversation.item.id;
 
     setRenameVisible(false);
-    setSelectedConversation(null);
+    setIsRenaming(true);
+
+    try {
+      const response = await apiClient.put(ENDPOINTS.chat.sessionDetails(sessionId), {
+        title: nextTitle,
+      });
+
+      if (response.success) {
+        setSection((prev) =>
+          prev.map((c) => (c.id === sessionId ? { ...c, title: nextTitle } : c)),
+        );
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      console.error("[Conversations] Error renaming session:", error);
+      toast.error("Error", "Failed to rename conversation.");
+    } finally {
+      setIsRenaming(false);
+      setSelectedConversation(null);
+    }
   };
 
-  const onPressDelete = () => {
+  const onPressDelete = async () => {
     if (!selectedConversation) return;
+    const sessionId = selectedConversation.item.id;
     const setSection = getSectionSetter(selectedConversation.section);
-    setSection((prev) => prev.filter((c) => c.id !== selectedConversation.item.id));
-    setContextMenuVisible(false);
-    setSelectedConversation(null);
-  };
 
-  const quickActions = CONVERSATIONS_QUICK_ACTIONS;
+    setContextMenuVisible(false);
+
+    setIsDeleting(true);
+    try {
+      const response = await apiClient.delete(ENDPOINTS.chat.sessionDetails(sessionId));
+
+      if (response.success) {
+        setSection((prev) => prev.filter((c) => c.id !== sessionId));
+      } else {
+        toast.error("Error", response.message || "Failed to delete session.");
+      }
+    } catch (error) {
+      console.error("[Conversations] Error deleting session:", error);
+      toast.error("Error", "Failed to delete conversation.");
+    } finally {
+      setIsDeleting(false);
+      setSelectedConversation(null);
+    }
+  };
 
   const openConversation = (item: Conversation) => {
     router.push({
@@ -133,6 +262,7 @@ export default function ConversationsScreen() {
       params: {
         title: item.title,
         therapy: item.subtitle.split("•")[0]?.trim() || "Cognitive Therapy",
+        sessionId: item.id,
       },
     } as any);
   };
@@ -143,181 +273,137 @@ export default function ConversationsScreen() {
         {/* Header Bar */}
         <AppHeader title="Conversations" />
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* Quick actions */}
-          <View style={styles.quickActionsCard}>
-            {quickActions.map((action, index) => (
-              <TouchableOpacity
-                key={action.id}
-                style={[
-                  styles.quickActionRow,
-                  index === quickActions.length - 1 && styles.noBorder,
-                ]}
-                activeOpacity={0.7}
-                onPress={() => action.route && router.push(action.route as any)}
-              >
-                <View style={styles.quickActionLeft}>
-                  <Feather name={action.icon as any} size={normalize(18)} color={action.color} />
-                  <Text
-                    style={[styles.quickActionText, action.id === "sos" && styles.sosActionText]}
-                  >
-                    {action.label}
-                  </Text>
-                </View>
+        {/* Global Loading Overlay */}
+        {(isRenaming || isDeleting) && (
+          <View style={styles.actionLoadingOverlay}>
+            <ActivityIndicator size="large" color="#3C61DD" />
+          </View>
+        )}
+
+        {isLoading && !refreshing ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#3C61DD" />
+          </View>
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={["#3C61DD"]}
+                tintColor="#3C61DD"
+              />
+            }
+          >
+            {/* Quick actions */}
+            <QuickActionsCard />
+
+            {todayConversations.length === 0 &&
+            yesterdayConversations.length === 0 &&
+            olderConversations.length === 0 ? (
+              <View style={styles.emptyContainer}>
                 <Feather
-                  name="chevron-right"
-                  size={normalize(18)}
-                  color={action.id === "sos" ? "#FF3B30" : "#C7C7CC"}
+                  name="message-square"
+                  size={normalize(48)}
+                  color="#A0A0A0"
+                  style={styles.emptyIcon}
                 />
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <Text style={styles.sectionLabel}>TODAY</Text>
-          <View style={styles.conversationsCard}>
-            {todayConversations.map((item, index) => (
-              <View
-                key={item.id}
-                ref={(node) => {
-                  rowNodesRef.current[item.id] = node;
-                }}
-              >
+                <Text style={styles.emptyTitle}>No conversations yet</Text>
+                <Text style={styles.emptySubtitle}>
+                  Start a chat to get guidance and supportive coaching.
+                </Text>
                 <TouchableOpacity
-                  style={[
-                    styles.conversationItem,
-                    index === todayConversations.length - 1 && styles.noBorder,
-                  ]}
-                  activeOpacity={0.7}
-                  onPress={() => openConversation(item)}
-                  onLongPress={() => onLongPressConversation("today", item)}
-                  delayLongPress={250}
+                  style={styles.emptyButton}
+                  onPress={() => router.push("/chatstarter")}
                 >
-                  <View style={styles.itemContent}>
-                    <View style={styles.itemHeader}>
-                      <Text style={styles.itemTitle}>{item.title}</Text>
-                      <Text style={styles.itemTime}>{item.timestamp}</Text>
-                    </View>
-                    <Text style={styles.itemSubtitle} numberOfLines={1}>
-                      {item.subtitle}
-                    </Text>
-                  </View>
+                  <Text style={styles.emptyButtonText}>Start a new chat</Text>
                 </TouchableOpacity>
               </View>
-            ))}
-          </View>
-
-          <Text style={[styles.sectionLabel, styles.sectionLabelSpacing]}>YESTERDAY</Text>
-          <View style={styles.conversationsCard}>
-            {yesterdayConversations.map((item, index) => (
-              <View
-                key={item.id}
-                ref={(node) => {
-                  rowNodesRef.current[item.id] = node;
-                }}
-              >
-                <TouchableOpacity
-                  style={[
-                    styles.conversationItem,
-                    index === yesterdayConversations.length - 1 && styles.noBorder,
-                  ]}
-                  activeOpacity={0.7}
-                  onPress={() => openConversation(item)}
-                  onLongPress={() => onLongPressConversation("yesterday", item)}
-                  delayLongPress={250}
-                >
-                  <View style={styles.itemContent}>
-                    <View style={styles.itemHeader}>
-                      <Text style={styles.itemTitle}>{item.title}</Text>
-                      <Text style={styles.itemTime}>{item.timestamp}</Text>
+            ) : (
+              <>
+                {todayConversations.length > 0 && (
+                  <>
+                    <Text style={styles.sectionLabel}>TODAY</Text>
+                    <View style={styles.conversationsCard}>
+                      {todayConversations.map((item, index) => (
+                        <ConversationItem
+                          key={item.id}
+                          item={item}
+                          isLast={index === todayConversations.length - 1}
+                          onPress={() => openConversation(item)}
+                          onLongPress={() => onLongPressConversation("today", item)}
+                          ref={(node) => {
+                            rowNodesRef.current[item.id] = node;
+                          }}
+                        />
+                      ))}
                     </View>
-                    <Text style={styles.itemSubtitle} numberOfLines={1}>
-                      {item.subtitle}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        </ScrollView>
+                  </>
+                )}
+
+                {yesterdayConversations.length > 0 && (
+                  <>
+                    <Text style={[styles.sectionLabel, styles.sectionLabelSpacing]}>YESTERDAY</Text>
+                    <View style={styles.conversationsCard}>
+                      {yesterdayConversations.map((item, index) => (
+                        <ConversationItem
+                          key={item.id}
+                          item={item}
+                          isLast={index === yesterdayConversations.length - 1}
+                          onPress={() => openConversation(item)}
+                          onLongPress={() => onLongPressConversation("yesterday", item)}
+                          ref={(node) => {
+                            rowNodesRef.current[item.id] = node;
+                          }}
+                        />
+                      ))}
+                    </View>
+                  </>
+                )}
+
+                {olderConversations.length > 0 && (
+                  <>
+                    <Text style={[styles.sectionLabel, styles.sectionLabelSpacing]}>OLDER</Text>
+                    <View style={styles.conversationsCard}>
+                      {olderConversations.map((item, index) => (
+                        <ConversationItem
+                          key={item.id}
+                          item={item}
+                          isLast={index === olderConversations.length - 1}
+                          onPress={() => openConversation(item)}
+                          onLongPress={() => onLongPressConversation("older", item)}
+                          ref={(node) => {
+                            rowNodesRef.current[item.id] = node;
+                          }}
+                        />
+                      ))}
+                    </View>
+                  </>
+                )}
+              </>
+            )}
+          </ScrollView>
+        )}
 
         {/* Long-press context menu (Rename / Delete) */}
-        <Modal
-          transparent
+        <ContextMenuModal
           visible={contextMenuVisible}
-          animationType="fade"
-          onRequestClose={closeContextMenu}
-        >
-          <Pressable style={styles.menuBackdrop} onPress={closeContextMenu}>
-            <View style={styles.menuLayer} pointerEvents="box-none">
-              <Pressable
-                style={[
-                  styles.contextMenu,
-                  { top: contextMenuAnchor.top, left: contextMenuAnchor.left },
-                ]}
-                onPress={() => {}}
-              >
-                <TouchableOpacity
-                  style={styles.menuAction}
-                  activeOpacity={0.7}
-                  onPress={onPressRename}
-                >
-                  <Feather name="edit-2" size={normalize(18)} color="#1C1C1E" />
-                  <Text style={styles.menuActionText}>Rename</Text>
-                </TouchableOpacity>
-                <View style={styles.menuDivider} />
-                <TouchableOpacity
-                  style={styles.menuAction}
-                  activeOpacity={0.7}
-                  onPress={onPressDelete}
-                >
-                  <Feather name="trash-2" size={normalize(18)} color="#1C1C1E" />
-                  <Text style={styles.menuActionText}>Delete</Text>
-                </TouchableOpacity>
-              </Pressable>
-            </View>
-          </Pressable>
-        </Modal>
+          anchor={contextMenuAnchor}
+          onClose={closeContextMenu}
+          onRename={onPressRename}
+          onDelete={onPressDelete}
+        />
 
         {/* Rename modal */}
-        <Modal
-          transparent
+        <RenameModal
           visible={renameVisible}
-          animationType="fade"
-          onRequestClose={() => setRenameVisible(false)}
-        >
-          <Pressable style={styles.menuBackdrop} onPress={() => setRenameVisible(false)}>
-            <Pressable style={styles.renameCard} onPress={() => {}}>
-              <Text style={styles.renameTitle}>Rename conversation</Text>
-              <TextInput
-                value={renameValue}
-                onChangeText={setRenameValue}
-                placeholder="Enter a new name"
-                placeholderTextColor="#A0A0A0"
-                style={styles.renameInput}
-                autoFocus
-              />
-              <View style={styles.renameButtons}>
-                <TouchableOpacity
-                  style={[styles.renameBtn, styles.renameBtnSecondary]}
-                  activeOpacity={0.7}
-                  onPress={() => setRenameVisible(false)}
-                >
-                  <Text style={[styles.renameBtnText, styles.renameBtnTextSecondary]}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.renameBtn, styles.renameBtnPrimary]}
-                  activeOpacity={0.7}
-                  onPress={commitRename}
-                >
-                  <Text style={styles.renameBtnText}>Save</Text>
-                </TouchableOpacity>
-              </View>
-            </Pressable>
-          </Pressable>
-        </Modal>
+          value={renameValue}
+          onChangeText={setRenameValue}
+          onClose={() => setRenameVisible(false)}
+          onSave={commitRename}
+        />
 
         {/* FAB: New Chat */}
         <TouchableOpacity style={styles.fab} onPress={() => router.push("/chatstarter")}>
@@ -375,38 +461,7 @@ const styles = StyleSheet.create({
   sectionLabelSpacing: {
     marginTop: hp(2.5),
   },
-  quickActionsCard: {
-    backgroundColor: "#FFF",
-    borderRadius: normalize(15),
-    marginBottom: hp(1.7),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  quickActionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: moderateScale(16),
-    paddingVertical: moderateScale(16),
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#F2F2F2",
-  },
-  quickActionLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: moderateScale(12),
-  },
-  quickActionText: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(15),
-    color: "#1C1C1E",
-  },
-  sosActionText: {
-    color: "#FF3B30",
-  },
+
   conversationsCard: {
     backgroundColor: "#FFF",
     borderRadius: normalize(15),
@@ -417,39 +472,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
-  conversationItem: {
-    paddingHorizontal: moderateScale(20),
-    paddingVertical: moderateScale(15),
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#F2F2F2",
-  },
-  noBorder: {
-    borderBottomWidth: 0,
-  },
-  itemContent: {
-    flex: 1,
-  },
-  itemHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: hp(0.5),
-  },
-  itemTitle: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(16),
-    color: "#000",
-  },
-  itemTime: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(12),
-    color: "#8A8A8E",
-  },
-  itemSubtitle: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(13),
-    color: "#8A8A8E",
-  },
+
   fab: {
     position: "absolute",
     bottom: hp(4),
@@ -473,98 +496,56 @@ const styles = StyleSheet.create({
     marginLeft: wp(2),
   },
 
-  menuBackdrop: {
+  loadingContainer: {
     flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.75)",
-  },
-  menuLayer: {
-    flex: 1,
-  },
-  contextMenu: {
-    position: "absolute",
-    width: moderateScale(240),
-    backgroundColor: "#FFFFFF",
-    borderRadius: normalize(16),
-    flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
-    justifyContent: "space-evenly",
-    paddingVertical: moderateScale(14),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 20,
-    elevation: 8,
   },
-  menuAction: {
-    flex: 1,
+  emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
-    gap: moderateScale(6),
+    paddingVertical: hp(8),
+    paddingHorizontal: wp(6),
   },
-  menuActionText: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(13),
+  emptyIcon: {
+    marginBottom: hp(2),
+  },
+  emptyTitle: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(18),
     color: "#1C1C1E",
-  },
-  menuDivider: {
-    width: 1,
-    height: "100%",
-    backgroundColor: "rgba(0,0,0,0.06)",
-  },
-
-  renameCard: {
-    marginHorizontal: wp(5.3),
-    marginTop: hp(27),
-    backgroundColor: "#FFFFFF",
-    borderRadius: normalize(16),
-    padding: moderateScale(16),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  renameTitle: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(16),
-    color: "#111111",
     marginBottom: hp(1),
   },
-  renameInput: {
-    height: moderateScale(46),
-    borderRadius: normalize(12),
-    paddingHorizontal: moderateScale(12),
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
+  emptySubtitle: {
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(14),
-    color: "#111111",
+    color: "#8A8A8E",
+    textAlign: "center",
+    marginBottom: hp(3),
+    lineHeight: normalize(20),
   },
-  renameButtons: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: moderateScale(8),
-    marginTop: hp(1.7),
-  },
-  renameBtn: {
-    paddingHorizontal: moderateScale(14),
-    paddingVertical: moderateScale(10),
-    borderRadius: normalize(12),
-    minWidth: moderateScale(90),
-    alignItems: "center",
-  },
-  renameBtnPrimary: {
+  emptyButton: {
     backgroundColor: "#3C61DD",
+    paddingHorizontal: moderateScale(24),
+    paddingVertical: moderateScale(12),
+    borderRadius: normalize(25),
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  renameBtnSecondary: {
-    backgroundColor: "rgba(60, 97, 221, 0.08)",
-  },
-  renameBtnText: {
+  emptyButtonText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: normalize(14),
-    color: "#FFFFFF",
+    fontSize: normalize(15),
+    color: "#FFF",
   },
-  renameBtnTextSecondary: {
-    color: "#3C61DD",
+  actionLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(255, 255, 255, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
+    elevation: 999,
   },
 });

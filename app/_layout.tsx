@@ -75,7 +75,6 @@ export default function RootLayout() {
             <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
             <Stack.Screen name="terms" options={{ headerShown: false }} />
             <Stack.Screen name="personality-test" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
           </Stack>
           <StatusBar style="dark" />
           <Toast config={toastConfig} />

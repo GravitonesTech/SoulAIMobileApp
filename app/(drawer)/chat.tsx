@@ -10,40 +10,101 @@ import { normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { isCancel } from "axios";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   text: string;
+  shouldAnimate?: boolean;
 };
 
 export default function ChatScreen() {
-  const { therapy, initialMessage, sessionId, selected_therapy } = useLocalSearchParams<{
-    therapy?: string;
-    initialMessage?: string;
-    sessionId?: string;
-    selected_therapy?: string;
-  }>();
+  const router = useRouter();
+  const { therapy, initialMessage, sessionId, selected_therapy, showNewChatButton } =
+    useLocalSearchParams<{
+      therapy?: string;
+      initialMessage?: string;
+      sessionId?: string;
+      selected_therapy?: string;
+      showNewChatButton?: string;
+    }>();
 
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const isKeyboardVisible = useKeyboardVisibility();
   const scrollViewRef = useRef<ScrollView>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const fetchChatHistory = async (id: string) => {
+    setIsHistoryLoading(true);
+    try {
+      const response = await apiClient.get<any>(ENDPOINTS.chat.sessionDetails(id));
+      if (response.success && response.data?.history) {
+        const history = response.data.history;
+        const mappedMessages: ChatMessage[] = [];
+
+        history.forEach((item: any, index: number) => {
+          if (item.user_input) {
+            mappedMessages.push({
+              id: `hist-u-${index}`,
+              role: "user",
+              text: item.user_input,
+              shouldAnimate: false,
+            });
+          }
+
+          const responseText =
+            item.responses?.claude_response ||
+            item.responses?.openai_response ||
+            item.responses?.groq_response;
+
+          if (responseText) {
+            mappedMessages.push({
+              id: `hist-a-${index}`,
+              role: "assistant",
+              text: responseText,
+              shouldAnimate: false,
+            });
+          }
+        });
+
+        setMessages(mappedMessages);
+      }
+    } catch (error) {
+      console.error("[Chat] Error fetching chat history:", error);
+      toast.error("Error", "Failed to load chat history");
+    } finally {
+      setIsHistoryLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Reset all messages and state when the session/path changes to prevent
     // stale animation or loading flags from locking the chat inputs.
     setMessages([]);
     setIsLoading(false);
+    setIsHistoryLoading(false);
     setIsAnimating(false);
     setInputText("");
+
+    if (sessionId && isNaN(Number(sessionId)) && !initialMessage) {
+      fetchChatHistory(sessionId);
+    }
 
     return () => {
       if (abortControllerRef.current) {
@@ -57,6 +118,7 @@ export default function ChatScreen() {
     if (initialMessage) {
       console.log("Initial message:", initialMessage);
       handleSend(initialMessage);
+      router.setParams({ initialMessage: "" });
     }
   }, [initialMessage, sessionId]);
 
@@ -94,7 +156,7 @@ export default function ChatScreen() {
       const response = await apiClient.post(
         ENDPOINTS.chat.send,
         {
-          session_id: "",
+          session_id: sessionId || "",
           user_input: trimmed,
           selected_model: "claude",
           selected_therapy: selected_therapy?.toLowerCase() || "",
@@ -115,6 +177,7 @@ export default function ChatScreen() {
           id: `m-${Date.now()}-a`,
           role: "assistant",
           text: aiResponse,
+          shouldAnimate: true,
         };
         setIsAnimating(true);
         setMessages((prev) => [...prev, assistantMessage]);
@@ -136,15 +199,32 @@ export default function ChatScreen() {
     }
   };
 
-  const handleNewChatPress = () => {
+  const handleNewChatPress = async () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
     setMessages([]);
-    setIsLoading(false);
+    setIsLoading(true);
     setIsAnimating(false);
     setInputText("");
+
+    try {
+      const response = await apiClient.post(ENDPOINTS.chat.sessions, {
+        therapy_type: "supportive",
+        title: "New Chat",
+      });
+      if (response.success && response.data?.session_id) {
+        router.setParams({ sessionId: response.data.session_id });
+      } else {
+        router.setParams({ sessionId: Date.now().toString() });
+      }
+    } catch (error) {
+      console.error("[Chat] Error creating new session:", error);
+      router.setParams({ sessionId: Date.now().toString() });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -161,9 +241,9 @@ export default function ChatScreen() {
         >
           {/* Header */}
           <AppHeader
-            title={therapy ? therapy : undefined}
-            showBadge={therapy ? true : false}
-            onNewChatPress={!therapy ? handleNewChatPress : undefined}
+            title={showNewChatButton !== "true" ? (therapy ? therapy : undefined) : undefined}
+            showBadge={showNewChatButton !== "true" ? true : false}
+            onNewChatPress={showNewChatButton === "true" ? handleNewChatPress : undefined}
             // isNewChatDisabled={isAnimating || isLoading}
           />
 
@@ -179,7 +259,11 @@ export default function ChatScreen() {
             keyboardShouldPersistTaps="handled"
             onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
           >
-            {messages.length === 0 ? (
+            {isHistoryLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#3C61DD" />
+              </View>
+            ) : messages.length === 0 ? (
               <View style={styles.emptyStateContainer}>
                 <Text style={styles.emptyStateText}>No messages yet. Send a message to start!</Text>
               </View>
@@ -189,6 +273,7 @@ export default function ChatScreen() {
                   key={m.id}
                   role={m.role}
                   text={m.text}
+                  shouldAnimate={m.shouldAnimate}
                   onAnimationComplete={
                     index === messages.length - 1 ? () => setIsAnimating(false) : undefined
                   }
@@ -204,7 +289,7 @@ export default function ChatScreen() {
             value={inputText}
             onChangeText={setInputText}
             onSend={handleSend}
-            disabled={isLoading || isAnimating}
+            disabled={isLoading || isAnimating || isHistoryLoading}
           />
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -235,5 +320,11 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(14),
     color: "#8A8A8E",
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: normalize(40),
   },
 });
