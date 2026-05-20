@@ -125,6 +125,13 @@ export const MORE_OPTIONS_ITEMS = [
     color: "#333",
     route: "/breathing",
   },
+  // {
+  //   id: "demo",
+  //   label: "Interactive Demo",
+  //   icon: "play-circle",
+  //   color: "#3C61DD",
+  //   route: "/demo",
+  // },
   { id: "faq", label: "FAQ", icon: "help-circle", color: "#333", route: "/faq" },
   { id: "sos", label: "SOS!", icon: "alert-circle", color: "#FF3B30", route: "/sos" },
 ];
@@ -201,173 +208,6 @@ export const PAST_THERAPY_SESSIONS = [
     amount: "10000",
     date: "11 Nov, 2027",
     duration: "90 minutes session",
-  },
-];
-export const ASSESSMENT_OPTIONS = [
-  { label: "Not at all", value: 0 },
-  { label: "Several Days", value: 1 },
-  { label: "More than half the days", value: 2 },
-  { label: "Nearly everyday", value: 3 },
-];
-
-export const DIFFICULTY_OPTIONS = [
-  { label: "Not difficult at all", value: 0 },
-  { label: "Somewhat difficult", value: 1 },
-  { label: "Very Difficult", value: 2 },
-  { label: "Extremely Difficult", value: 3 },
-];
-
-export const ASSESSMENT_QUESTIONS = [
-  // PHQ-9
-  {
-    id: "phq1",
-    section: "Patient Health Questionnaire (PHQ-9)",
-    title: "Interest or Pleasure?",
-    question: "Little interest or pleasure in doing things.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "phq2",
-    section: "Patient Health Questionnaire (PHQ-9)",
-    title: "Feeling Down?",
-    question: "Feeling down, depressed, or hopeless.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "phq3",
-    section: "Patient Health Questionnaire (PHQ-9)",
-    title: "Sleep Problems?",
-    question: "Trouble falling or staying asleep, or sleeping too much.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "phq4",
-    section: "Patient Health Questionnaire (PHQ-9)",
-    title: "Tired or Low Energy?",
-    question: "Feeling tired or having little energy.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "phq5",
-    section: "Patient Health Questionnaire (PHQ-9)",
-    title: "Appetite Issues?",
-    question: "Poor appetite or overeating.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "phq6",
-    section: "Patient Health Questionnaire (PHQ-9)",
-    title: "Self Perception?",
-    question:
-      "Feeling bad about yourself – or that you are a failure or have let yourself or your family down.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "phq7",
-    section: "Patient Health Questionnaire (PHQ-9)",
-    title: "Trouble Concentrating?",
-    question:
-      "Trouble concentrating on things, such as reading the newspaper or watching television.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "phq8",
-    section: "Patient Health Questionnaire (PHQ-9)",
-    title: "Psychomotor Changes?",
-    question:
-      "Moving or speaking so slowly that other people could have noticed? Or the opposite – being so fidgety or restless that you have been moving around a lot more than usual?",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "phq9",
-    section: "Patient Health Questionnaire (PHQ-9)",
-    title: "Harmful Thoughts?",
-    question: "Thoughts that you would be better off dead, or of hurting yourself in some way.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "phq_diff",
-    section: "Patient Health Questionnaire (PHQ-9)",
-    title: "Daily Difficulty",
-    question:
-      "If you checked off any problems, how difficult have these problems made it for you to do your work, take care of things at home, or get along with other people?",
-    subtitle: "Overall impact on your daily life",
-    type: "difficulty",
-  },
-  // GAD-7
-  {
-    id: "gad1",
-    section: "General Anxiety Disorder Questionnaire (GAD-7)",
-    title: "Nervous or Anxious?",
-    question: "Feeling nervous, anxious, or on edge.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "gad2",
-    section: "General Anxiety Disorder Questionnaire (GAD-7)",
-    title: "Unable to Stop Worrying?",
-    question: "Not being able to stop or control worrying.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "gad3",
-    section: "General Anxiety Disorder Questionnaire (GAD-7)",
-    title: "Worrying Too Much?",
-    question: "Worrying too much about different things.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "gad4",
-    section: "General Anxiety Disorder Questionnaire (GAD-7)",
-    title: "Trouble Relaxing?",
-    question: "Trouble relaxing.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "gad5",
-    section: "General Anxiety Disorder Questionnaire (GAD-7)",
-    title: "Restless?",
-    question: "Being so restless that it's hard to sit still.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "gad6",
-    section: "General Anxiety Disorder Questionnaire (GAD-7)",
-    title: "Easily Irritable?",
-    question: "Becoming easily annoyed or irritable.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "gad7",
-    section: "General Anxiety Disorder Questionnaire (GAD-7)",
-    title: "Feeling Afraid?",
-    question: "Feeling afraid as if something awful might happen.",
-    subtitle: "Over the last 2 weeks, how often have you been bothered by this?",
-    type: "rating",
-  },
-  {
-    id: "gad_diff",
-    section: "General Anxiety Disorder Questionnaire (GAD-7)",
-    title: "Daily Difficulty",
-    question:
-      "If you checked off any problems, how difficult have these problems made it for you to do your work, take care of things at home, or get along with other people?",
-    subtitle: "Overall impact on your daily life",
-    type: "difficulty",
   },
 ];
 

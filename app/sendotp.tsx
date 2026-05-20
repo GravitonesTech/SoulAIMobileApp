@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -42,40 +43,42 @@ export default function LoginScreen() {
 
   return (
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.titleText}>Soul AI</Text>
-            <Text style={styles.subtitleText}>Log in to your Soul AI account</Text>
-          </View>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.titleText}>Soul AI</Text>
+              <Text style={styles.subtitleText}>Log in to your Soul AI account</Text>
+            </View>
 
-          {/* Form */}
-          <View style={styles.formContainer}>
-            <AppInput
-              iconName="phone"
-              placeholder="Phone Number*"
-              keyboardType="number-pad"
-              value={phone}
-              onChangeText={setPhone}
-              maxLength={10}
-              style={styles.inputMargin}
-            />
+            {/* Form */}
+            <View style={styles.formContainer}>
+              <AppInput
+                iconName="phone"
+                placeholder="Phone Number*"
+                keyboardType="number-pad"
+                value={phone}
+                onChangeText={setPhone}
+                maxLength={10}
+                style={styles.inputMargin}
+              />
 
-            <AppButton title="Continue" style={styles.signInBtnMargin} onPress={handleLogin} />
-          </View>
+              <AppButton title="Continue" style={styles.signInBtnMargin} onPress={handleLogin} />
+            </View>
 
-          {/* Bottom Link */}
-          <View style={styles.bottomLinkContainer}>
-            <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/signup")}>
-              <Text style={styles.bottomLinkText}>Don’t have an account? Create one</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            {/* Bottom Link */}
+            <View style={styles.bottomLinkContainer}>
+              <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/signup")}>
+                <Text style={styles.bottomLinkText}>Don’t have an account? Create one</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -88,8 +91,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: "center",
     paddingHorizontal: moderateScale(28),
-    paddingTop: moderateScale(108),
+    paddingTop: moderateScale(48),
     paddingBottom: moderateScale(12),
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     alignItems: "center",

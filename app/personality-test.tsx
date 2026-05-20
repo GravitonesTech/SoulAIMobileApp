@@ -1,42 +1,159 @@
+import { AssessmentEmpty } from "@/components/personality-test/AssessmentEmpty";
+import { AssessmentFooter } from "@/components/personality-test/AssessmentFooter";
+import { AssessmentLoading } from "@/components/personality-test/AssessmentLoading";
+import { OptionCard } from "@/components/personality-test/OptionCard";
 import { AppButton } from "@/components/ui/AppButton";
-import {
-  ASSESSMENT_OPTIONS,
-  ASSESSMENT_QUESTIONS,
-  DIFFICULTY_OPTIONS,
-} from "@/constants/StaticData";
+import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { Typography } from "@/constants/Typography";
-import { moderateScale, normalize, hp, wp } from "@/utils/responsive";
+import { ENDPOINTS } from "@/constants/endpoints";
+import { useAppConfirmation } from "@/hooks/useAppConfirmation";
+import { Question } from "@/types/assessment";
+import { apiClient } from "@/utils/api";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
-import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { BackHandler, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function PersonalityTestScreen() {
   const router = useRouter();
+  const { showConfirmation } = useAppConfirmation();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const currentQuestion = ASSESSMENT_QUESTIONS[currentIndex];
-  const progress = ((currentIndex + 1) / ASSESSMENT_QUESTIONS.length) * 100;
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
 
-  const handleSelect = (value: number) => {
-    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
+  const showExitAlert = useCallback(() => {
+    showConfirmation(
+      "Discard Progress?",
+      "Your assessment answers are not saved. Are you sure you want to quit?",
+      () => router.back(),
+      {
+        cancelLabel: "Cancel",
+        confirmLabel: "Quit",
+      },
+    );
+  }, [router, showConfirmation]);
+  useEffect(() => {
+    const backAction = () => {
+      if (isLoading || questions.length === 0) {
+        router.back();
+        return true;
+      }
+      showExitAlert();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+    return () => backHandler.remove();
+  }, [isLoading, questions.length, router, showExitAlert]);
+
+  const fetchQuestions = async () => {
+    try {
+      const response = await apiClient.get(ENDPOINTS.master.assessmentForms);
+      if (response.success && response.data) {
+        const allQuestions: Question[] = [];
+        response.data.forEach((form: any) => {
+          form.questions.forEach((q: any) => {
+            allQuestions.push({
+              id: q.id,
+              form_id: q.form_id,
+              form_code: form.code || form.name,
+              question_text: q.question_text,
+              order: q.order,
+              section: form.name,
+              subtitle: form.description,
+              options: q.options,
+            });
+          });
+        });
+        setQuestions(allQuestions);
+      } else {
+        toast.error("Failed to load assessments", response.message || "Something went wrong");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Error", "Could not connect to the server");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleNext = () => {
+  const submitAssessments = async () => {
+    setIsSubmitting(true);
+    try {
+      // Group answers by form
+      const groupedSubmissions: Record<
+        number,
+        {
+          form_id: number;
+          form_code: string;
+          answers: { question_id: number; selected_option_id: number }[];
+        }
+      > = {};
+
+      questions.forEach((q) => {
+        const selectedOptionId = answers[q.id];
+        if (selectedOptionId !== undefined) {
+          if (!groupedSubmissions[q.form_id]) {
+            groupedSubmissions[q.form_id] = {
+              form_id: q.form_id,
+              form_code: q.form_code,
+              answers: [],
+            };
+          }
+          groupedSubmissions[q.form_id].answers.push({
+            question_id: q.id,
+            selected_option_id: selectedOptionId,
+          });
+        }
+      });
+
+      const payload = Object.values(groupedSubmissions);
+
+      const response = await apiClient.post(ENDPOINTS.users.assessmentSubmissionsBulk, payload);
+
+      if (response.success) {
+        toast.success("Success", "Assessments submitted successfully");
+        router.replace("/chatstarter");
+      } else {
+        toast.error("Submission Failed", response.message || "Failed to submit assessments");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Error", "Could not submit assessment answers");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const currentQuestion = questions[currentIndex];
+  const progress = questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0;
+
+  const handleSelect = (optionId: number) => {
+    if (!currentQuestion) return;
+    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: optionId }));
+  };
+
+  const handleNext = async () => {
+    if (!currentQuestion) return;
     if (answers[currentQuestion.id] === undefined) {
       toast.error("Selection Required", "Please select an option to continue");
       return;
     }
 
-    if (currentIndex < ASSESSMENT_QUESTIONS.length - 1) {
+    if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      // Test complete - could navigate to results or show a summary
-      router.back();
+      await submitAssessments();
     }
   };
 
@@ -44,11 +161,23 @@ export default function PersonalityTestScreen() {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     } else {
-      router.back();
+      showExitAlert();
     }
   };
 
-  const options = currentQuestion.type === "difficulty" ? DIFFICULTY_OPTIONS : ASSESSMENT_OPTIONS;
+  if (isLoading) {
+    return <AssessmentLoading />;
+  }
+
+  if (isSubmitting) {
+    return <AssessmentLoading message="Submitting answers..." />;
+  }
+
+  if (questions.length === 0) {
+    return <AssessmentEmpty onBack={() => router.back()} />;
+  }
+
+  const options = currentQuestion?.options || [];
 
   return (
     <LinearGradient
@@ -58,15 +187,7 @@ export default function PersonalityTestScreen() {
       style={styles.container}
     >
       <SafeAreaView style={styles.safeArea}>
-        {/* Top Navigation & Progress */}
-        <View style={styles.topNavContainer}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <Feather name="arrow-left" size={normalize(24)} color="#111111" />
-          </TouchableOpacity>
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${progress}%` }]} />
-          </View>
-        </View>
+        <ProgressHeader progress={progress} onBack={handleBack} />
 
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
@@ -75,54 +196,36 @@ export default function PersonalityTestScreen() {
         >
           {/* Section Indicator */}
           <View style={styles.sectionBadge}>
-            <Text style={styles.sectionBadgeText}>{currentQuestion.section}</Text>
+            <Text style={styles.sectionBadgeText}>{currentQuestion?.section}</Text>
           </View>
 
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.titleText}>{currentQuestion.question}</Text>
-            <Text style={styles.subtitleText}>{currentQuestion.subtitle}</Text>
+            <Text style={styles.titleText}>{currentQuestion?.question_text}</Text>
+            <Text style={styles.subtitleText}>{currentQuestion?.subtitle}</Text>
           </View>
 
           {/* Options */}
           <View style={styles.optionsContainer}>
-            {options.map((option) => {
-              const isSelected = answers[currentQuestion.id] === option.value;
-              return (
-                <TouchableOpacity
-                  key={option.value}
-                  activeOpacity={0.7}
-                  onPress={() => handleSelect(option.value)}
-                  style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-                >
-                  <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
-                    {option.label}
-                  </Text>
-                  {currentQuestion.type === "rating" && (
-                    <Text style={[styles.optionValue, isSelected && styles.optionValueSelected]}>
-                      {option.value}
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
+            {options.map((option) => (
+              <OptionCard
+                key={option.id}
+                option={option}
+                isSelected={answers[currentQuestion.id] === option.id}
+                onSelect={handleSelect}
+              />
+            ))}
           </View>
 
+          <AssessmentFooter />
+        </ScrollView>
+
+        <View style={styles.bottomContainer}>
           <AppButton
-            title={currentIndex === ASSESSMENT_QUESTIONS.length - 1 ? "Finish" : "Next"}
-            style={styles.nextButton}
+            title={currentIndex === questions.length - 1 ? "Finish" : "Next"}
             onPress={handleNext}
           />
-
-          <View style={styles.whoFooter}>
-            <View style={styles.whoDivider} />
-            <Text style={styles.whoFooterText}>
-              Assessment questions are based on standardized clinical scales (PHQ-9 and GAD-7) as
-              recommended by the{"\n"}
-              <Text style={styles.whoHighlight}>WORLD HEALTH ORGANIZATION</Text>
-            </Text>
-          </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -135,32 +238,10 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  topNavContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: moderateScale(24),
-    paddingTop: moderateScale(16),
-    paddingBottom: moderateScale(24),
-  },
-  backButton: {
-    padding: moderateScale(4),
-    marginRight: wp(4),
-  },
-  progressTrack: {
-    flex: 1,
-    height: normalize(4),
-    backgroundColor: "rgba(60, 97, 221, 0.1)",
-    borderRadius: normalize(2),
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#3C61DD",
-  },
   scrollContainer: {
     flexGrow: 1,
     paddingHorizontal: moderateScale(24),
-    paddingBottom: moderateScale(40),
+    paddingBottom: moderateScale(20),
   },
   sectionBadge: {
     alignSelf: "center",
@@ -199,74 +280,11 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     width: "100%",
-    marginBottom: hp(3.5),
+    marginBottom: hp(0.5),
   },
-  optionCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: "100%",
-    minHeight: moderateScale(64),
-    backgroundColor: "#FFFFFF",
-    borderRadius: normalize(16),
-    paddingHorizontal: moderateScale(20),
-    paddingVertical: moderateScale(12),
-    marginBottom: hp(2),
-    borderWidth: 1,
-    borderColor: "transparent",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: normalize(4),
-    elevation: 2,
-  },
-  optionCardSelected: {
-    borderColor: "#3C61DD",
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1.5,
-  },
-  optionLabel: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(17),
-    color: "#464646",
-    flex: 1,
-  },
-  optionLabelSelected: {
-    color: "#3C61DD",
-  },
-  optionValue: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(17),
-    color: "#8E8E93",
-    marginLeft: wp(3),
-  },
-  optionValueSelected: {
-    color: "#3C61DD",
-  },
-  nextButton: {
-    marginTop: "auto",
-  },
-  whoFooter: {
-    marginTop: hp(4),
-    alignItems: "center",
-  },
-  whoDivider: {
-    width: "40%",
-    height: normalize(1),
-    backgroundColor: "rgba(60, 97, 221, 0.15)",
-    marginBottom: hp(2),
-  },
-  whoFooterText: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(11),
-    color: "#8E8E93",
-    textAlign: "center",
-    lineHeight: normalize(18),
-    opacity: 0.8,
-  },
-  whoHighlight: {
-    fontFamily: Typography.fonts.medium,
-    color: "#3C61DD",
-    fontSize: normalize(10),
+  bottomContainer: {
+    paddingHorizontal: moderateScale(24),
+    paddingBottom: moderateScale(24),
+    marginTop: hp(1.5),
   },
 });

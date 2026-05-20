@@ -9,6 +9,7 @@ export interface UserProfile {
   experience: string | null;
   support_types: string[];
   response_styles: string;
+  profile_photo: string | null;
 }
 
 export interface ApiResponse<T> {

@@ -13,6 +13,7 @@ export const toast = {
     });
   },
   error: (title: string, message?: string) => {
+    console.log(`🔴 [Toast Error] Title: "${title}" | Message: "${message || ""}"`);
     Toast.show({
       type: "error",
       text1: title,

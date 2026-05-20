@@ -21,6 +21,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -54,6 +55,7 @@ export default function SignupScreen() {
       return;
     }
 
+    setIsLoading(true);
     const result = await apiClient.post(ENDPOINTS.auth.register, {
       email: email.trim(),
       password: password,
@@ -74,90 +76,92 @@ export default function SignupScreen() {
 
   return (
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.titleText}>Get Started</Text>
-            <Text style={styles.subtitleText}>Create your personalized experience</Text>
-          </View>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.titleText}>Get Started</Text>
+              <Text style={styles.subtitleText}>Create your personalized experience</Text>
+            </View>
 
-          {/* Form */}
-          <View style={styles.formContainer}>
-            <AppInput
-              iconName="user"
-              placeholder="Email"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-              style={styles.inputMargin}
-            />
+            {/* Form */}
+            <View style={styles.formContainer}>
+              <AppInput
+                iconName="user"
+                placeholder="Email"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.inputMargin}
+              />
 
-            <AppInput
-              iconName="lock"
-              placeholder="Password"
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={setPassword}
-              style={styles.inputMargin}
-              rightIcon={
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                  <Feather
-                    name={showPassword ? "eye" : "eye-off"}
-                    size={normalize(20)}
-                    color="#555555"
-                  />
-                </TouchableOpacity>
-              }
-            />
+              <AppInput
+                iconName="lock"
+                placeholder="Password"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+                style={styles.inputMargin}
+                rightIcon={
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                    <Feather
+                      name={showPassword ? "eye" : "eye-off"}
+                      size={normalize(20)}
+                      color="#555555"
+                    />
+                  </TouchableOpacity>
+                }
+              />
 
-            <AppInput
-              iconName="lock"
-              placeholder="Confirm Password"
-              secureTextEntry={!showConfirmPassword}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              style={styles.inputMargin}
-              rightIcon={
-                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                  <Feather
-                    name={showConfirmPassword ? "eye" : "eye-off"}
-                    size={normalize(20)}
-                    color="#555555"
-                  />
-                </TouchableOpacity>
-              }
-            />
+              <AppInput
+                iconName="lock"
+                placeholder="Confirm Password"
+                secureTextEntry={!showConfirmPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                style={styles.inputMargin}
+                rightIcon={
+                  <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                    <Feather
+                      name={showConfirmPassword ? "eye" : "eye-off"}
+                      size={normalize(20)}
+                      color="#555555"
+                    />
+                  </TouchableOpacity>
+                }
+              />
 
-            <AppButton
-              title={isLoading ? "" : "Send OTP"}
-              style={styles.signInBtnMargin}
-              onPress={handleSendOtp}
-              disabled={isLoading}
-              icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
-            />
-          </View>
+              <AppButton
+                title={isLoading ? "" : "Send OTP"}
+                style={styles.signInBtnMargin}
+                onPress={handleSendOtp}
+                disabled={isLoading}
+                icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
+              />
+            </View>
 
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <Text style={styles.dividerText}>Or Sign Up With</Text>
-          </View>
+            {/* Divider */}
+            <View style={styles.dividerContainer}>
+              <Text style={styles.dividerText}>Or Sign Up With</Text>
+            </View>
 
-          {/* Social Logins */}
-          <SocialButtons style={styles.socialContainer} />
+            {/* Social Logins */}
+            <SocialButtons style={styles.socialContainer} />
 
-          {/* Bottom Link */}
-          <View style={styles.bottomLinkContainer}>
-            <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/login")}>
-              <Text style={styles.bottomLinkText}>Already have an account? Sign in</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            {/* Bottom Link */}
+            <View style={styles.bottomLinkContainer}>
+              <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/login")}>
+                <Text style={styles.bottomLinkText}>Already have an account? Sign in</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -170,8 +174,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: "center",
     paddingHorizontal: moderateScale(28),
-    paddingTop: moderateScale(82),
+    paddingTop: moderateScale(48),
     paddingBottom: moderateScale(40),
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     alignItems: "center",

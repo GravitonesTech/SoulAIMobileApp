@@ -20,6 +20,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 
 export default function ResetPasswordScreen() {
@@ -84,78 +85,80 @@ export default function ResetPasswordScreen() {
 
   return (
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
-      <KeyboardAvoidingView
-        style={{ flex: 1, width: "100%" }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          bounces={false}
-          keyboardShouldPersistTaps="handled"
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          style={{ flex: 1, width: "100%" }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <View style={styles.header}>
-            <Text style={styles.titleText}>Reset Password</Text>
-            <Text style={styles.subtitleText}>
-              Enter the OTP sent to your email and set a new password.
-            </Text>
-          </View>
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            bounces={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.header}>
+              <Text style={styles.titleText}>Reset Password</Text>
+              <Text style={styles.subtitleText}>
+                Enter the OTP sent to your email and set a new password.
+              </Text>
+            </View>
 
-          <Text style={styles.emailLabel}>{email}</Text>
+            <Text style={styles.emailLabel}>{email}</Text>
 
-          <View style={styles.formContainer}>
-            <OtpInput length={4} onChange={setOtp} />
+            <View style={styles.formContainer}>
+              <OtpInput length={4} onChange={setOtp} />
 
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={resend}
-              disabled={isResendDisabled}
-              style={styles.resendContainer}
-            >
-              <Text style={styles.resendText}>{resendLabel}</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={resend}
+                disabled={isResendDisabled}
+                style={styles.resendContainer}
+              >
+                <Text style={styles.resendText}>{resendLabel}</Text>
+              </TouchableOpacity>
 
-            <AppInput
-              iconName="lock"
-              placeholder="New Password*"
-              secureTextEntry={!showPassword}
-              value={newPassword}
-              onChangeText={setNewPassword}
-              style={styles.inputMargin}
-              rightIcon={
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                  <Feather name={showPassword ? "eye" : "eye-off"} size={20} color="#555555" />
-                </TouchableOpacity>
-              }
-            />
+              <AppInput
+                iconName="lock"
+                placeholder="New Password*"
+                secureTextEntry={!showPassword}
+                value={newPassword}
+                onChangeText={setNewPassword}
+                style={styles.inputMargin}
+                rightIcon={
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                    <Feather name={showPassword ? "eye" : "eye-off"} size={20} color="#555555" />
+                  </TouchableOpacity>
+                }
+              />
 
-            <AppInput
-              iconName="lock"
-              placeholder="Confirm Password*"
-              secureTextEntry={!showPassword}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              style={styles.inputMargin}
-            />
+              <AppInput
+                iconName="lock"
+                placeholder="Confirm Password*"
+                secureTextEntry={!showPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                style={styles.inputMargin}
+              />
 
-            <AppButton
-              title={isLoading ? "" : "Reset Password"}
-              style={styles.primaryBtn}
-              onPress={handleReset}
-              disabled={isLoading}
-              icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
-            />
+              <AppButton
+                title={isLoading ? "" : "Reset Password"}
+                style={styles.primaryBtn}
+                onPress={handleReset}
+                disabled={isLoading}
+                icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
+              />
 
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => router.back()}
-              style={styles.backLink}
-              disabled={isLoading}
-            >
-              <Text style={styles.backText}>Back</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.back()}
+                style={styles.backLink}
+                disabled={isLoading}
+              >
+                <Text style={styles.backText}>Back</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -166,8 +169,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: "center",
     paddingHorizontal: moderateScale(28),
-    paddingTop: moderateScale(72),
+    paddingTop: moderateScale(48),
     paddingBottom: moderateScale(260),
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     alignItems: "center",

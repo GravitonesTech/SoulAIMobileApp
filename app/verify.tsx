@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 
@@ -37,37 +38,39 @@ export default function VerifyScreen() {
 
   return (
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <View style={styles.centerContainer}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.titleText}>Verify Account</Text>
-            <Text style={styles.subtitleText}>Enter OTP Received{"\n"}on +91 98*****205</Text>
-          </View>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <View style={styles.centerContainer}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.titleText}>Verify Account</Text>
+              <Text style={styles.subtitleText}>Enter OTP Received{"\n"}on +91 98*****205</Text>
+            </View>
 
-          {/* OTP Input Form */}
-          <View style={styles.formContainer}>
-            <OtpInput length={4} onChange={setOtp} />
+            {/* OTP Input Form */}
+            <View style={styles.formContainer}>
+              <OtpInput length={4} onChange={setOtp} />
 
-            <AppButton title="Verify" style={styles.verifyBtnMargin} onPress={handleVerify} />
-          </View>
+              <AppButton title="Verify" style={styles.verifyBtnMargin} onPress={handleVerify} />
+            </View>
 
-          {/* Resend Link */}
-          <TouchableOpacity activeOpacity={0.7} style={styles.resendContainer}>
-            <Text style={styles.resendText}>Resend Verification Code</Text>
-          </TouchableOpacity>
-
-          {/* Bottom Re-enter Phone Number Link */}
-          <View style={styles.bottomLinkContainer}>
-            <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()}>
-              <Text style={styles.bottomLinkText}>Re-enter Phone Number</Text>
+            {/* Resend Link */}
+            <TouchableOpacity activeOpacity={0.7} style={styles.resendContainer}>
+              <Text style={styles.resendText}>Resend Verification Code</Text>
             </TouchableOpacity>
+
+            {/* Bottom Re-enter Phone Number Link */}
+            <View style={styles.bottomLinkContainer}>
+              <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()}>
+                <Text style={styles.bottomLinkText}>Re-enter Phone Number</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -80,7 +83,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     paddingHorizontal: moderateScale(28),
-    paddingTop: moderateScale(100), // Matching the overall padded look of previous screens
+    paddingTop: moderateScale(48), // Matching the overall padded look of previous screens
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     alignItems: "center",

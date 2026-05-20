@@ -36,6 +36,10 @@ export const ENDPOINTS = {
   users: {
     /** GET / PATCH — Current authenticated user's profile */
     me: "/users/me",
+    /** POST — Bulk submit assessment answers */
+    assessmentSubmissionsBulk: "/users/assessments/submissions/bulk",
+    /** GET — Get form completion statuses */
+    assessmentStatus: "/users/assessments/status",
   },
 
   chat: {
@@ -45,5 +49,7 @@ export const ENDPOINTS = {
   master: {
     /** GET — Fetch available therapies */
     therapies: "/master/therapies",
+    /** GET — Fetch standard clinical assessment forms */
+    assessmentForms: "/master/assessments/forms",
   },
 } as const;

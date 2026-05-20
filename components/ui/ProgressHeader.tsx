@@ -1,6 +1,6 @@
-import { DimensionValue, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
-import { Feather } from "@expo/vector-icons";
 import { moderateScale, normalize, wp } from "@/utils/responsive";
+import { Feather } from "@expo/vector-icons";
+import { DimensionValue, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
 
 interface ProgressHeaderProps {
   /**
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: moderateScale(24),
-    paddingTop: Platform.OS === "android" ? moderateScale(56) : moderateScale(16),
+    paddingTop: Platform.OS === "android" ? moderateScale(36) : moderateScale(16),
     paddingBottom: moderateScale(24),
     width: "100%",
   },
