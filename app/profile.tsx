@@ -1,4 +1,5 @@
 import { AppHeader } from "@/components/ui/AppHeader";
+import { UserInitialsAvatar } from "@/components/ui/UserInitialsAvatar";
 import { ENDPOINTS } from "@/constants/endpoints";
 import {
   PAST_THERAPY_SESSIONS,
@@ -15,7 +16,8 @@ import { AuthService } from "@/utils/auth";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter, useFocusEffect } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -125,105 +127,110 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      {/* Header */}
-      <AppHeader
-        leftIcon="arrow-left"
-        title={user?.full_name || "Profile"}
-        rightContent={
-          <TouchableOpacity onPress={handleLogout}>
-            <MaterialCommunityIcons name="logout-variant" size={normalize(24)} color="#000" />
-          </TouchableOpacity>
-        }
-      />
+    <LinearGradient colors={["#FFFFFF", "#E2F4FF"]} style={styles.container}>
+      <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
+        {/* Header */}
+        <AppHeader
+          leftIcon="arrow-left"
+          title={user?.full_name || "Profile"}
+          rightContent={
+            <TouchableOpacity onPress={handleLogout}>
+              <MaterialCommunityIcons name="logout-variant" size={normalize(24)} color="#000" />
+            </TouchableOpacity>
+          }
+        />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Therapy Info - Now distinct from the image card */}
-        <View style={styles.therapyInfo}>
-          <Text style={styles.sessionsText}>24 Human Therapy Sessions</Text>
-          <Text style={styles.therapySubtext}>Getting Started with Therapy</Text>
-        </View>
-
-        {/* Profile Image Card */}
-        <View style={styles.imageCard}>
-          <Image
-            source={
-              imageUri
-                ? { uri: imageUri }
-                : user?.profile_photo
-                  ? { uri: user.profile_photo }
-                  : require("@/assets/images/therapist.png")
-            }
-            style={styles.profileImage}
-          />
-          {isUploading && (
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#3C61DD" />
-            </View>
-          )}
-        </View>
-
-        <TouchableOpacity onPress={handlePickImage} style={styles.changePhotoButton}>
-          <Text style={styles.changePhotoText}>Change Profile Photo</Text>
-        </TouchableOpacity>
-
-        {/* Personality Results */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>PERSONALITY RESULTS</Text>
-          <View style={styles.card}>
-            {personalityResults.map((result, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.cardItem,
-                  index === personalityResults.length - 1 && styles.noBorder,
-                ]}
-              >
-                <Text style={styles.cardItemText}>{result}</Text>
-              </View>
-            ))}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* Therapy Info - Now distinct from the image card */}
+          <View style={styles.therapyInfo}>
+            <Text style={styles.sessionsText}>24 Human Therapy Sessions</Text>
+            <Text style={styles.therapySubtext}>Getting Started with Therapy</Text>
           </View>
-          <TouchableOpacity
-            style={[styles.linkButton, isLoadingStatus && { opacity: 0.5 }]}
-            onPress={() => router.push("/personality-test")}
-            disabled={isLoadingStatus}
-          >
-            <Text style={styles.linkText}>
-              {isLoadingStatus
-                ? "Checking Status..."
-                : assessmentStatus.phq9Submitted && assessmentStatus.gad7Submitted
-                  ? "Retake Personality Test"
-                  : "Take Personality Test"}
-            </Text>
-          </TouchableOpacity>
-        </View>
 
-        {/* Saved Payment Methods */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>SAVED PAYMENT METHODS</Text>
-          <View style={styles.card}>
-            {paymentMethods.map((method, index) => (
-              <View
-                key={method.id}
-                style={[styles.paymentItem, index === paymentMethods.length - 1 && styles.noBorder]}
-              >
-                <View>
-                  <Text style={styles.paymentType}>{method.type}</Text>
-                  <Text style={styles.paymentDetails}>Ends in ****-{method.last4}</Text>
+          {/* Profile Image Card */}
+          <View style={styles.imageCard}>
+            {imageUri || user?.profile_photo ? (
+              <Image
+                source={{ uri: imageUri || user?.profile_photo }}
+                style={styles.profileImage}
+              />
+            ) : (
+              <UserInitialsAvatar name={user?.full_name || "User"} />
+            )}
+            {isUploading && (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="large" color="#3C61DD" />
+              </View>
+            )}
+          </View>
+
+          <TouchableOpacity onPress={handlePickImage} style={styles.changePhotoButton}>
+            <Text style={styles.linkText}>Change Profile Photo</Text>
+          </TouchableOpacity>
+
+          {/* Personality Results */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>PERSONALITY RESULTS</Text>
+            <View style={styles.card}>
+              {personalityResults.map((result, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.cardItem,
+                    index === personalityResults.length - 1 && styles.noBorder,
+                  ]}
+                >
+                  <Text style={styles.cardItemText}>{result}</Text>
                 </View>
-                <TouchableOpacity>
-                  <Feather name="trash-2" size={normalize(22)} color="#464646" />
-                </TouchableOpacity>
-              </View>
-            ))}
+              ))}
+            </View>
+            <TouchableOpacity
+              style={[styles.linkButton, isLoadingStatus && { opacity: 0.5 }]}
+              onPress={() => router.push("/personality-test")}
+              disabled={isLoadingStatus}
+            >
+              <Text style={styles.linkText}>
+                {isLoadingStatus
+                  ? "Checking Status..."
+                  : assessmentStatus.phq9Submitted && assessmentStatus.gad7Submitted
+                    ? "Retake Personality Test"
+                    : "Take Personality Test"}
+              </Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.addPaymentButton}>
-            <Text style={styles.addPaymentText}>+ Add Payment Method</Text>
-          </TouchableOpacity>
-        </View>
 
-        {/* Past Therapy Sessions */}
-        <View style={styles.section}>
+          {/* Saved Payment Methods */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>SAVED PAYMENT METHODS</Text>
+            <View style={styles.card}>
+              {paymentMethods.map((method, index) => (
+                <View
+                  key={method.id}
+                  style={[
+                    styles.paymentItem,
+                    index === paymentMethods.length - 1 && styles.noBorder,
+                  ]}
+                >
+                  <View>
+                    <Text style={styles.paymentType}>{method.type}</Text>
+                    <Text style={styles.paymentDetails}>Ends in ****-{method.last4}</Text>
+                  </View>
+                  <TouchableOpacity>
+                    <Feather name="trash-2" size={normalize(22)} color="#464646" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+            <TouchableOpacity style={styles.addPaymentButton}>
+              <Text style={styles.linkText}>+ Add Payment Method</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Past Therapy Sessions */}
+          {/* <View style={styles.section}>
           <Text style={styles.sectionTitle}>PAST THERAPY SESSIONS</Text>
           <View style={styles.card}>
             {pastSessions.map((session, index) => (
@@ -242,18 +249,18 @@ export default function ProfileScreen() {
             ))}
           </View>
           <TouchableOpacity style={styles.linkButton}>
-            <Text style={styles.seeMoreText}>see more</Text>
+            <Text style={styles.seeMoreText}>See more</Text>
           </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </View> */}
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f9ff",
   },
   scrollContent: {
     paddingHorizontal: moderateScale(24),
@@ -296,7 +303,7 @@ const styles = StyleSheet.create({
   changePhotoButton: {
     alignSelf: "flex-end",
     marginBottom: hp(2.5),
-    marginTop: hp(0.5),
+    marginTop: hp(1.5),
   },
   changePhotoText: {
     fontFamily: Typography.fonts.medium,
@@ -317,8 +324,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontFamily: Typography.fonts.medium,
-    fontSize: normalize(13),
-    color: "#464646",
+    fontSize: normalize(14),
+    color: "#2E2E2E",
     marginBottom: hp(1.5),
     letterSpacing: 0.5,
   },
@@ -346,7 +353,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
   },
   linkText: {
-    fontFamily: Typography.fonts.medium,
+    fontFamily: Typography.fonts.bold,
     fontSize: normalize(14),
     color: "#3C61DD",
     textAlign: "right",
@@ -373,7 +380,7 @@ const styles = StyleSheet.create({
   },
   addPaymentButton: {
     alignSelf: "flex-end",
-    marginTop: hp(-0.5),
+    // marginTop: hp(-0.5),
   },
   addPaymentText: {
     fontFamily: Typography.fonts.medium,
@@ -408,8 +415,8 @@ const styles = StyleSheet.create({
     color: "#8E8E8E",
   },
   seeMoreText: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(13),
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(14),
     color: "#3C61DD",
     textAlign: "right",
   },

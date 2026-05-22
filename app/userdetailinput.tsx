@@ -84,10 +84,15 @@ export default function GenderScreen() {
 
     // Re-assemble formatted text
     let formatted = dayPart;
-    if (cleaned.length > 2) {
+    if (cleaned.length === 2 && text.length > dob.length) {
+      formatted = `${dayPart}/`;
+    } else if (cleaned.length > 2) {
       formatted = `${dayPart}/${monthPart}`;
     }
-    if (cleaned.length > 4) {
+    
+    if (cleaned.length === 4 && text.length > dob.length) {
+      formatted = `${dayPart}/${monthPart}/`;
+    } else if (cleaned.length > 4) {
       formatted = `${dayPart}/${monthPart}/${yearPart}`;
     }
 
@@ -95,16 +100,16 @@ export default function GenderScreen() {
     formatted = formatted.slice(0, 10);
 
     // If fully entered (10 characters), cap to latest valid date (today) if in the future
-    if (formatted.length === 10) {
-      const [day, month, year] = formatted.split("/").map(Number);
-      const typedDate = new Date(year, month - 1, day);
-      if (typedDate > today) {
-        const dd = String(today.getDate()).padStart(2, "0");
-        const mm = String(today.getMonth() + 1).padStart(2, "0");
-        const yyyy = today.getFullYear();
-        formatted = `${dd}/${mm}/${yyyy}`;
-      }
-    }
+    // if (formatted.length === 10) {
+    //   const [day, month, year] = formatted.split("/").map(Number);
+    //   const typedDate = new Date(year, month - 1, day);
+    //   if (typedDate > today) {
+    //     const dd = String(today.getDate()).padStart(2, "0");
+    //     const mm = String(today.getMonth() + 1).padStart(2, "0");
+    //     const yyyy = today.getFullYear();
+    //     formatted = `${dd}/${mm}/${yyyy}`;
+    //   }
+    // }
 
     setDob(formatted);
   };
@@ -302,6 +307,9 @@ export default function GenderScreen() {
                   maxLength={10}
                   // rightIcon={<Feather name="calendar" size={normalize(20)} color="#8A8A8E" />}
                 />
+                {dob.length === 10 && !is18Plus(dob) && (
+                  <Text style={styles.warningText}>You must be 18 years or older.</Text>
+                )}
               </View>
 
               <View style={[styles.inputWrapper, { zIndex: 5 }]}>
@@ -435,5 +443,12 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(16),
     color: "#333333",
+  },
+  warningText: {
+    fontFamily: Typography.fonts.regular,
+    fontSize: normalize(12),
+    color: "#FF3B30",
+    marginTop: moderateScale(4),
+    marginLeft: moderateScale(4),
   },
 });

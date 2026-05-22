@@ -9,9 +9,9 @@ export const AssessmentFooter = () => {
       <View style={styles.whoDivider} />
       <Text style={styles.whoFooterText}>
         Assessment questions are based on standardized clinical scales (PHQ-9 and GAD-7) as
-        recommended by the{"\n"}
-        <Text style={styles.whoHighlight}>WORLD HEALTH ORGANIZATION</Text>
+        recommended by the
       </Text>
+      <Text style={styles.whoHighlight}>WORLD HEALTH ORGANIZATION</Text>
     </View>
   );
 };
@@ -26,18 +26,20 @@ const styles = StyleSheet.create({
     height: normalize(1),
     backgroundColor: "rgba(60, 97, 221, 0.15)",
     marginBottom: hp(2),
+    // gap: normalize(2),
   },
   whoFooterText: {
     fontFamily: Typography.fonts.regular,
-    fontSize: normalize(11),
+    fontSize: normalize(12),
     color: "#8E8E8E",
     textAlign: "center",
-    lineHeight: normalize(18),
+    lineHeight: normalize(16),
     opacity: 0.8,
   },
   whoHighlight: {
     fontFamily: Typography.fonts.medium,
     color: "#3C61DD",
-    fontSize: normalize(10),
+    fontSize: normalize(12),
+    marginTop: hp(0.5),
   },
 });
