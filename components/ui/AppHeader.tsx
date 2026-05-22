@@ -1,4 +1,5 @@
 import { Typography } from "@/constants/Typography";
+import { UserInitialsAvatar } from "./UserInitialsAvatar";
 import { useAppSelector } from "@/store/hooks";
 import { moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
@@ -111,14 +112,14 @@ export const AppHeader = ({
         ) : showAvatar ? (
           <TouchableOpacity onPress={handleAvatarPress}>
             <View style={styles.avatarContainer}>
-              <Image
-                source={
-                  user?.profile_photo
-                    ? { uri: user.profile_photo }
-                    : require("@/assets/images/avatar.png")
-                }
-                style={styles.avatar}
-              />
+              {user?.profile_photo ? (
+                <Image
+                  source={{ uri: user.profile_photo }}
+                  style={styles.avatar}
+                />
+              ) : (
+                <UserInitialsAvatar name={user?.full_name || "User"} textSize={normalize(16)} />
+              )}
             </View>
           </TouchableOpacity>
         ) : (

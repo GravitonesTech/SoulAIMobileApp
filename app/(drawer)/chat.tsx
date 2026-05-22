@@ -265,7 +265,8 @@ export default function ChatScreen() {
               </View>
             ) : messages.length === 0 ? (
               <View style={styles.emptyStateContainer}>
-                <Text style={styles.emptyStateText}>No messages yet. Send a message to start!</Text>
+                <Text style={styles.emptyStateText}>No messages yet.</Text>
+                <Text style={styles.emptyStateText}>Send a message to start!</Text>
               </View>
             ) : (
               messages.map((m, index) => (

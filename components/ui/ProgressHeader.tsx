@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   topNavContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: moderateScale(24),
+    paddingHorizontal: moderateScale(20),
     paddingTop: Platform.OS === "android" ? moderateScale(36) : moderateScale(16),
     paddingBottom: moderateScale(24),
     width: "100%",
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   },
   progressTrack: {
     flex: 1,
-    height: normalize(4),
+    height: normalize(6),
     backgroundColor: "rgba(60, 97, 221, 0.1)",
     borderRadius: normalize(2),
     overflow: "hidden",
@@ -57,5 +57,6 @@ const styles = StyleSheet.create({
   progressFill: {
     height: "100%",
     backgroundColor: "#3C61DD",
+    borderRadius: normalize(10),
   },
 });

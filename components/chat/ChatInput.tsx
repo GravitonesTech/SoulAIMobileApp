@@ -43,12 +43,12 @@ export const ChatInput = ({
           style={styles.iconButton}
           activeOpacity={0.7}
           onPress={onSend}
-          disabled={disabled}
+          disabled={disabled || value.trim().length === 0}
         >
           <Ionicons
             name="paper-plane-outline"
             size={normalize(26)}
-            color={disabled ? "#A0A0A0" : "#1C1C1E"}
+            color={disabled || value.trim().length === 0 ? "#1C1C1E" : "#3C61DD"}
           />
         </TouchableOpacity>
       </View>
