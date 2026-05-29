@@ -89,7 +89,7 @@ export default function GenderScreen() {
     } else if (cleaned.length > 2) {
       formatted = `${dayPart}/${monthPart}`;
     }
-    
+
     if (cleaned.length === 4 && text.length > dob.length) {
       formatted = `${dayPart}/${monthPart}/`;
     } else if (cleaned.length > 4) {

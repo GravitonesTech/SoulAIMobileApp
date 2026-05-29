@@ -1,5 +1,5 @@
 import { Typography } from "@/constants/Typography";
-import { UserInitialsAvatar } from "./UserInitialsAvatar";
+import { UserAvatar } from "./UserAvatar";
 import { useAppSelector } from "@/store/hooks";
 import { moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
@@ -12,6 +12,7 @@ interface AppHeaderProps {
   onLeftPress?: () => void;
   title?: string;
   titleColor?: string;
+  iconColor?: string;
   showBadge?: boolean;
   showAvatar?: boolean;
   onAvatarPress?: () => void;
@@ -25,6 +26,7 @@ export const AppHeader = ({
   onLeftPress,
   title,
   titleColor = "#000",
+  iconColor = "#333",
   showBadge = false,
   showAvatar = true,
   onAvatarPress,
@@ -40,11 +42,7 @@ export const AppHeader = ({
     if (onLeftPress) {
       onLeftPress();
     } else if (leftIcon === "arrow-left") {
-      // if (navigation.canGoBack()) {
       navigation.goBack();
-      // } else {
-      // router.replace("/chatstarter");
-      // }
     } else if (leftIcon === "menu") {
       try {
         (navigation as any).openDrawer();
@@ -69,7 +67,7 @@ export const AppHeader = ({
         style={styles.iconButton}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <Feather name={leftIcon} size={normalize(26)} color="#333" />
+        <Feather name={leftIcon} size={normalize(26)} color={iconColor} />
       </TouchableOpacity>
 
       <View style={styles.middleContainer}>
@@ -111,16 +109,7 @@ export const AppHeader = ({
           <View style={styles.rightContentContainer}>{rightContent}</View>
         ) : showAvatar ? (
           <TouchableOpacity onPress={handleAvatarPress}>
-            <View style={styles.avatarContainer}>
-              {user?.profile_photo ? (
-                <Image
-                  source={{ uri: user.profile_photo }}
-                  style={styles.avatar}
-                />
-              ) : (
-                <UserInitialsAvatar name={user?.full_name || "User"} textSize={normalize(16)} />
-              )}
-            </View>
+            <UserAvatar size={normalize(38)} />
           </TouchableOpacity>
         ) : (
           <View style={styles.iconButton} />
@@ -201,16 +190,5 @@ const styles = StyleSheet.create({
     width: moderateScale(40),
     alignItems: "flex-end",
     justifyContent: "center",
-  },
-  avatarContainer: {
-    width: moderateScale(38),
-    height: moderateScale(38),
-    borderRadius: normalize(19),
-    backgroundColor: "#D1E5FF",
-    overflow: "hidden",
-  },
-  avatar: {
-    width: "100%",
-    height: "100%",
   },
 });

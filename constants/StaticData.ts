@@ -81,7 +81,13 @@ export const MORE_OPTIONS_ITEMS = [
     color: "#333",
     route: "/conversations",
   },
-  { id: "sound", label: "Sound Healing", icon: "volume-2", color: "#333", route: "/coming-soon" },
+  {
+    id: "sound",
+    label: "Sound Healing",
+    icon: "volume-2",
+    color: "#333",
+    route: "/sound-healing-flow",
+  },
   {
     id: "breathing",
     label: "Breathing Exercise",
@@ -220,4 +226,142 @@ export const USER_AVATAR_COLORS = [
   "#FF8C00", // Dark Orange
   "#00BFFF", // Deep Sky Blue
   "#32CD32", // Lime Green
+];
+
+export const SOUND_HEALING_CATEGORIES = [
+  {
+    title: "FEATURED",
+    items: [
+      {
+        id: "1",
+        title: "One Minute Reset",
+        subtitle: "Meditation • John Doe",
+        image:
+          "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=300&q=80",
+      },
+      {
+        id: "2",
+        title: "Alpha Waves",
+        subtitle: "Deep Relaxation • Soul AI",
+        image:
+          "https://images.unsplash.com/photo-1515405295579-ba7b45403062?auto=format&fit=crop&w=300&q=80",
+      },
+      {
+        id: "3",
+        title: "Mindfulness",
+        subtitle: "Meditation • Jane Doe",
+        image:
+          "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=300&q=80",
+      },
+    ],
+  },
+  {
+    title: "BILATERAL STIMULATION",
+    items: [
+      {
+        id: "4",
+        title: "Calming Anxiety",
+        subtitle: "Meditation • Jane Doe",
+        image:
+          "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=300&q=80",
+      },
+      {
+        id: "5",
+        title: "Mindfulness Beginners",
+        subtitle: "Mindfulness • Jeff Doe",
+        image:
+          "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=300&q=80",
+      },
+    ],
+  },
+  {
+    title: "FOCUS & FLOW",
+    items: [
+      {
+        id: "6",
+        title: "Bilateral Stimulation",
+        subtitle: "Reset • Soul AI",
+        image:
+          "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?auto=format&fit=crop&w=300&q=80",
+      },
+      {
+        id: "7",
+        title: "Guided Breathing",
+        subtitle: "Exercise • John Doe",
+        image:
+          "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=300&q=80",
+      },
+    ],
+  },
+  {
+    title: "UPLIFT",
+    items: [
+      {
+        id: "8",
+        title: "Calming Anxiety",
+        subtitle: "Meditation • Jane Doe",
+        image:
+          "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=300&q=80",
+      },
+      {
+        id: "9",
+        title: "Mindfulness Beginners",
+        subtitle: "Mindfulness • Jeff Doe",
+        image:
+          "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=300&q=80",
+      },
+    ],
+  },
+];
+
+export const SOUND_CATEGORY_ITEMS = [
+  {
+    id: "1",
+    title: "One Minute Reset",
+    subtitle: "Meditation • John Doe",
+    image:
+      "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "2",
+    title: "Alpha Waves",
+    subtitle: "Deep Relaxation • Soul AI",
+    image:
+      "https://images.unsplash.com/photo-1515405295579-ba7b45403062?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "4",
+    title: "Calming Anxiety",
+    subtitle: "Meditation • Jane Doe",
+    image:
+      "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "5",
+    title: "Mindfulness Beginners",
+    subtitle: "Mindfulness • Jeff Doe",
+    image:
+      "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "6",
+    title: "Bilateral Stimulation",
+    subtitle: "Reset • Soul AI",
+    image:
+      "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "7",
+    title: "Guided Breathing",
+    subtitle: "Exercise • John Doe",
+    image:
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "8",
+    title: "Rain in Leaves",
+    subtitle: "Soundscape",
+    image:
+      "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?auto=format&fit=crop&w=400&q=80",
+  },
 ];
