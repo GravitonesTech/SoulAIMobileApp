@@ -1,17 +1,57 @@
 import { AppHeader } from "@/components/ui/AppHeader";
-import { SOUND_CATEGORY_ITEMS } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
 import { moderateScale, normalize } from "@/utils/responsive";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useLocalSearchParams, useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { apiClient } from "@/utils/api";
+import { ENDPOINTS } from "@/constants/endpoints";
+
+type Sound = {
+  id: number;
+  short_name: string;
+  description: string;
+  image: string;
+  sound: string;
+  category_id: number;
+};
 
 export default function SoundCategoryScreen() {
-  const { title } = useLocalSearchParams();
+  const { title, id } = useLocalSearchParams();
   const router = useRouter();
   const categoryTitle = title || "FOCUS & FLOW";
+  const categoryId = id ? Number(id) : null;
+
+  const [sounds, setSounds] = useState<Sound[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchSounds = async () => {
+        if (!categoryId) {
+          setLoading(false);
+          return;
+        }
+        try {
+          setLoading(true);
+          const res = await apiClient.get(ENDPOINTS.master.categorySounds(categoryId));
+          if (res.success && res.data) {
+            setSounds(res.data);
+          } else {
+            setSounds([]);
+          }
+        } catch (error) {
+          console.error("Error fetching category sounds:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchSounds();
+    }, [categoryId])
+  );
 
   return (
     <LinearGradient
@@ -32,24 +72,43 @@ export default function SoundCategoryScreen() {
               <Text style={styles.sectionTitle}>{categoryTitle}</Text>
             </View>
 
-            <View style={styles.gridContainer}>
-              {SOUND_CATEGORY_ITEMS.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.card}
-                  activeOpacity={0.9}
-                  onPress={() => router.push("/sound-healing-flow/now-playing")}
-                >
-                  <Image source={{ uri: item.image }} style={styles.cardImage} />
-                  <Text style={styles.cardTitle} numberOfLines={1}>
-                    {item.title}
-                  </Text>
-                  <Text style={styles.cardSubtitle} numberOfLines={1}>
-                    {item.subtitle}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {loading ? (
+              <View style={styles.centerContainer}>
+                <ActivityIndicator size="large" color="#007AFF" />
+              </View>
+            ) : sounds.length === 0 ? (
+              <View style={styles.centerContainer}>
+                <Text style={styles.nothingFoundText}>No sounds available</Text>
+              </View>
+            ) : (
+              <View style={styles.gridContainer}>
+                {sounds.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.card}
+                    activeOpacity={0.9}
+                    onPress={() => router.push({
+                      pathname: "/sound-healing-flow/now-playing",
+                      params: { 
+                         id: item.id, 
+                         url: item.sound, 
+                         title: item.short_name, 
+                         artist: categoryTitle, 
+                         image: item.image 
+                      }
+                    })}
+                  >
+                    <Image source={{ uri: item.image }} style={styles.cardImage} />
+                    <Text style={styles.cardTitle} numberOfLines={1}>
+                      {item.short_name}
+                    </Text>
+                    <Text style={styles.cardSubtitle} numberOfLines={1}>
+                      {item.description}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </ScrollView>
         </View>
       </SafeAreaView>
@@ -107,6 +166,17 @@ const styles = StyleSheet.create({
   cardSubtitle: {
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(12),
+    color: "#8E8E8E",
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: moderateScale(40),
+  },
+  nothingFoundText: {
+    fontFamily: Typography.fonts.medium,
+    fontSize: normalize(16),
     color: "#8E8E8E",
   },
 });
