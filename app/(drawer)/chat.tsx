@@ -23,11 +23,20 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+type RecommendedSound = {
+  id: number;
+  sound: string;
+  short_name: string;
+  description: string;
+  image: string;
+};
+
 type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   text: string;
   shouldAnimate?: boolean;
+  recommendedSound?: RecommendedSound | null;
 };
 
 export default function ChatScreen() {
@@ -73,12 +82,16 @@ export default function ChatScreen() {
             item.responses?.openai_response ||
             item.responses?.groq_response;
 
-          if (responseText) {
+          const recommendedSound =
+            item.recommended_sound || item.responses?.recommended_sound || null;
+
+          if (responseText || recommendedSound) {
             mappedMessages.push({
               id: `hist-a-${index}`,
               role: "assistant",
-              text: responseText,
+              text: responseText || "",
               shouldAnimate: false,
+              recommendedSound: recommendedSound,
             });
           }
         });
@@ -173,11 +186,13 @@ export default function ChatScreen() {
 
       if (response.success && response.data) {
         const aiResponse = response.data.response;
+        const recommendedSound = response.data.recommended_sound || null;
         const assistantMessage: ChatMessage = {
           id: `m-${Date.now()}-a`,
           role: "assistant",
-          text: aiResponse,
+          text: aiResponse || "",
           shouldAnimate: true,
+          recommendedSound: recommendedSound,
         };
         setIsAnimating(true);
         setMessages((prev) => [...prev, assistantMessage]);
@@ -275,6 +290,7 @@ export default function ChatScreen() {
                   role={m.role}
                   text={m.text}
                   shouldAnimate={m.shouldAnimate}
+                  recommendedSound={m.recommendedSound}
                   onAnimationComplete={
                     index === messages.length - 1 ? () => setIsAnimating(false) : undefined
                   }
