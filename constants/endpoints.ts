@@ -57,6 +57,8 @@ export const ENDPOINTS = {
     assessmentForms: "/master/assessments/forms",
     /** GET — Fetch sound categories */
     soundCategories: "/master/sound-categories",
+    /** GET — Fetch sound subcategories */
+    soundSubcategories: "/master/sound-subcategories",
     /** GET — Fetch sounds for a specific category */
     categorySounds: (id: number | string) => `/master/sound-categories/${id}/sounds`,
   },

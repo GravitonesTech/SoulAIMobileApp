@@ -1,24 +1,115 @@
 import { AppHeader } from "@/components/ui/AppHeader";
+import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { apiClient } from "@/utils/api";
 import { moderateScale, normalize, wp } from "@/utils/responsive";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
+import * as FileSystem from "expo-file-system/legacy";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
+
+const getSubcategoryName = (
+  subcategoryId: number | string | null | undefined,
+  subcategories: any[],
+) => {
+  if (!subcategoryId) return "";
+  const sub = subcategories.find((s) => String(s.id) === String(subcategoryId));
+  return sub ? (sub.name || "").trim() : "";
+};
 
 export default function NowPlayingScreen() {
-  const navigation = useNavigation();
-  const { title, artist, image, url } = useLocalSearchParams();
+  const router = useRouter();
+  const { title, artist, image, url, id, categoryId, artist_name, subcategory_id } =
+    useLocalSearchParams();
 
-  const displayTitle = title ? String(title) : "Unknown Title";
-  const displayArtist = artist ? `by ${String(artist)}` : "Unknown Artist";
+  const [sounds, setSounds] = useState<any[]>([]);
+  const [subcategories, setSubcategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchSubcategoriesAndSounds = async () => {
+      try {
+        const subRes = await apiClient.get(ENDPOINTS.master.soundSubcategories);
+        if (subRes.success && subRes.data) {
+          setSubcategories(subRes.data);
+        }
+      } catch (error) {
+        console.error("Error fetching subcategories:", error);
+      }
+
+      if (!categoryId) return;
+      try {
+        const res = await apiClient.get(ENDPOINTS.master.categorySounds(Number(categoryId)));
+        if (res.success && res.data) {
+          setSounds(res.data);
+        }
+      } catch (error) {
+        console.error("Error fetching category sounds:", error);
+      }
+    };
+    fetchSubcategoriesAndSounds();
+  }, [categoryId]);
+
+  const handleNext = () => {
+    if (!sounds.length) return;
+    const currentIndex = sounds.findIndex((s) => String(s.id) === String(id));
+    if (currentIndex !== -1 && currentIndex < sounds.length - 1) {
+      const nextTrack = sounds[currentIndex + 1];
+      router.setParams({
+        id: String(nextTrack.id),
+        url: nextTrack.sound,
+        title: nextTrack.short_name,
+        image: nextTrack.image,
+        artist: nextTrack.artist_name || artist,
+        artist_name: nextTrack.artist_name || "",
+        subcategory_id: nextTrack.subcategory_id ? String(nextTrack.subcategory_id) : "",
+      });
+    }
+  };
+
+  const handlePrev = () => {
+    if (!sounds.length) return;
+    const currentIndex = sounds.findIndex((s) => String(s.id) === String(id));
+    if (currentIndex > 0) {
+      const prevTrack = sounds[currentIndex - 1];
+      router.setParams({
+        id: String(prevTrack.id),
+        url: prevTrack.sound,
+        title: prevTrack.short_name,
+        image: prevTrack.image,
+        artist: prevTrack.artist_name || artist,
+        artist_name: prevTrack.artist_name || "",
+        subcategory_id: prevTrack.subcategory_id ? String(prevTrack.subcategory_id) : "",
+      });
+    }
+  };
+
+  const currentTrack = sounds.find((s) => String(s.id) === String(id));
+  const displayTitle = title ? String(title) : currentTrack?.short_name || "Unknown Title";
+  const displayArtistName = currentTrack?.artist_name || (artist_name ? String(artist_name) : "");
+  const subId = currentTrack?.subcategory_id || (subcategory_id ? Number(subcategory_id) : null);
+  const subName = getSubcategoryName(subId, subcategories);
+  const displaySubtitle =
+    subName && displayArtistName
+      ? `${subName} by ${displayArtistName}`
+      : subName || (displayArtistName ? `by ${displayArtistName}` : "Soul AI");
   const displayImage = image
     ? String(image)
-    : "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?auto=format&fit=crop&w=800&q=80";
+    : currentTrack?.image ||
+      "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?auto=format&fit=crop&w=800&q=80";
 
   const player = useAudioPlayer(url ? String(url) : null);
   const status = useAudioPlayerStatus(player);
@@ -34,6 +125,86 @@ export default function NowPlayingScreen() {
       player.pause();
     } else {
       player.play();
+    }
+  };
+
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (!url) {
+      Toast.show({ type: "error", text1: "Error", text2: "No audio URL available." });
+      return;
+    }
+    try {
+      setIsDownloading(true);
+      const safeTitle = displayTitle.replace(/[^a-zA-Z0-9]/g, "_");
+      const fileName = `${safeTitle}.mp3`;
+
+      const localUri = FileSystem.cacheDirectory + fileName;
+      const downloadRes = await FileSystem.downloadAsync(String(url), localUri);
+
+      if (downloadRes.status !== 200) {
+        throw new Error("Download failed");
+      }
+
+      if (Platform.OS === "android") {
+        const permissions =
+          await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+        if (permissions.granted) {
+          try {
+            const base64 = await FileSystem.readAsStringAsync(localUri, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            const newFileUri = await FileSystem.StorageAccessFramework.createFileAsync(
+              permissions.directoryUri,
+              fileName,
+              "audio/mpeg",
+            );
+            await FileSystem.writeAsStringAsync(newFileUri, base64, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+
+            Toast.show({
+              type: "success",
+              text1: "Success",
+              text2: "Audio downloaded successfully!",
+            });
+          } catch (e) {
+            console.error(e);
+            Toast.show({
+              type: "error",
+              text1: "Error",
+              text2: "Failed to save to the selected folder.",
+            });
+          }
+        } else {
+          Toast.show({
+            type: "error",
+            text1: "Permission Denied",
+            text2: "Cannot save file without permission.",
+          });
+        }
+      } else {
+        const soulAiDir = FileSystem.documentDirectory + "SoulAI/";
+        const dirInfo = await FileSystem.getInfoAsync(soulAiDir);
+        if (!dirInfo.exists) {
+          await FileSystem.makeDirectoryAsync(soulAiDir, { intermediates: true });
+        }
+
+        const iosUri = soulAiDir + fileName;
+        await FileSystem.moveAsync({ from: localUri, to: iosUri });
+
+        Toast.show({ type: "success", text1: "Success", text2: "Audio saved to Files -> SoulAI" });
+      }
+    } catch (error) {
+      console.error(error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Something went wrong while downloading.",
+      });
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -56,6 +227,10 @@ export default function NowPlayingScreen() {
 
   const currentDisplayValue = isSeeking ? seekValue : status.currentTime;
   const progressPercent = status.duration > 0 ? (currentDisplayValue / status.duration) * 100 : 0;
+
+  const currentIndex = sounds.findIndex((s) => String(s.id) === String(id));
+  const hasPrev = sounds.length > 0 && currentIndex > 0;
+  const hasNext = sounds.length > 0 && currentIndex !== -1 && currentIndex < sounds.length - 1;
 
   return (
     <LinearGradient
@@ -83,7 +258,7 @@ export default function NowPlayingScreen() {
             {/* Title and Subtitle */}
             <View style={styles.infoContainer}>
               <Text style={styles.title}>{displayTitle}</Text>
-              <Text style={styles.subtitle}>{displayArtist}</Text>
+              <Text style={styles.subtitle}>{displaySubtitle}</Text>
             </View>
 
             {/* Slider */}
@@ -125,9 +300,13 @@ export default function NowPlayingScreen() {
             {/* Controls */}
             <View style={styles.controlsContainer}>
               <TouchableOpacity>
-                <Feather name="shuffle" size={normalize(20)} color="#E0E0E0" />
+                <MaterialCommunityIcons name="dolby" size={normalize(24)} color="#E0E0E0" />
               </TouchableOpacity>
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={handlePrev}
+                disabled={!hasPrev}
+                style={{ opacity: hasPrev ? 1 : 0.4 }}
+              >
                 <Feather name="skip-back" size={normalize(28)} color="#FFF" />
               </TouchableOpacity>
               <TouchableOpacity
@@ -142,11 +321,19 @@ export default function NowPlayingScreen() {
                   style={!player.playing ? { marginLeft: normalize(4) } : {}}
                 />
               </TouchableOpacity>
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleNext}
+                disabled={!hasNext}
+                style={{ opacity: hasNext ? 1 : 0.4 }}
+              >
                 <Feather name="skip-forward" size={normalize(28)} color="#FFF" />
               </TouchableOpacity>
-              <TouchableOpacity>
-                <Feather name="download" size={normalize(20)} color="#E0E0E0" />
+              <TouchableOpacity onPress={handleDownload} disabled={isDownloading}>
+                {isDownloading ? (
+                  <ActivityIndicator size="small" color="#E0E0E0" />
+                ) : (
+                  <Feather name="download" size={normalize(20)} color="#E0E0E0" />
+                )}
               </TouchableOpacity>
             </View>
           </View>

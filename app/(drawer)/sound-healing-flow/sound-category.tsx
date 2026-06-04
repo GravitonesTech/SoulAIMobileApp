@@ -1,13 +1,31 @@
 import { AppHeader } from "@/components/ui/AppHeader";
-import { Typography } from "@/constants/Typography";
-import { moderateScale, normalize } from "@/utils/responsive";
-import { useLocalSearchParams, useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import { apiClient } from "@/utils/api";
 import { ENDPOINTS } from "@/constants/endpoints";
+import { Typography } from "@/constants/Typography";
+import { apiClient } from "@/utils/api";
+import { moderateScale, normalize } from "@/utils/responsive";
+import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+const getSubcategoryName = (
+  subcategoryId: number | string | null | undefined,
+  subcategories: any[],
+) => {
+  if (!subcategoryId) return "";
+  const sub = subcategories.find((s) => String(s.id) === String(subcategoryId));
+  return sub ? (sub.name || "").trim() : "";
+};
 
 type Sound = {
   id: number;
@@ -16,6 +34,8 @@ type Sound = {
   image: string;
   sound: string;
   category_id: number;
+  artist_name?: string | null;
+  subcategory_id?: number | null;
 };
 
 export default function SoundCategoryScreen() {
@@ -25,33 +45,48 @@ export default function SoundCategoryScreen() {
   const categoryId = id ? Number(id) : null;
 
   const [sounds, setSounds] = useState<Sound[]>([]);
+  const [subcategories, setSubcategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      const fetchSounds = async () => {
-        if (!categoryId) {
-          setLoading(false);
-          return;
+  const fetchSounds = useCallback(
+    async (showLoadingIndicator = true) => {
+      if (!categoryId) {
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
+      try {
+        if (showLoadingIndicator) setLoading(true);
+        const subRes = await apiClient.get(ENDPOINTS.master.soundSubcategories);
+        if (subRes.success && subRes.data) {
+          setSubcategories(subRes.data);
         }
-        try {
-          setLoading(true);
-          const res = await apiClient.get(ENDPOINTS.master.categorySounds(categoryId));
-          if (res.success && res.data) {
-            setSounds(res.data);
-          } else {
-            setSounds([]);
-          }
-        } catch (error) {
-          console.error("Error fetching category sounds:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
 
-      fetchSounds();
-    }, [categoryId])
+        const res = await apiClient.get(ENDPOINTS.master.categorySounds(categoryId));
+        if (res.success && res.data) {
+          setSounds(res.data);
+        } else {
+          setSounds([]);
+        }
+      } catch (error) {
+        console.error("Error fetching category sounds:", error);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [categoryId],
   );
+
+  useEffect(() => {
+    fetchSounds(true);
+  }, [fetchSounds]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchSounds(false);
+  }, [fetchSounds]);
 
   return (
     <LinearGradient
@@ -66,10 +101,14 @@ export default function SoundCategoryScreen() {
 
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[
+              styles.scrollContent,
+              (loading || sounds.length === 0) && { flexGrow: 1 },
+            ]}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           >
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{categoryTitle}</Text>
+              <Text style={styles.sectionTitle}>{String(categoryTitle).toUpperCase()}</Text>
             </View>
 
             {loading ? (
@@ -87,23 +126,32 @@ export default function SoundCategoryScreen() {
                     key={item.id}
                     style={styles.card}
                     activeOpacity={0.9}
-                    onPress={() => router.push({
-                      pathname: "/sound-healing-flow/now-playing",
-                      params: { 
-                         id: item.id, 
-                         url: item.sound, 
-                         title: item.short_name, 
-                         artist: categoryTitle, 
-                         image: item.image 
-                      }
-                    })}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/sound-healing-flow/now-playing",
+                        params: {
+                          id: item.id,
+                          url: item.sound,
+                          title: item.short_name,
+                          artist: item.artist_name || categoryTitle,
+                          image: item.image,
+                          categoryId: categoryId,
+                          artist_name: item.artist_name || "",
+                          subcategory_id: item.subcategory_id ? String(item.subcategory_id) : "",
+                        },
+                      })
+                    }
                   >
                     <Image source={{ uri: item.image }} style={styles.cardImage} />
                     <Text style={styles.cardTitle} numberOfLines={1}>
                       {item.short_name}
                     </Text>
                     <Text style={styles.cardSubtitle} numberOfLines={1}>
-                      {item.description}
+                      {(() => {
+                        const sub = getSubcategoryName(item.subcategory_id, subcategories);
+                        const artist = item.artist_name;
+                        return sub && artist ? `${sub} • ${artist}` : sub || artist || "";
+                      })()}
                     </Text>
                   </TouchableOpacity>
                 ))}

@@ -1,14 +1,32 @@
 import { AppHeader } from "@/components/ui/AppHeader";
+import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { apiClient } from "@/utils/api";
 import { moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
-import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import { apiClient } from "@/utils/api";
-import { ENDPOINTS } from "@/constants/endpoints";
+import { useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+const getSubcategoryName = (
+  subcategoryId: number | string | null | undefined,
+  subcategories: any[],
+) => {
+  if (!subcategoryId) return "";
+  const sub = subcategories.find((s) => String(s.id) === String(subcategoryId));
+  return sub ? (sub.name || "").trim() : "";
+};
 
 type Sound = {
   id: number;
@@ -17,6 +35,8 @@ type Sound = {
   image: string;
   sound: string;
   category_id: number;
+  artist_name?: string | null;
+  subcategory_id?: number | null;
 };
 
 type Category = {
@@ -31,46 +51,59 @@ type Category = {
 export default function SoundHealingScreen() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      const fetchData = async () => {
-        try {
-          setLoading(true);
-          const catRes = await apiClient.get(ENDPOINTS.master.soundCategories);
-          if (catRes.success && catRes.data) {
-            const fetchedCats: Category[] = catRes.data;
-            
-            if (fetchedCats.length > 0) {
-              const catsWithSounds = await Promise.all(
-                fetchedCats.map(async (cat) => {
-                  const soundRes = await apiClient.get(ENDPOINTS.master.categorySounds(cat.id));
-                  let sounds: Sound[] = [];
-                  if (soundRes.success && soundRes.data) {
-                    sounds = soundRes.data;
-                  }
-                  return { ...cat, sounds };
-                })
-              );
-              
-              // Filter out categories that have no sounds
-              const categoriesWithMusic = catsWithSounds.filter(cat => cat.sounds && cat.sounds.length > 0);
-              setCategories(categoriesWithMusic);
-            } else {
-              setCategories([]);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching sound categories:", error);
-        } finally {
-          setLoading(false);
+  const fetchData = useCallback(async (showLoadingIndicator = true) => {
+    try {
+      if (showLoadingIndicator) setLoading(true);
+      const subRes = await apiClient.get(ENDPOINTS.master.soundSubcategories);
+      if (subRes.success && subRes.data) {
+        setSubcategories(subRes.data);
+      }
+
+      const catRes = await apiClient.get(ENDPOINTS.master.soundCategories);
+      if (catRes.success && catRes.data) {
+        const fetchedCats: Category[] = catRes.data;
+
+        if (fetchedCats.length > 0) {
+          const catsWithSounds = await Promise.all(
+            fetchedCats.map(async (cat) => {
+              const soundRes = await apiClient.get(ENDPOINTS.master.categorySounds(cat.id));
+              let sounds: Sound[] = [];
+              if (soundRes.success && soundRes.data) {
+                sounds = soundRes.data;
+              }
+              return { ...cat, sounds };
+            }),
+          );
+
+          // Filter out categories that have no sounds
+          const categoriesWithMusic = catsWithSounds.filter(
+            (cat) => cat.sounds && cat.sounds.length > 0,
+          );
+          setCategories(categoriesWithMusic);
+        } else {
+          setCategories([]);
         }
-      };
+      }
+    } catch (error) {
+      console.error("Error fetching sound categories:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
-      fetchData();
-    }, [])
-  );
+  useEffect(() => {
+    fetchData(true);
+  }, [fetchData]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchData(false);
+  }, [fetchData]);
 
   return (
     <LinearGradient
@@ -83,20 +116,24 @@ export default function SoundHealingScreen() {
         <View style={styles.flex1}>
           <AppHeader title="Sound Healing" leftIcon="arrow-left" />
 
-          {loading ? (
-            <View style={styles.centerContainer}>
-              <ActivityIndicator size="large" color="#007AFF" />
-            </View>
-          ) : categories.length === 0 ? (
-            <View style={styles.centerContainer}>
-              <Text style={styles.nothingFoundText}>Nothing found</Text>
-            </View>
-          ) : (
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
-            >
-              {categories.map((category) => (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[
+              styles.scrollContent,
+              (loading || categories.length === 0) && { flexGrow: 1, justifyContent: "center" },
+            ]}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          >
+            {loading ? (
+              <View style={styles.centerContainer}>
+                <ActivityIndicator size="large" color="#007AFF" />
+              </View>
+            ) : categories.length === 0 ? (
+              <View style={styles.centerContainer}>
+                <Text style={styles.nothingFoundText}>Nothing found</Text>
+              </View>
+            ) : (
+              categories.map((category) => (
                 <View key={category.id} style={styles.sectionContainer}>
                   <TouchableOpacity
                     style={styles.sectionHeader}
@@ -108,7 +145,7 @@ export default function SoundHealingScreen() {
                       })
                     }
                   >
-                    <Text style={styles.sectionTitle}>{category.name}</Text>
+                    <Text style={styles.sectionTitle}>{(category.name || "").toUpperCase()}</Text>
                     <Feather name="arrow-right" size={normalize(18)} color="#A0A0A0" />
                   </TouchableOpacity>
 
@@ -123,23 +160,37 @@ export default function SoundHealingScreen() {
                           key={sound.id}
                           style={styles.card}
                           activeOpacity={0.9}
-                          onPress={() => router.push({
-                            pathname: "/sound-healing-flow/now-playing",
-                            params: { 
-                               id: sound.id, 
-                               url: sound.sound, 
-                               title: sound.short_name, 
-                               artist: category.name, 
-                               image: sound.image || category.image 
-                            }
-                          })}
+                          onPress={() =>
+                            router.push({
+                              pathname: "/sound-healing-flow/now-playing",
+                              params: {
+                                id: sound.id,
+                                url: sound.sound,
+                                title: sound.short_name,
+                                artist: sound.artist_name || category.name,
+                                image: sound.image || category.image,
+                                categoryId: category.id,
+                                artist_name: sound.artist_name || "",
+                                subcategory_id: sound.subcategory_id
+                                  ? String(sound.subcategory_id)
+                                  : "",
+                              },
+                            })
+                          }
                         >
-                          <Image source={{ uri: sound.image || category.image }} style={styles.cardImage} />
+                          <Image
+                            source={{ uri: sound.image || category.image }}
+                            style={styles.cardImage}
+                          />
                           <Text style={styles.cardTitle} numberOfLines={1}>
                             {sound.short_name}
                           </Text>
                           <Text style={styles.cardSubtitle} numberOfLines={1}>
-                            {sound.description}
+                            {(() => {
+                              const sub = getSubcategoryName(sound.subcategory_id, subcategories);
+                              const artist = sound.artist_name;
+                              return sub && artist ? `${sub} • ${artist}` : sub || artist || "";
+                            })()}
                           </Text>
                         </TouchableOpacity>
                       ))
@@ -148,9 +199,9 @@ export default function SoundHealingScreen() {
                     )}
                   </ScrollView>
                 </View>
-              ))}
-            </ScrollView>
-          )}
+              ))
+            )}
+          </ScrollView>
         </View>
       </SafeAreaView>
     </LinearGradient>
