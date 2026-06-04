@@ -3,12 +3,22 @@ import { normalize } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { ChatAudioPlayer } from "./ChatAudioPlayer";
+
+type RecommendedSound = {
+  id: number;
+  sound: string;
+  short_name: string;
+  description: string;
+  image: string;
+};
 
 interface ChatBubbleProps {
   role: "user" | "assistant";
   text: string;
   onAnimationComplete?: () => void;
   shouldAnimate?: boolean;
+  recommendedSound?: RecommendedSound | null;
 }
 
 export const ChatBubble = ({
@@ -16,6 +26,7 @@ export const ChatBubble = ({
   text,
   onAnimationComplete,
   shouldAnimate = true,
+  recommendedSound,
 }: ChatBubbleProps) => {
   const isUser = role === "user";
   const [displayedText, setDisplayedText] = useState(isUser || !shouldAnimate ? text : "");
@@ -57,8 +68,19 @@ export const ChatBubble = ({
 
   return (
     <View style={[styles.bubbleRow, styles.bubbleRowLeft]}>
-      <View style={[styles.bubble, styles.assistantBubble]}>
-        <Text style={[styles.bubbleText, styles.assistantText]}>{displayedText}</Text>
+      <View style={{ flexDirection: "column", maxWidth: "86%" }}>
+        {text ? (
+          <View
+            style={[
+              styles.bubble,
+              styles.assistantBubble,
+              { maxWidth: "100%", marginBottom: recommendedSound ? normalize(8) : 0 },
+            ]}
+          >
+            <Text style={[styles.bubbleText, styles.assistantText]}>{displayedText}</Text>
+          </View>
+        ) : null}
+        {recommendedSound && <ChatAudioPlayer sound={recommendedSound} />}
       </View>
     </View>
   );

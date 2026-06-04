@@ -81,7 +81,13 @@ export const MORE_OPTIONS_ITEMS = [
     color: "#333",
     route: "/conversations",
   },
-  { id: "sound", label: "Sound Healing", icon: "volume-2", color: "#333", route: "/coming-soon" },
+  {
+    id: "sound",
+    label: "Sound Healing",
+    icon: "volume-2",
+    color: "#333",
+    route: "/sound-healing-flow",
+  },
   {
     id: "breathing",
     label: "Breathing Exercise",
