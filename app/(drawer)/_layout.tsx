@@ -100,6 +100,7 @@ export default function DrawerLayout() {
       <Drawer.Screen name="breathing" options={{ title: "Breathing Exercise" }} />
       {/* <Drawer.Screen name="demo" options={{ title: "Interactive Demo" }} /> */}
       <Drawer.Screen name="sound-healing-flow" options={{ title: "Sound Healing" }} />
+      {/* <Drawer.Screen name="downloads" options={{ title: "Downloads" }} /> */}
     </Drawer>
   );
 }
