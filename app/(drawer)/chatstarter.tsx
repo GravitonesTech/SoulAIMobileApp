@@ -129,7 +129,7 @@ export default function ChatStarterScreen() {
             initialMessage: prompt,
             sessionId: response.data.session_id,
             // selected_therapy: therapyType,
-            // showNewChatButton: "true",
+            showNewChatButton: "true",
           },
         } as any);
       }
