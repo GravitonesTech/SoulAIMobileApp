@@ -1,6 +1,7 @@
 import { Typography } from "@/constants/Typography";
 import { normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import React, { useEffect } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -64,12 +65,22 @@ const safeSeekTo = (player: any, seconds: number) => {
 export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
   const player = useAudioPlayer(sound.sound);
   const status = useAudioPlayerStatus(player);
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     if (player && sound.sound) {
       safePlay(player);
     }
   }, [player, sound.sound]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      safePause(player);
+      if (activePlayer === player) {
+        activePlayer = null;
+      }
+    }
+  }, [isFocused, player]);
 
   useEffect(() => {
     // When this player starts playing, pause any other active player
