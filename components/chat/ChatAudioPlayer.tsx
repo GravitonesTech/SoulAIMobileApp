@@ -1,6 +1,7 @@
 import { Typography } from "@/constants/Typography";
 import { normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import React, { useEffect } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -19,25 +20,73 @@ interface ChatAudioPlayerProps {
 
 let activePlayer: any = null;
 
+const safePlay = (player: any) => {
+  if (!player) return;
+  try {
+    const res = player.play();
+    if (res && typeof res.catch === "function") {
+      res.catch((e: any) => {
+        console.warn("[ChatAudioPlayer] Failed to play player:", e);
+      });
+    }
+  } catch (e) {
+    console.warn("[ChatAudioPlayer] Failed to play player synchronously:", e);
+  }
+};
+
+const safePause = (player: any) => {
+  if (!player) return;
+  try {
+    const res = player.pause();
+    if (res && typeof res.catch === "function") {
+      res.catch((e: any) => {
+        console.warn("[ChatAudioPlayer] Failed to pause player:", e);
+      });
+    }
+  } catch (e) {
+    console.warn("[ChatAudioPlayer] Failed to pause player synchronously:", e);
+  }
+};
+
+const safeSeekTo = (player: any, seconds: number) => {
+  if (!player) return;
+  try {
+    const res = player.seekTo(seconds);
+    if (res && typeof res.catch === "function") {
+      res.catch((e: any) => {
+        console.warn("[ChatAudioPlayer] Failed to seek player:", e);
+      });
+    }
+  } catch (e) {
+    console.warn("[ChatAudioPlayer] Failed to seek player synchronously:", e);
+  }
+};
+
 export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
   const player = useAudioPlayer(sound.sound);
   const status = useAudioPlayerStatus(player);
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     if (player && sound.sound) {
-      player.play();
+      safePlay(player);
     }
   }, [player, sound.sound]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      safePause(player);
+      if (activePlayer === player) {
+        activePlayer = null;
+      }
+    }
+  }, [isFocused, player]);
 
   useEffect(() => {
     // When this player starts playing, pause any other active player
     if (status.playing) {
       if (activePlayer && activePlayer !== player) {
-        try {
-          activePlayer.pause();
-        } catch (e) {
-          console.warn("[ChatAudioPlayer] Failed to pause previous player:", e);
-        }
+        safePause(activePlayer);
       }
       activePlayer = player;
     }
@@ -47,7 +96,7 @@ export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
     // Cleanup on unmount: pause player and clear activePlayer reference if it is this player
     return () => {
       if (player) {
-        player.pause();
+        safePause(player);
       }
       if (activePlayer === player) {
         activePlayer = null;
@@ -58,19 +107,19 @@ export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
   useEffect(() => {
     // If playback finishes, reset position to start so it can be replayed
     if (!status.playing && status.duration > 0 && status.currentTime >= status.duration - 0.5) {
-      player.seekTo(0);
+      safeSeekTo(player, 0);
     }
   }, [status.playing, status.currentTime, status.duration, player]);
 
   const handlePlayPause = () => {
     if (status.playing) {
-      player.pause();
+      safePause(player);
     } else {
       // Safeguard: seek to 0 if near the end of track
       if (status.duration > 0 && status.currentTime >= status.duration - 0.5) {
-        player.seekTo(0);
+        safeSeekTo(player, 0);
       }
-      player.play();
+      safePlay(player);
     }
   };
 
