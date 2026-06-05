@@ -13,7 +13,6 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -147,55 +146,20 @@ export default function NowPlayingScreen() {
         throw new Error("Download failed");
       }
 
-      if (Platform.OS === "android") {
-        const permissions =
-          await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
-        if (permissions.granted) {
-          try {
-            const base64 = await FileSystem.readAsStringAsync(localUri, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-            const newFileUri = await FileSystem.StorageAccessFramework.createFileAsync(
-              permissions.directoryUri,
-              fileName,
-              "audio/mpeg",
-            );
-            await FileSystem.writeAsStringAsync(newFileUri, base64, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-
-            Toast.show({
-              type: "success",
-              text1: "Success",
-              text2: "Audio downloaded successfully!",
-            });
-          } catch (e) {
-            console.error(e);
-            Toast.show({
-              type: "error",
-              text1: "Error",
-              text2: "Failed to save to the selected folder.",
-            });
-          }
-        } else {
-          Toast.show({
-            type: "error",
-            text1: "Permission Denied",
-            text2: "Cannot save file without permission.",
-          });
-        }
-      } else {
-        const soulAiDir = FileSystem.documentDirectory + "SoulAI/";
-        const dirInfo = await FileSystem.getInfoAsync(soulAiDir);
-        if (!dirInfo.exists) {
-          await FileSystem.makeDirectoryAsync(soulAiDir, { intermediates: true });
-        }
-
-        const iosUri = soulAiDir + fileName;
-        await FileSystem.moveAsync({ from: localUri, to: iosUri });
-
-        Toast.show({ type: "success", text1: "Success", text2: "Audio saved to Files -> SoulAI" });
+      const soulAiDir = FileSystem.documentDirectory + "SoulAI/";
+      const dirInfo = await FileSystem.getInfoAsync(soulAiDir);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(soulAiDir, { intermediates: true });
       }
+
+      const destUri = soulAiDir + fileName;
+      await FileSystem.moveAsync({ from: localUri, to: destUri });
+
+      Toast.show({
+        type: "success",
+        text1: "Success",
+        text2: "Audio saved to internal storage!",
+      });
     } catch (error) {
       console.error(error);
       Toast.show({

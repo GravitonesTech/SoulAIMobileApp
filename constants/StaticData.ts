@@ -88,6 +88,13 @@ export const MORE_OPTIONS_ITEMS = [
     color: "#333",
     route: "/sound-healing-flow",
   },
+  // {
+  //   id: "downloads",
+  //   label: "Downloads",
+  //   icon: "download",
+  //   color: "#333",
+  //   route: "/downloads",
+  // },
   {
     id: "breathing",
     label: "Breathing Exercise",
