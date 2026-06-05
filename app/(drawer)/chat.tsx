@@ -41,13 +41,14 @@ type ChatMessage = {
 
 export default function ChatScreen() {
   const router = useRouter();
-  const { therapy, initialMessage, sessionId, selected_therapy, showNewChatButton } =
+  const { therapy, initialMessage, sessionId, selected_therapy, showNewChatButton, greetingMessage } =
     useLocalSearchParams<{
       therapy?: string;
       initialMessage?: string;
       sessionId?: string;
       selected_therapy?: string;
       showNewChatButton?: string;
+      greetingMessage?: string;
     }>();
 
   const [inputText, setInputText] = useState("");
@@ -63,9 +64,19 @@ export default function ChatScreen() {
     setIsHistoryLoading(true);
     try {
       const response = await apiClient.get<any>(ENDPOINTS.chat.sessionDetails(id));
-      if (response.success && response.data?.history) {
-        const history = response.data.history;
+      if (response.success && response.data) {
+        const history = response.data.history || [];
         const mappedMessages: ChatMessage[] = [];
+
+        const greeting = response.data.greeting_message || response.data.greeting;
+        if (greeting) {
+          mappedMessages.push({
+            id: "greeting",
+            role: "assistant",
+            text: greeting,
+            shouldAnimate: false,
+          });
+        }
 
         history.forEach((item: any, index: number) => {
           if (item.user_input) {
@@ -107,13 +118,23 @@ export default function ChatScreen() {
   };
 
   useEffect(() => {
-    // Reset all messages and state when the session/path changes to prevent
-    // stale animation or loading flags from locking the chat inputs.
     setMessages([]);
     setIsLoading(false);
     setIsHistoryLoading(false);
     setIsAnimating(false);
     setInputText("");
+
+    if (greetingMessage) {
+      setMessages([
+        {
+          id: "greeting",
+          role: "assistant",
+          text: String(greetingMessage),
+          shouldAnimate: true,
+        },
+      ]);
+      setIsAnimating(true);
+    }
 
     if (sessionId && isNaN(Number(sessionId)) && !initialMessage) {
       fetchChatHistory(sessionId);
@@ -125,7 +146,7 @@ export default function ChatScreen() {
         abortControllerRef.current = null;
       }
     };
-  }, [sessionId, therapy, selected_therapy]);
+  }, [sessionId, therapy, selected_therapy, greetingMessage]);
 
   useEffect(() => {
     if (initialMessage) {
@@ -230,9 +251,12 @@ export default function ChatScreen() {
         title: "New Chat",
       });
       if (response.success && response.data?.session_id) {
-        router.setParams({ sessionId: response.data.session_id });
+        router.setParams({
+          sessionId: response.data.session_id,
+          greetingMessage: response.data.greeting_message || "",
+        });
       } else {
-        router.setParams({ sessionId: Date.now().toString() });
+        router.setParams({ sessionId: Date.now().toString(), greetingMessage: "" });
       }
     } catch (error) {
       console.error("[Chat] Error creating new session:", error);

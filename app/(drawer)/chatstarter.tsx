@@ -75,6 +75,7 @@ export default function ChatStarterScreen() {
             therapy: item.name,
             sessionId: response.data.session_id,
             selected_therapy: item.short_name,
+            greetingMessage: response.data.greeting_message || "",
           },
         } as any);
       }
