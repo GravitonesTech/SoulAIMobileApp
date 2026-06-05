@@ -5,19 +5,13 @@ import { apiClient } from "@/utils/api";
 import { moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
+import { useIsFocused } from "@react-navigation/native";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import * as FileSystem from "expo-file-system/legacy";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -32,7 +26,7 @@ const getSubcategoryName = (
 
 export default function NowPlayingScreen() {
   const router = useRouter();
-  const { title, artist, image, url, id, categoryId, artist_name, subcategory_id } =
+  const { title, artist, image, url, id, categoryId, artist_name, subcategory_id, startTime } =
     useLocalSearchParams();
 
   const [sounds, setSounds] = useState<any[]>([]);
@@ -113,11 +107,34 @@ export default function NowPlayingScreen() {
   const player = useAudioPlayer(url ? String(url) : null);
   const status = useAudioPlayerStatus(player);
 
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (!isFocused && player) {
+      try {
+        player.pause();
+      } catch (e) {
+        console.warn("Failed to pause player on blur:", e);
+      }
+    }
+  }, [isFocused, player]);
+
+  const hasSoughtRef = useRef(false);
+
   useEffect(() => {
     if (player && url) {
+      if (startTime && !hasSoughtRef.current) {
+        hasSoughtRef.current = true;
+        console.log("[NowPlaying] Received startTime parameter:", startTime);
+        try {
+          player.seekTo(Number(startTime));
+        } catch (e) {
+          console.warn("Failed to seek to startTime:", e);
+        }
+      }
       player.play();
     }
-  }, [player, url]);
+  }, [player, url, startTime]);
 
   const handlePlayPause = () => {
     if (player.playing) {
