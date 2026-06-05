@@ -114,6 +114,32 @@ export default function ChatStarterScreen() {
     }
   };
 
+  const handlePromptPress = async (prompt: string) => {
+    if (isStartingSession) return;
+    setIsStartingSession(true);
+    try {
+      const response = await apiClient.post(ENDPOINTS.chat.sessions, {
+        title: prompt,
+      });
+      if (response.success && response.data?.session_id) {
+        // const therapyType = response.data.therapy_type;
+        router.push({
+          pathname: "/chat",
+          params: {
+            initialMessage: prompt,
+            sessionId: response.data.session_id,
+            // selected_therapy: therapyType,
+            showNewChatButton: "true",
+          },
+        } as any);
+      }
+    } catch (e) {
+      console.error("[ChatStarter] Error starting session with prompt:", e);
+    } finally {
+      setIsStartingSession(false);
+    }
+  };
+
   return (
     <LinearGradient
       colors={["#FFFFFF", "#E2F4FF"]}
@@ -177,6 +203,7 @@ export default function ChatStarterScreen() {
                     key={index}
                     style={styles.promptCard}
                     activeOpacity={0.7}
+                    onPress={() => handlePromptPress(prompt)}
                     disabled={isStartingSession}
                   >
                     <View style={styles.dot} />
