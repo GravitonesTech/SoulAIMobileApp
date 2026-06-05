@@ -37,7 +37,7 @@ export default function DownloadsScreen() {
   useFocusEffect(
     useCallback(() => {
       loadDownloadedTracks();
-    }, [])
+    }, []),
   );
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function DownloadsScreen() {
       setIsLoading(true);
       const soulAiDir = FileSystem.documentDirectory + "SoulAI/";
       const dirInfo = await FileSystem.getInfoAsync(soulAiDir);
-      
+
       if (!dirInfo.exists) {
         setTracks([]);
         return;
@@ -108,7 +108,7 @@ export default function DownloadsScreen() {
       }
 
       await FileSystem.deleteAsync(track.uri);
-      
+
       Toast.show({
         type: "success",
         text1: "Deleted",
@@ -142,8 +142,7 @@ export default function DownloadsScreen() {
   const totalSize = tracks.reduce((acc, curr) => acc + curr.size, 0);
   const currentPlayingTrack = tracks.find((t) => t.uri === playingUri);
 
-  const progressPercent =
-    status.duration > 0 ? (status.currentTime / status.duration) * 100 : 0;
+  const progressPercent = status.duration > 0 ? (status.currentTime / status.duration) * 100 : 0;
 
   return (
     <View style={styles.container}>
@@ -161,7 +160,8 @@ export default function DownloadsScreen() {
             </View>
             <Text style={styles.emptyTitle}>No downloads yet</Text>
             <Text style={styles.emptySubtitle}>
-              Audio files you download from the Sound Healing section will appear here for offline playback.
+              Audio files you download from the Sound Healing section will appear here for offline
+              playback.
             </Text>
             <TouchableOpacity
               style={styles.exploreButton}

@@ -3,6 +3,7 @@ import { normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
+import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -63,6 +64,7 @@ const safeSeekTo = (player: any, seconds: number) => {
 };
 
 export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
+  const router = useRouter();
   const player = useAudioPlayer(sound.sound);
   const status = useAudioPlayerStatus(player);
   const isFocused = useIsFocused();
@@ -123,21 +125,44 @@ export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
     }
   };
 
+  const handleCardPress = () => {
+    if (player) {
+      safePause(player);
+    }
+    router.push({
+      pathname: "/sound-healing-flow/now-playing",
+      params: {
+        id: String(sound.id),
+        title: sound.short_name,
+        artist_name: "Soul AI",
+        image: sound.image,
+        url: sound.sound,
+        startTime: String(status.currentTime),
+      },
+    });
+  };
+
   const progressPercent = status.duration > 0 ? (status.currentTime / status.duration) * 100 : 0;
 
   return (
     <View style={styles.card}>
       <View style={styles.mainRow}>
-        <View style={styles.textContainer}>
-          <Text style={styles.label}>Listen to</Text>
-          <Text style={styles.title} numberOfLines={1}>
-            {(sound.short_name || "").trim()}
-          </Text>
-          <Text style={styles.description} numberOfLines={1}>
-            {(sound.description || "").trim()}
-          </Text>
-        </View>
-        <Image source={{ uri: sound.image }} style={styles.artwork} />
+        <TouchableOpacity
+          style={styles.contentPressable}
+          activeOpacity={0.7}
+          onPress={handleCardPress}
+        >
+          <View style={styles.textContainer}>
+            <Text style={styles.label}>Listen to</Text>
+            <Text style={styles.title} numberOfLines={1}>
+              {(sound.short_name || "").trim()}
+            </Text>
+            <Text style={styles.description} numberOfLines={1}>
+              {(sound.description || "").trim()}
+            </Text>
+          </View>
+          <Image source={{ uri: sound.image }} style={styles.artwork} />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.playButton} onPress={handlePlayPause} activeOpacity={0.8}>
           <Feather name={status.playing ? "pause" : "play"} size={normalize(26)} color="#3C61DD" />
         </TouchableOpacity>
@@ -194,6 +219,11 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.regular,
     fontSize: normalize(11),
     color: "#7A8B9E",
+  },
+  contentPressable: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
   },
   artwork: {
     width: normalize(48),
