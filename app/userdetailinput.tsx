@@ -1,13 +1,16 @@
 import { AppButton } from "@/components/ui/AppButton";
 import { AppInput } from "@/components/ui/AppInput";
+import { ProgressHeader } from "@/components/ui/ProgressHeader";
+import { GENDERS } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { apiClient } from "@/utils/api";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -20,27 +23,58 @@ import {
 import { ScrollView as GestureScrollView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ProgressHeader } from "@/components/ui/ProgressHeader";
-import { COUNTRIES, GENDERS } from "@/constants/StaticData";
-import { hp, moderateScale, normalize } from "@/utils/responsive";
-
 export default function GenderScreen() {
   const router = useRouter();
   const scrollRef = useRef<GestureScrollView>(null);
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
   const [countrySearch, setCountrySearch] = useState("");
+  const [selectedCountryId, setSelectedCountryId] = useState<number | null>(null);
   const [selectedGender, setSelectedGender] = useState("");
 
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
+  const [countriesList, setCountriesList] = useState<{ id: number; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      try {
+        const response = await apiClient.get(ENDPOINTS.users.metadata);
+        if (response.success && response.data?.countries) {
+          const activeCountries = response.data.countries
+            .filter((c: any) => c.is_active !== false)
+            .map((c: any) => ({ id: c.id, name: c.name }));
+          setCountriesList(activeCountries);
+        }
+      } catch (error) {
+        console.error("[GenderScreen] Failed to fetch metadata countries:", error);
+      }
+    };
+    fetchMetadata();
+  }, []);
 
   // Filter countries based on search query
   const filteredCountries = useMemo(() => {
-    if (!countrySearch) return COUNTRIES;
-    return COUNTRIES.filter((c) => c.toLowerCase().includes(countrySearch.toLowerCase()));
-  }, [countrySearch]);
+    if (!countrySearch) return countriesList;
+    return countriesList.filter((c) => c.name.toLowerCase().includes(countrySearch.toLowerCase()));
+  }, [countrySearch, countriesList]);
+
+  const handleCountryTextChange = (text: string) => {
+    setCountrySearch(text);
+    setShowCountryDropdown(true);
+    const match = countriesList.find((c) => c.name.toLowerCase() === text.trim().toLowerCase());
+    if (match) {
+      setSelectedCountryId(match.id);
+    } else {
+      setSelectedCountryId(null);
+    }
+  };
+
+  const handleCountrySelect = (item: { id: number; name: string }) => {
+    setSelectedCountryId(item.id);
+    setCountrySearch(item.name);
+  };
 
   const handleNameChange = (text: string) => {
     // Keep only alphabetic characters and spaces
@@ -170,15 +204,15 @@ export default function GenderScreen() {
       toast.error("Age Restriction", "You must be 18 years or older to use Soul AI.");
       return;
     }
-    if (!countrySearch.trim()) {
-      toast.error("Error", "Please select your country");
+    if (!selectedCountryId) {
+      toast.error("Error", "Please select a valid country from the list");
       return;
     }
 
     setIsLoading(true);
     const result = await apiClient.patch(ENDPOINTS.users.me, {
       full_name: name,
-      country: countrySearch,
+      country: selectedCountryId,
       date_of_birth: formatDobForAPI(dob),
       gender: selectedGender,
       completed_step: 1,
@@ -196,6 +230,37 @@ export default function GenderScreen() {
     }
 
     setIsLoading(false);
+  };
+
+  const renderCountryDropdown = (
+    options: { id: number; name: string }[],
+    onSelect: (item: { id: number; name: string }) => void,
+    visible: boolean,
+    onClose: () => void,
+  ) => {
+    if (!visible || options.length === 0) return null;
+    return (
+      <View style={styles.dropdownContainer}>
+        <GestureScrollView
+          style={{ maxHeight: moderateScale(250) }}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled={true}
+        >
+          {options.map((option) => (
+            <TouchableOpacity
+              key={option.id}
+              style={styles.dropdownOption}
+              onPress={() => {
+                onSelect(option);
+                onClose();
+              }}
+            >
+              <Text style={styles.dropdownOptionText}>{option.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </GestureScrollView>
+      </View>
+    );
   };
 
   const renderDropdown = (
@@ -316,10 +381,7 @@ export default function GenderScreen() {
                 <AppInput
                   placeholder="Country"
                   value={countrySearch}
-                  onChangeText={(text) => {
-                    setCountrySearch(text);
-                    setShowCountryDropdown(true);
-                  }}
+                  onChangeText={handleCountryTextChange}
                   onFocus={() => {
                     setShowCountryDropdown(true);
                     setTimeout(() => {
@@ -347,8 +409,11 @@ export default function GenderScreen() {
                     </TouchableOpacity>
                   }
                 />
-                {renderDropdown(filteredCountries, setCountrySearch, showCountryDropdown, () =>
-                  setShowCountryDropdown(false),
+                {renderCountryDropdown(
+                  filteredCountries,
+                  handleCountrySelect,
+                  showCountryDropdown,
+                  () => setShowCountryDropdown(false),
                 )}
               </View>
 

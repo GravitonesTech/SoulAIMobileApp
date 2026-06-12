@@ -1,11 +1,18 @@
 import { AppButton } from "@/components/ui/AppButton";
-import { TONE_OPTIONS } from "@/constants/StaticData";
+import { AppHeader } from "@/components/ui/AppHeader";
+import { ProgressHeader } from "@/components/ui/ProgressHeader";
+import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { updateUser } from "@/store/slices/authSlice";
+import { apiClient } from "@/utils/api";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,14 +21,69 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ProgressHeader } from "@/components/ui/ProgressHeader";
 
 export default function ResponseScreen() {
   const router = useRouter();
-  const { experience } = useLocalSearchParams<{ experience: string }>();
-  const [selectedTone, setSelectedTone] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { experience_id, from } = useLocalSearchParams<{ experience_id: string; from: string }>();
+  const user = useAppSelector((state) => state.auth.user);
+
+  const [selectedTone, setSelectedTone] = useState<{ id: number; name: string } | null>(() => {
+    if (from === "profile" && Array.isArray(user?.response_styles) && user.response_styles.length > 0) {
+      return user.response_styles[0];
+    }
+    return null;
+  });
+  const [toneOptions, setToneOptions] = useState<{ id: number; name: string }[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      try {
+        const response = await apiClient.get(ENDPOINTS.users.metadata);
+        if (response.success && response.data?.response_styles) {
+          setToneOptions(response.data.response_styles);
+        }
+      } catch (error) {
+        console.error("[ResponseScreen] Failed to fetch metadata response_styles:", error);
+      }
+    };
+    fetchMetadata();
+  }, []);
+
+  const handleNext = async () => {
+    if (!selectedTone) {
+      toast.error("Error", "Please select your preferred response tone");
+      return;
+    }
+
+    if (from === "profile") {
+      setIsLoading(true);
+      try {
+        const result = await apiClient.patch(ENDPOINTS.users.me, {
+          response_style_ids: [selectedTone.id],
+        });
+        if (result.success && result.data) {
+          dispatch(updateUser(result.data));
+          toast.success("Success", "Therapy style updated successfully!");
+          router.back();
+        } else {
+          toast.error("Update Failed", result.message || "Failed to update response style");
+        }
+      } catch (error) {
+        console.error("[ResponseScreen] Error saving response style:", error);
+        toast.error("Error", "A network error occurred. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      router.push({
+        pathname: "/support",
+        params: { experience_id, tone_id: selectedTone.id },
+      } as any);
+    }
+  };
 
   return (
     <LinearGradient
@@ -36,7 +98,16 @@ export default function ResponseScreen() {
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <ProgressHeader progress="78%" onBack={() => router.back()} />
+          {from === "profile" ? (
+            <AppHeader
+              leftIcon="arrow-left"
+              // showAvatar={false}
+              title="Therapy Style"
+              onLeftPress={() => router.back()}
+            />
+          ) : (
+            <ProgressHeader progress="78%" onBack={() => router.back()} />
+          )}
 
           <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
             {/* Header */}
@@ -47,11 +118,11 @@ export default function ResponseScreen() {
 
             {/* Tone Options */}
             <View style={styles.optionsContainer}>
-              {TONE_OPTIONS.map((tone) => {
-                const isSelected = selectedTone === tone;
+              {toneOptions.map((tone) => {
+                const isSelected = selectedTone?.id === tone.id;
                 return (
                   <TouchableOpacity
-                    key={tone}
+                    key={tone.id}
                     activeOpacity={0.7}
                     onPress={() => setSelectedTone(tone)}
                     style={[styles.languageOption, isSelected && styles.languageOptionSelected]}
@@ -62,7 +133,7 @@ export default function ResponseScreen() {
                         isSelected ? { color: "#8A8A8E" } : { color: "#8A8A8E" },
                       ]}
                     >
-                      {tone}
+                      {tone.name}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -70,18 +141,11 @@ export default function ResponseScreen() {
             </View>
 
             <AppButton
-              title="Next"
+              title={isLoading ? "" : from === "profile" ? "Save" : "Next"}
               style={styles.nextButton}
-              onPress={() => {
-                if (!selectedTone) {
-                  toast.error("Error", "Please select your preferred response tone");
-                  return;
-                }
-                router.push({
-                  pathname: "/support",
-                  params: { experience, tone: selectedTone },
-                } as any);
-              }}
+              onPress={handleNext}
+              disabled={isLoading}
+              icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
             />
           </ScrollView>
         </KeyboardAvoidingView>
