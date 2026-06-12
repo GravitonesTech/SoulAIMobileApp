@@ -138,6 +138,7 @@ export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
         image: sound.image,
         url: sound.sound,
         startTime: String(status.currentTime),
+        from: "chat",
       },
     });
   };
