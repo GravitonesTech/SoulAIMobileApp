@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "soulAi",
+    "name": "Soul AI",
     "slug": "soulai",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -37,7 +37,6 @@
           "image": "./assets/images/4.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#3BC0EB",
           "dark": {
             "backgroundColor": "#000000"
           }
