@@ -2,7 +2,6 @@ import { AppButton } from "@/components/ui/AppButton";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { ENDPOINTS } from "@/constants/endpoints";
-import { TONE_OPTIONS } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateUser } from "@/store/slices/authSlice";
@@ -11,7 +10,7 @@ import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -27,23 +26,31 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function ResponseScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { experience, from } = useLocalSearchParams<{ experience: string; from: string }>();
+  const { experience_id, from } = useLocalSearchParams<{ experience_id: string; from: string }>();
   const user = useAppSelector((state) => state.auth.user);
 
-  const userResponseStyle =
-    Array.isArray(user?.response_styles) && user.response_styles.length > 0
-      ? user.response_styles[0].name
-      : typeof user?.response_styles === "string"
-        ? user.response_styles
-        : null;
-
-  const [selectedTone, setSelectedTone] = useState<string | null>(() => {
-    if (from === "profile") {
-      return userResponseStyle || null;
+  const [selectedTone, setSelectedTone] = useState<{ id: number; name: string } | null>(() => {
+    if (from === "profile" && Array.isArray(user?.response_styles) && user.response_styles.length > 0) {
+      return user.response_styles[0];
     }
     return null;
   });
+  const [toneOptions, setToneOptions] = useState<{ id: number; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      try {
+        const response = await apiClient.get(ENDPOINTS.users.metadata);
+        if (response.success && response.data?.response_styles) {
+          setToneOptions(response.data.response_styles);
+        }
+      } catch (error) {
+        console.error("[ResponseScreen] Failed to fetch metadata response_styles:", error);
+      }
+    };
+    fetchMetadata();
+  }, []);
 
   const handleNext = async () => {
     if (!selectedTone) {
@@ -55,7 +62,7 @@ export default function ResponseScreen() {
       setIsLoading(true);
       try {
         const result = await apiClient.patch(ENDPOINTS.users.me, {
-          response_styles: selectedTone,
+          response_style_ids: [selectedTone.id],
         });
         if (result.success && result.data) {
           dispatch(updateUser(result.data));
@@ -73,7 +80,7 @@ export default function ResponseScreen() {
     } else {
       router.push({
         pathname: "/support",
-        params: { experience, tone: selectedTone },
+        params: { experience_id, tone_id: selectedTone.id },
       } as any);
     }
   };
@@ -111,11 +118,11 @@ export default function ResponseScreen() {
 
             {/* Tone Options */}
             <View style={styles.optionsContainer}>
-              {TONE_OPTIONS.map((tone) => {
-                const isSelected = selectedTone === tone;
+              {toneOptions.map((tone) => {
+                const isSelected = selectedTone?.id === tone.id;
                 return (
                   <TouchableOpacity
-                    key={tone}
+                    key={tone.id}
                     activeOpacity={0.7}
                     onPress={() => setSelectedTone(tone)}
                     style={[styles.languageOption, isSelected && styles.languageOptionSelected]}
@@ -126,7 +133,7 @@ export default function ResponseScreen() {
                         isSelected ? { color: "#8A8A8E" } : { color: "#8A8A8E" },
                       ]}
                     >
-                      {tone}
+                      {tone.name}
                     </Text>
                   </TouchableOpacity>
                 );

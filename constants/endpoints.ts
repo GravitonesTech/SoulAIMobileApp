@@ -40,6 +40,8 @@ export const ENDPOINTS = {
     assessmentSubmissionsBulk: "/users/assessments/submissions/bulk",
     /** GET — Get form completion statuses */
     assessmentStatus: "/users/assessments/status",
+    /** GET — Fetch metadata */
+    metadata: "/users/metadata",
   },
 
   chat: {

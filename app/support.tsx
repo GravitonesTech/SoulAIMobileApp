@@ -1,13 +1,16 @@
 import { AppButton } from "@/components/ui/AppButton";
+import { AppHeader } from "@/components/ui/AppHeader";
+import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateUser } from "@/store/slices/authSlice";
 import { apiClient } from "@/utils/api";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -20,44 +23,54 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AppHeader } from "@/components/ui/AppHeader";
-import { ProgressHeader } from "@/components/ui/ProgressHeader";
-import { SUPPORT_OPTIONS } from "@/constants/StaticData";
-import { hp, moderateScale, normalize } from "@/utils/responsive";
-
 export default function SupportScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { experience, tone, from } = useLocalSearchParams<{
-    experience: string;
-    tone: string;
+  const { experience_id, tone_id, from } = useLocalSearchParams<{
+    experience_id: string;
+    tone_id: string;
     from: string;
   }>();
   const user = useAppSelector((state) => state.auth.user);
 
-  const userSupportTypes =
+  const userSupportTypeIds =
     Array.isArray(user?.support_types) && user.support_types.length > 0
-      ? user.support_types.map((s: any) => (s && typeof s === "object" ? s.name : s))
+      ? user.support_types.map((s: any) => s.id)
       : [];
 
-  const [selectedSupport, setSelectedSupport] = useState<string[]>(() => {
+  const [selectedSupportIds, setSelectedSupportIds] = useState<number[]>(() => {
     if (from === "profile") {
-      return userSupportTypes;
+      return userSupportTypeIds;
     }
     return [];
   });
+  const [supportOptions, setSupportOptions] = useState<{ id: number; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const toggleSupport = (option: string) => {
-    if (selectedSupport.includes(option)) {
-      setSelectedSupport(selectedSupport.filter((s) => s !== option));
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      try {
+        const response = await apiClient.get(ENDPOINTS.users.metadata);
+        if (response.success && response.data?.support_types) {
+          setSupportOptions(response.data.support_types);
+        }
+      } catch (error) {
+        console.error("[SupportScreen] Failed to fetch metadata support_types:", error);
+      }
+    };
+    fetchMetadata();
+  }, []);
+
+  const toggleSupport = (id: number) => {
+    if (selectedSupportIds.includes(id)) {
+      setSelectedSupportIds(selectedSupportIds.filter((s) => s !== id));
     } else {
-      setSelectedSupport([...selectedSupport, option]);
+      setSelectedSupportIds([...selectedSupportIds, id]);
     }
   };
 
   const handleNext = async () => {
-    if (selectedSupport.length === 0) {
+    if (selectedSupportIds.length === 0) {
       toast.error("Error", "Please select at least one area where you need support");
       return;
     }
@@ -67,7 +80,7 @@ export default function SupportScreen() {
     if (from === "profile") {
       try {
         const result = await apiClient.patch(ENDPOINTS.users.me, {
-          support_types: selectedSupport,
+          support_type_ids: selectedSupportIds,
         });
         if (result.success && result.data) {
           dispatch(updateUser(result.data));
@@ -87,9 +100,9 @@ export default function SupportScreen() {
 
     const result = await apiClient.patch(ENDPOINTS.users.me, {
       completed_step: 2,
-      experience: experience || null,
-      support_types: selectedSupport,
-      response_styles: tone || "",
+      experience_id: experience_id ? Number(experience_id) : null,
+      support_type_ids: selectedSupportIds,
+      response_style_ids: tone_id ? [Number(tone_id)] : [],
     });
 
     if (result.success) {
@@ -138,16 +151,16 @@ export default function SupportScreen() {
 
             {/* Support Options */}
             <View style={styles.optionsContainer}>
-              {SUPPORT_OPTIONS.map((option) => {
-                const isSelected = selectedSupport.includes(option);
+              {supportOptions.map((option) => {
+                const isSelected = selectedSupportIds.includes(option.id);
                 return (
                   <TouchableOpacity
-                    key={option}
+                    key={option.id}
                     activeOpacity={0.7}
-                    onPress={() => toggleSupport(option)}
+                    onPress={() => toggleSupport(option.id)}
                     style={[styles.supportOption, isSelected && styles.supportOptionSelected]}
                   >
-                    <Text style={[styles.supportText, { color: "#8A8A8E" }]}>{option}</Text>
+                    <Text style={[styles.supportText, { color: "#8A8A8E" }]}>{option.name}</Text>
                   </TouchableOpacity>
                 );
               })}

@@ -1,9 +1,13 @@
 import { AppButton } from "@/components/ui/AppButton";
+import { ProgressHeader } from "@/components/ui/ProgressHeader";
+import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { apiClient } from "@/utils/api";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -15,13 +19,24 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ProgressHeader } from "@/components/ui/ProgressHeader";
-import { EXPERIENCE_LEVELS } from "@/constants/StaticData";
-import { hp, moderateScale, normalize } from "@/utils/responsive";
-
 export default function ExperienceScreen() {
   const router = useRouter();
-  const [selectedExperience, setSelectedExperience] = useState<string | null>(null);
+  const [selectedExperience, setSelectedExperience] = useState<{ id: number; name: string } | null>(null);
+  const [experienceLevels, setExperienceLevels] = useState<{ id: number; name: string }[]>([]);
+
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      try {
+        const response = await apiClient.get(ENDPOINTS.users.metadata);
+        if (response.success && response.data?.experiences) {
+          setExperienceLevels(response.data.experiences);
+        }
+      } catch (error) {
+        console.error("[ExperienceScreen] Failed to fetch metadata experiences:", error);
+      }
+    };
+    fetchMetadata();
+  }, []);
 
   return (
     <LinearGradient
@@ -46,16 +61,16 @@ export default function ExperienceScreen() {
 
             {/* Experience Options */}
             <View style={styles.optionsContainer}>
-              {EXPERIENCE_LEVELS.map((level) => {
-                const isSelected = selectedExperience === level;
+              {experienceLevels.map((level) => {
+                const isSelected = selectedExperience?.id === level.id;
                 return (
                   <TouchableOpacity
-                    key={level}
+                    key={level.id}
                     activeOpacity={0.7}
                     onPress={() => setSelectedExperience(level)}
                     style={[styles.languageOption, isSelected && styles.languageOptionSelected]}
                   >
-                    <Text style={[styles.languageText, { color: "#8A8A8E" }]}>{level}</Text>
+                    <Text style={[styles.languageText, { color: "#8A8A8E" }]}>{level.name}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -71,7 +86,7 @@ export default function ExperienceScreen() {
                 }
                 router.push({
                   pathname: "/response",
-                  params: { experience: selectedExperience },
+                  params: { experience_id: selectedExperience.id },
                 } as any);
               }}
             />
