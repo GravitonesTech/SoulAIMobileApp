@@ -5,7 +5,7 @@ import { apiClient } from "@/utils/api";
 import { moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -50,6 +50,7 @@ type Category = {
 
 export default function SoundHealingScreen() {
   const router = useRouter();
+  const { from } = useLocalSearchParams<{ from?: string }>();
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,7 +115,17 @@ export default function SoundHealingScreen() {
     >
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right", "bottom"]}>
         <View style={styles.flex1}>
-          <AppHeader title="Sound Healing" leftIcon="arrow-left" />
+          <AppHeader
+            title="Sound Healing"
+            leftIcon="arrow-left"
+            onLeftPress={() => {
+              if (from === "chat") {
+                router.replace("/chatstarter");
+              } else {
+                router.back();
+              }
+            }}
+          />
 
           <ScrollView
             showsVerticalScrollIndicator={false}

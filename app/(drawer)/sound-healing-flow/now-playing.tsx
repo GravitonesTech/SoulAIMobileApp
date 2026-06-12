@@ -240,7 +240,10 @@ export default function NowPlayingScreen() {
             iconColor="#FFF"
             onLeftPress={() => {
               if (from === "chat") {
-                router.push("/sound-healing-flow");
+                router.replace({
+                  pathname: "/sound-healing-flow",
+                  params: { from: "chat" },
+                } as any);
               } else {
                 router.back();
               }
