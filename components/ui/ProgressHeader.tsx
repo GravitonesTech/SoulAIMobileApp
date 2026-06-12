@@ -6,30 +6,35 @@ interface ProgressHeaderProps {
   /**
    * Progress value as a percentage (e.g., "13%" or 13)
    */
-  progress: string | number;
+  progress?: string | number;
   /**
    * Callback function when back button is pressed
    */
   onBack: () => void;
+  /**
+   * Whether to hide the progress track entirely
+   */
+  hideProgress?: boolean;
 }
 
-/**
- * Standardized header with a back button and progress track for onboarding screens.
- */
-export const ProgressHeader = ({ progress, onBack }: ProgressHeaderProps) => {
+export const ProgressHeader = ({ progress, onBack, hideProgress = false }: ProgressHeaderProps) => {
   return (
     <View style={styles.topNavContainer}>
       <TouchableOpacity onPress={onBack} style={styles.backButton}>
         <Feather name="arrow-left" size={normalize(24)} color="#111111" />
       </TouchableOpacity>
-      <View style={styles.progressTrack}>
-        <View
-          style={[
-            styles.progressFill,
-            { width: (typeof progress === "number" ? `${progress}%` : progress) as DimensionValue },
-          ]}
-        />
-      </View>
+      {!hideProgress && progress && (
+        <View style={styles.progressTrack}>
+          <View
+            style={[
+              styles.progressFill,
+              {
+                width: (typeof progress === "number" ? `${progress}%` : progress) as DimensionValue,
+              },
+            ]}
+          />
+        </View>
+      )}
     </View>
   );
 };

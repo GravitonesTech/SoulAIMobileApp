@@ -1,6 +1,8 @@
 import { AppButton } from "@/components/ui/AppButton";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { updateUser } from "@/store/slices/authSlice";
 import { apiClient } from "@/utils/api";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
@@ -18,14 +20,32 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AppHeader } from "@/components/ui/AppHeader";
 import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { SUPPORT_OPTIONS } from "@/constants/StaticData";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 
 export default function SupportScreen() {
   const router = useRouter();
-  const { experience, tone } = useLocalSearchParams<{ experience: string; tone: string }>();
-  const [selectedSupport, setSelectedSupport] = useState<string[]>([]);
+  const dispatch = useAppDispatch();
+  const { experience, tone, from } = useLocalSearchParams<{
+    experience: string;
+    tone: string;
+    from: string;
+  }>();
+  const user = useAppSelector((state) => state.auth.user);
+
+  const userSupportTypes =
+    Array.isArray(user?.support_types) && user.support_types.length > 0
+      ? user.support_types.map((s: any) => (s && typeof s === "object" ? s.name : s))
+      : [];
+
+  const [selectedSupport, setSelectedSupport] = useState<string[]>(() => {
+    if (from === "profile") {
+      return userSupportTypes;
+    }
+    return [];
+  });
   const [isLoading, setIsLoading] = useState(false);
 
   const toggleSupport = (option: string) => {
@@ -43,6 +63,28 @@ export default function SupportScreen() {
     }
 
     setIsLoading(true);
+
+    if (from === "profile") {
+      try {
+        const result = await apiClient.patch(ENDPOINTS.users.me, {
+          support_types: selectedSupport,
+        });
+        if (result.success && result.data) {
+          dispatch(updateUser(result.data));
+          toast.success("Success", "Support areas updated successfully!");
+          router.back();
+        } else {
+          toast.error("Update Failed", result.message || "Failed to update support areas");
+        }
+      } catch (error) {
+        console.error("[SupportScreen] Error saving support types:", error);
+        toast.error("Error", "A network error occurred. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     const result = await apiClient.patch(ENDPOINTS.users.me, {
       completed_step: 2,
       experience: experience || null,
@@ -76,7 +118,16 @@ export default function SupportScreen() {
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <ProgressHeader progress="91%" onBack={() => router.back()} />
+          {from === "profile" ? (
+            <AppHeader
+              leftIcon="arrow-left"
+              // showAvatar={false}
+              title="Support Needed"
+              onLeftPress={() => router.back()}
+            />
+          ) : (
+            <ProgressHeader progress="91%" onBack={() => router.back()} />
+          )}
 
           <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
             {/* Header */}
@@ -103,7 +154,7 @@ export default function SupportScreen() {
             </View>
 
             <AppButton
-              title={isLoading ? "" : "Next"}
+              title={isLoading ? "" : from === "profile" ? "Save" : "Next"}
               style={styles.nextButton}
               onPress={handleNext}
               disabled={isLoading}
