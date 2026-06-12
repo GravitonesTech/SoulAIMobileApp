@@ -9,7 +9,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
+  Animated,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,105 +21,142 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AuthOptionsScreen() {
   const router = useRouter();
-  const [isCheckingToken, setIsCheckingToken] = useState(true);
+  const [showSplash, setShowSplash] = useState(true);
+  const [fadeAnim] = useState(new Animated.Value(1));
 
   useEffect(() => {
+    let checkDone = false;
+    let timerDone = false;
+    let checkedUser: any = null;
+
     const checkUserSession = async () => {
-      const { isAuthenticated, user } = await AuthService.checkAuth();
-
-      if (!isAuthenticated || !user) {
-        setIsCheckingToken(false);
-        return;
+      try {
+        const { isAuthenticated, user } = await AuthService.checkAuth();
+        if (isAuthenticated && user) {
+          checkedUser = user;
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+      } finally {
+        checkDone = true;
+        maybeHideSplash();
       }
-
-      AuthService.navigateToCorrectScreen(user);
-
-      setIsCheckingToken(false);
     };
 
-    checkUserSession();
-  }, [router]);
+    const maybeHideSplash = () => {
+      if (checkDone && timerDone) {
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowSplash(false);
+          if (checkedUser) {
+            AuthService.navigateToCorrectScreen(checkedUser);
+          }
+        });
+      }
+    };
 
-  if (isCheckingToken) {
-    return (
+    const timer = setTimeout(() => {
+      timerDone = true;
+      maybeHideSplash();
+    }, 2200);
+
+    checkUserSession();
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <View style={{ flex: 1 }}>
       <LinearGradient
         colors={[Colors.gradient.start, Colors.gradient.end]}
         start={{ x: 1, y: 0 }}
         end={{ x: 0, y: 1 }}
-        style={[styles.container, { justifyContent: "center", alignItems: "center" }]}
+        style={styles.container}
       >
-        <ActivityIndicator size="large" color="#FFFFFF" />
+        <SafeAreaView style={styles.safeArea}>
+          <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+            {/* Header (same as first screen) */}
+            <View style={styles.header}>
+              <Text style={styles.titleText}>Welcome to Soul AI</Text>
+            </View>
+
+            {/* Buttons (acts like formContainer) */}
+            <View style={styles.formContainer}>
+              <Text style={[styles.subtitleText, { marginBottom: hp(3.5) }]}>
+                Sign in to Personalize your{"\n"}Therapy AI Companion
+              </Text>
+
+              <Text style={styles.continueWithText}>Continue with</Text>
+
+              <AppButton
+                title="Phone Number"
+                variant="social"
+                icon={<Feather name="message-circle" size={normalize(20)} color="#000" />}
+                style={styles.inputMargin}
+                onPress={() => router.push("/sendotp")}
+              />
+
+              <AppButton
+                title="Email"
+                variant="social"
+                icon={<Feather name="mail" size={normalize(20)} color="#000" />}
+                style={styles.inputMargin}
+                onPress={() => router.push("/login")}
+              />
+
+              <SocialButtons />
+            </View>
+
+            {/* Divider (same position as first screen) */}
+            <View style={styles.dividerContainer}>
+              <Text style={styles.termsText}>
+                By tapping Continue or logging into an existing Soul account, you agree to our{" "}
+                <Text style={styles.linkText} onPress={() => router.push("/terms" as any)}>
+                  Terms
+                </Text>{" "}
+                and acknowledge that you have read our{" "}
+                <Text style={styles.linkText} onPress={() => router.push("/privacy-policy")}>
+                  Privacy Policy
+                </Text>
+                , which explains how to opt out of our offers and promos.
+              </Text>
+            </View>
+
+            {/* Bottom Link (same as first screen) */}
+            <View style={styles.bottomLinkContainer}>
+              <TouchableOpacity onPress={() => router.push("/signup")}>
+                <Text style={styles.bottomLinkText}>
+                  Don{"'"}t have an account? <Text style={styles.boldText}>Create one</Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       </LinearGradient>
-    );
-  }
 
-  return (
-    <LinearGradient
-      colors={[Colors.gradient.start, Colors.gradient.end]}
-      start={{ x: 1, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.container}
-    >
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-          {/* Header (same as first screen) */}
-          <View style={styles.header}>
-            <Text style={styles.titleText}>Welcome to Soul AI</Text>
-          </View>
-
-          {/* Buttons (acts like formContainer) */}
-          <View style={styles.formContainer}>
-            <Text style={[styles.subtitleText, { marginBottom: hp(3.5) }]}>
-              Sign in to Personalize your{"\n"}Therapy AI Companion
-            </Text>
-
-            <Text style={styles.continueWithText}>Continue with</Text>
-
-            <AppButton
-              title="Phone Number"
-              variant="social"
-              icon={<Feather name="message-circle" size={normalize(20)} color="#000" />}
-              style={styles.inputMargin}
-              onPress={() => router.push("/sendotp")}
-            />
-
-            <AppButton
-              title="Email"
-              variant="social"
-              icon={<Feather name="mail" size={normalize(20)} color="#000" />}
-              style={styles.inputMargin}
-              onPress={() => router.push("/login")}
-            />
-
-            <SocialButtons />
-          </View>
-
-          {/* Divider (same position as first screen) */}
-          <View style={styles.dividerContainer}>
-            <Text style={styles.termsText}>
-              By tapping Continue or logging into an existing Soul account, you agree to our{" "}
-              <Text style={styles.linkText} onPress={() => router.push("/terms" as any)}>
-                Terms
-              </Text>{" "}
-              and acknowledge that you have read our{" "}
-              <Text style={styles.linkText} onPress={() => router.push("/privacy-policy")}>
-                Privacy Policy
-              </Text>
-              , which explains how to opt out of our offers and promos.
-            </Text>
-          </View>
-
-          {/* Bottom Link (same as first screen) */}
-          <View style={styles.bottomLinkContainer}>
-            <TouchableOpacity onPress={() => router.push("/signup")}>
-              <Text style={styles.bottomLinkText}>
-                Don{"'"}t have an account? <Text style={styles.boldText}>Create one</Text>
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+      {/* Premium Custom Splash Overlay */}
+      {showSplash && (
+        <Animated.View style={[StyleSheet.absoluteFill, { opacity: fadeAnim }]}>
+          <LinearGradient
+            colors={["#3BC0EB", "#5858E8"]}
+            start={{ x: 0.1, y: 0.1 }}
+            end={{ x: 0.9, y: 0.9 }}
+            style={styles.splashContainer}
+          >
+            <View style={styles.splashContent}>
+              <Image
+                source={require("@/assets/images/4.png")}
+                style={styles.splashLogo}
+                resizeMode="contain"
+              />
+            </View>
+          </LinearGradient>
+        </Animated.View>
+      )}
+    </View>
   );
 }
 
@@ -212,5 +250,19 @@ const styles = StyleSheet.create({
 
   boldText: {
     fontFamily: Typography.fonts.bold,
+  },
+  splashContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  splashContent: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+  },
+  splashLogo: {
+    width: normalize(260),
+    height: normalize(260),
   },
 });
