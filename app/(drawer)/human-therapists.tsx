@@ -1,11 +1,16 @@
-import { TOP_THERAPISTS } from "@/constants/StaticData";
 import { AppHeader } from "@/components/ui/AppHeader";
+import { UserInitialsAvatar } from "@/components/ui/UserInitialsAvatar";
+import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
+import { toast } from "@/utils/toast";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useMemo, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -16,14 +21,150 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+interface Therapist {
+  id: number;
+  email: string;
+  full_name: string;
+  phone: string | null;
+  profile_photo: string | null;
+  license_number: string | null;
+  specialization: string[];
+  experience_years: number;
+  bio: string;
+  clinic_address: string | null;
+  is_approved: boolean;
+  average_rating: number;
+  total_reviews: number;
+  schedules: {
+    day_of_week: string;
+    time_slots: string[];
+  }[];
+}
+
+interface Appointment {
+  id: number;
+  patient_email: string;
+  patient_name: string;
+  patient_phone: string;
+  therapist_id: number;
+  appointment_date: string;
+  time_slot: string;
+  appointment_status: string;
+  notes: string | null;
+  status: boolean;
+  created_at: string;
+  therapist_name: string;
+  therapist_photo: string | null;
+  therapist_specialization: string[];
+}
+
 export default function HumanTherapistsScreen() {
+  const router = useRouter();
   const [searchText, setSearchText] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [therapists, setTherapists] = useState<Therapist[]>([]);
+  const [searchedTherapists, setSearchedTherapists] = useState<Therapist[]>([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isAppointmentsLoading, setIsAppointmentsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
-  const filteredTherapists = useMemo(() => {
-    if (!searchText.trim()) return [];
-    return TOP_THERAPISTS.filter((t) => t.name.toLowerCase().includes(searchText.toLowerCase()));
-  }, [searchText]);
+  const fetchTherapistsAndAppointments = useCallback(async () => {
+    setIsLoading(true);
+    setIsAppointmentsLoading(true);
+    setError(null);
+
+    const [therapistsRes, appointmentsRes] = await Promise.allSettled([
+      apiClient.get<Therapist[]>(ENDPOINTS.users.topRatedTherapists),
+      apiClient.get<{ upcoming: Appointment[]; past: any[] }>(ENDPOINTS.users.myAppointments),
+    ]);
+
+    if (
+      therapistsRes.status === "fulfilled" &&
+      therapistsRes.value.success &&
+      therapistsRes.value.data
+    ) {
+      setTherapists(therapistsRes.value.data);
+    } else {
+      const msg =
+        therapistsRes.status === "fulfilled" ? therapistsRes.value.message : "Network error";
+      setError(msg || "Failed to load therapists");
+    }
+    setIsLoading(false);
+
+    if (
+      appointmentsRes.status === "fulfilled" &&
+      appointmentsRes.value.success &&
+      appointmentsRes.value.data
+    ) {
+      setUpcomingAppointments(appointmentsRes.value.data.upcoming || []);
+    }
+    setIsAppointmentsLoading(false);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchTherapistsAndAppointments();
+    }, [fetchTherapistsAndAppointments]),
+  );
+
+  const performSearch = useCallback(async (query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setSearchedTherapists([]);
+      setIsSearching(false);
+      setSearchError(null);
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError(null);
+    try {
+      const response = await apiClient.get<{
+        total_count: number;
+        page: number;
+        page_size: number;
+        total_pages: number;
+        therapists: Therapist[];
+      }>(ENDPOINTS.users.getAllTherapists, {
+        params: {
+          page: 1,
+          page_size: 10,
+          search_query: trimmed,
+        },
+      });
+
+      if (response.success && response.data) {
+        setSearchedTherapists(response.data.therapists || []);
+      } else {
+        setSearchError(response.message || "Failed to search therapists");
+      }
+    } catch {
+      setSearchError("An unexpected network error occurred");
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (searchText.trim()) {
+      setIsSearching(true);
+    } else {
+      setIsSearching(false);
+      setSearchedTherapists([]);
+      setSearchError(null);
+    }
+
+    const handler = setTimeout(() => {
+      performSearch(searchText);
+    }, 400);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchText, performSearch]);
 
   const showSearchResults = searchText.length > 0;
 
@@ -46,17 +187,37 @@ export default function HumanTherapistsScreen() {
           {/* Search Bar */}
           <View style={styles.searchSection}>
             <View
-              style={[styles.searchBar, (isFocused || showSearchResults) && styles.searchBarActive]}
+              style={[
+                styles.searchBar,
+                (isFocused || showSearchResults) && styles.searchBarActive,
+                {
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: moderateScale(10),
+                  paddingHorizontal: moderateScale(15),
+                },
+              ]}
             >
+              <Feather name="search" size={normalize(18)} color="#A0A0A0" />
               <TextInput
                 placeholder="Search for a therapist"
                 placeholderTextColor="#A0A0A0"
-                style={styles.searchInput}
+                style={[styles.searchInput, { flex: 1 }]}
                 value={searchText}
                 onChangeText={setSearchText}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
+                returnKeyType="search"
+                onSubmitEditing={() => performSearch(searchText)}
               />
+              {searchText.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSearchText("")}
+                  style={{ padding: moderateScale(4) }}
+                >
+                  <Feather name="x" size={normalize(18)} color="#A0A0A0" />
+                </TouchableOpacity>
+              )}
             </View>
             <TouchableOpacity style={styles.filterButton}>
               <MaterialIcons name="filter-list" size={normalize(24)} color="#333" />
@@ -66,53 +227,150 @@ export default function HumanTherapistsScreen() {
           {showSearchResults ? (
             /* Search Results */
             <View style={styles.searchResultsContainer}>
-              {filteredTherapists.map((therapist) => (
-                <TouchableOpacity
-                  key={therapist.id}
-                  style={styles.searchResultItem}
-                  onPress={() => {
-                    setSearchText("");
-                    // navigation to therapist details could go here
-                  }}
-                >
-                  <View style={styles.searchResultLeft}>
-                    <Feather name="sun" size={normalize(20)} color="#333" />
-                    <Text style={styles.searchResultName}>{therapist.name}</Text>
-                  </View>
-                  <Feather name="arrow-right" size={normalize(18)} color="#A0A0A0" />
-                </TouchableOpacity>
-              ))}
+              {isSearching ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#3C61DD" />
+                </View>
+              ) : searchError ? (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>{searchError}</Text>
+                  <TouchableOpacity
+                    style={styles.retryButton}
+                    onPress={() => performSearch(searchText)}
+                  >
+                    <Text style={styles.retryText}>Retry</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : searchedTherapists.length === 0 ? (
+                <View style={styles.noResultContainer}>
+                  <Text style={styles.noResultTitle}>No results found</Text>
+                  <Text style={styles.noResultSubtitle}>
+                    {`We couldn't find any therapist matching "${searchText}"`}
+                  </Text>
+                </View>
+              ) : (
+                searchedTherapists.map((therapist) => (
+                  <TouchableOpacity
+                    key={therapist.id}
+                    style={styles.therapistListItem}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setSearchText("");
+                      router.push({
+                        pathname: "/therapist-details",
+                        params: {
+                          id: therapist.id.toString(),
+                          therapistJson: JSON.stringify(therapist),
+                        },
+                      } as any);
+                    }}
+                  >
+                    <View style={styles.therapistListLeft}>
+                      <View style={styles.listAvatarContainer}>
+                        {therapist.profile_photo ? (
+                          <Image source={{ uri: therapist.profile_photo }} style={styles.avatar} />
+                        ) : (
+                          <UserInitialsAvatar name={therapist.full_name} textSize={normalize(18)} />
+                        )}
+                      </View>
+                      <View style={styles.listInfo}>
+                        <Text style={styles.therapistName}>{therapist.full_name}</Text>
+                        <Text style={styles.ratingText}>
+                          {therapist.average_rating > 0
+                            ? `${therapist.average_rating.toFixed(1)} Rating`
+                            : "0.0 Rating"}
+                          {therapist.total_reviews > 0
+                            ? ` (${therapist.total_reviews} reviews)`
+                            : ""}
+                        </Text>
+                        <Text style={styles.specializationText} numberOfLines={2}>
+                          {therapist.specialization && therapist.specialization.length > 0
+                            ? `Specialized in ${therapist.specialization.join(", ")}`
+                            : "General Practitioner"}
+                        </Text>
+                      </View>
+                    </View>
+                    <Feather name="chevron-right" size={normalize(24)} color="#A0A0A0" />
+                  </TouchableOpacity>
+                ))
+              )}
             </View>
           ) : (
             <>
               {/* Upcoming Appointment */}
               <View style={styles.section}>
-                <Text style={styles.sectionLabel}>UPCOMING APPOINTMENT</Text>
-                <View style={styles.appointmentCard}>
-                  <View style={styles.appointmentHeader}>
-                    <View>
-                      <Text style={styles.therapistName}>Dr. Z Chen</Text>
-                      <Text style={styles.sessionInfo}>30 minutes Session</Text>
-                    </View>
-                    <Text style={styles.appointmentTime}>April 26, 2026 at 5:00 PM</Text>
+                <Text style={styles.sectionLabel}>UPCOMING APPOINTMENTS</Text>
+                {isAppointmentsLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="#3C61DD" />
                   </View>
+                ) : upcomingAppointments.length === 0 ? (
+                  <View style={styles.appointmentEmptyCard}>
+                    <Text style={styles.appointmentEmptyText}>No upcoming sessions scheduled.</Text>
+                  </View>
+                ) : (
+                  upcomingAppointments.map((appointment) => (
+                    <View
+                      key={appointment.id}
+                      style={[styles.appointmentCard, { marginBottom: hp(1.5) }]}
+                    >
+                      <View style={styles.appointmentHeader}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.therapistName}>{appointment.therapist_name}</Text>
+                          <Text style={styles.sessionInfo}>
+                            {appointment.therapist_specialization &&
+                            appointment.therapist_specialization.length > 0
+                              ? appointment.therapist_specialization.join(", ")
+                              : "Therapy Session"}
+                          </Text>
+                        </View>
+                        <View style={{ alignItems: "flex-end", marginLeft: moderateScale(10) }}>
+                          <Text style={styles.appointmentTime}>{appointment.appointment_date}</Text>
+                          <Text
+                            style={[styles.sessionInfo, { color: "#3C61DD", marginTop: hp(0.2) }]}
+                            numberOfLines={1}
+                          >
+                            {appointment.time_slot}
+                          </Text>
+                        </View>
+                      </View>
 
-                  <TouchableOpacity style={styles.actionRow}>
-                    <View style={styles.actionLeft}>
-                      <Feather name="user" size={normalize(20)} color="#333" />
-                      <Text style={styles.actionText}>Join Session</Text>
-                    </View>
-                    <Feather name="chevron-right" size={normalize(18)} color="#A0A0A0" />
-                  </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.actionRow}
+                        onPress={() =>
+                          toast.info(
+                            "Joining Session",
+                            `Connecting you with ${appointment.therapist_name}...`,
+                          )
+                        }
+                      >
+                        <View style={styles.actionLeft}>
+                          <Feather name="video" size={normalize(20)} color="#3C61DD" />
+                          <Text style={[styles.actionText, { color: "#3C61DD" }]}>
+                            Join Session
+                          </Text>
+                        </View>
+                        <Feather name="chevron-right" size={normalize(18)} color="#3C61DD" />
+                      </TouchableOpacity>
 
-                  <TouchableOpacity style={[styles.actionRow, styles.noBorder]}>
-                    <View style={styles.actionLeft}>
-                      <Feather name="alert-circle" size={normalize(20)} color="#E53935" />
-                      <Text style={[styles.actionText, styles.cancelText]}>Cancel Session</Text>
+                      <TouchableOpacity
+                        style={[styles.actionRow, styles.noBorder]}
+                        onPress={() =>
+                          toast.info(
+                            "Cancel Session",
+                            "Please contact support to cancel your session.",
+                          )
+                        }
+                      >
+                        <View style={styles.actionLeft}>
+                          <Feather name="alert-circle" size={normalize(20)} color="#E53935" />
+                          <Text style={[styles.actionText, styles.cancelText]}>Cancel Session</Text>
+                        </View>
+                        <Feather name="chevron-right" size={normalize(18)} color="#A0A0A0" />
+                      </TouchableOpacity>
                     </View>
-                    <Feather name="chevron-right" size={normalize(18)} color="#A0A0A0" />
-                  </TouchableOpacity>
-                </View>
+                  ))
+                )}
               </View>
 
               {/* Recent */}
@@ -139,25 +397,75 @@ export default function HumanTherapistsScreen() {
               {/* Top Therapists */}
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>TOP THERAPISTS</Text>
-                {TOP_THERAPISTS.map((therapist, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.therapistListItem}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.therapistListLeft}>
-                      <View style={styles.listAvatarContainer}>
-                        <Image source={therapist.image} style={styles.avatar} />
+                {isLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#3C61DD" />
+                  </View>
+                ) : error ? (
+                  <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{error}</Text>
+                    <TouchableOpacity
+                      style={styles.retryButton}
+                      onPress={fetchTherapistsAndAppointments}
+                    >
+                      <Text style={styles.retryText}>Retry</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : therapists.length === 0 ? (
+                  <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>No therapists found</Text>
+                  </View>
+                ) : (
+                  therapists.map((therapist) => (
+                    <TouchableOpacity
+                      key={therapist.id}
+                      style={styles.therapistListItem}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        router.push({
+                          pathname: "/therapist-details",
+                          params: {
+                            id: therapist.id.toString(),
+                            therapistJson: JSON.stringify(therapist),
+                          },
+                        } as any);
+                      }}
+                    >
+                      <View style={styles.therapistListLeft}>
+                        <View style={styles.listAvatarContainer}>
+                          {therapist.profile_photo ? (
+                            <Image
+                              source={{ uri: therapist.profile_photo }}
+                              style={styles.avatar}
+                            />
+                          ) : (
+                            <UserInitialsAvatar
+                              name={therapist.full_name}
+                              textSize={normalize(18)}
+                            />
+                          )}
+                        </View>
+                        <View style={styles.listInfo}>
+                          <Text style={styles.therapistName}>{therapist.full_name}</Text>
+                          <Text style={styles.ratingText}>
+                            {therapist.average_rating > 0
+                              ? `${therapist.average_rating.toFixed(1)} Rating`
+                              : "0.0 Rating"}
+                            {therapist.total_reviews > 0
+                              ? ` (${therapist.total_reviews} reviews)`
+                              : ""}
+                          </Text>
+                          <Text style={styles.specializationText} numberOfLines={2}>
+                            {therapist.specialization && therapist.specialization.length > 0
+                              ? `Specialized in ${therapist.specialization.join(", ")}`
+                              : "General Practitioner"}
+                          </Text>
+                        </View>
                       </View>
-                      <View style={styles.listInfo}>
-                        <Text style={styles.therapistName}>{therapist.name}</Text>
-                        <Text style={styles.ratingText}>{therapist.rating}</Text>
-                        <Text style={styles.specializationText}>{therapist.specialization}</Text>
-                      </View>
-                    </View>
-                    <Feather name="chevron-right" size={normalize(24)} color="#A0A0A0" />
-                  </TouchableOpacity>
-                ))}
+                      <Feather name="chevron-right" size={normalize(24)} color="#A0A0A0" />
+                    </TouchableOpacity>
+                  ))
+                )}
               </View>
             </>
           )}
@@ -408,5 +716,63 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(15),
     color: "#000",
+  },
+  loadingContainer: {
+    paddingVertical: hp(4),
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorContainer: {
+    paddingVertical: hp(3),
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 59, 48, 0.05)",
+    borderRadius: normalize(12),
+    paddingHorizontal: moderateScale(15),
+  },
+  errorText: {
+    fontFamily: Typography.fonts.medium,
+    fontSize: normalize(14),
+    color: "#FF3B30",
+    textAlign: "center",
+    marginBottom: hp(1.5),
+  },
+  retryButton: {
+    backgroundColor: "#3C61DD",
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(8),
+    borderRadius: normalize(20),
+  },
+  retryText: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(13),
+    color: "#FFF",
+  },
+  emptyContainer: {
+    paddingVertical: hp(4),
+    alignItems: "center",
+  },
+  emptyText: {
+    fontFamily: Typography.fonts.regular,
+    fontSize: normalize(14),
+    color: "#666",
+  },
+  appointmentEmptyCard: {
+    backgroundColor: "#FFF",
+    borderRadius: normalize(16),
+    padding: moderateScale(20),
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  appointmentEmptyText: {
+    fontFamily: Typography.fonts.regular,
+    fontSize: normalize(14),
+    color: "#666",
+    textAlign: "center",
   },
 });
