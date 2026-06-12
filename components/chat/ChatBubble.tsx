@@ -1,8 +1,10 @@
 import { Typography } from "@/constants/Typography";
 import { normalize } from "@/utils/responsive";
+import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { ChatAudioPlayer } from "./ChatAudioPlayer";
 
 type RecommendedSound = {
@@ -19,6 +21,7 @@ interface ChatBubbleProps {
   onAnimationComplete?: () => void;
   shouldAnimate?: boolean;
   recommendedSound?: RecommendedSound | null;
+  isHuman?: boolean;
 }
 
 export const ChatBubble = ({
@@ -27,7 +30,9 @@ export const ChatBubble = ({
   onAnimationComplete,
   shouldAnimate = true,
   recommendedSound,
+  isHuman,
 }: ChatBubbleProps) => {
+  const router = useRouter();
   const isUser = role === "user";
   const [displayedText, setDisplayedText] = useState(isUser || !shouldAnimate ? text : "");
 
@@ -81,6 +86,34 @@ export const ChatBubble = ({
           </View>
         ) : null}
         {recommendedSound && <ChatAudioPlayer sound={recommendedSound} />}
+        {isHuman && (
+          <TouchableOpacity
+            onPress={() => router.push("/human-therapists")}
+            activeOpacity={0.8}
+            style={styles.humanLinkWrapper}
+          >
+            <LinearGradient
+              colors={["#3BC0EB", "#5858E8"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.humanLinkGradient}
+            >
+              <Feather
+                name="user"
+                size={normalize(16)}
+                color="#FFFFFF"
+                style={styles.humanLinkIcon}
+              />
+              <Text style={styles.humanLinkText}>Connect with a human therapist</Text>
+              <Feather
+                name="arrow-right"
+                size={normalize(14)}
+                color="#FFFFFF"
+                style={styles.humanLinkArrow}
+              />
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -126,5 +159,32 @@ const styles = StyleSheet.create({
   assistantText: {
     fontFamily: Typography.fonts.regular,
     color: "#1C1C1E",
+  },
+  humanLinkWrapper: {
+    alignSelf: "flex-start",
+    marginTop: normalize(8),
+    shadowColor: "#5858E8",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  humanLinkGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: normalize(20),
+    paddingVertical: normalize(10),
+    paddingHorizontal: normalize(16),
+  },
+  humanLinkIcon: {
+    marginRight: normalize(8),
+  },
+  humanLinkText: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(13),
+    color: "#FFFFFF",
+  },
+  humanLinkArrow: {
+    marginLeft: normalize(6),
   },
 });

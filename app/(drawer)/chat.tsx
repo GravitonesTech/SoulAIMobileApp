@@ -38,6 +38,7 @@ type ChatMessage = {
   text: string;
   shouldAnimate?: boolean;
   recommendedSound?: RecommendedSound | null;
+  isHuman?: boolean;
 };
 
 export default function ChatScreen() {
@@ -87,6 +88,8 @@ export default function ChatScreen() {
           const recommendedSound =
             item.recommended_sound || item.responses?.recommended_sound || null;
 
+          const isHuman = item.is_human || item.responses?.is_human || false;
+
           if (responseText || recommendedSound) {
             mappedMessages.push({
               id: `hist-a-${index}`,
@@ -94,6 +97,7 @@ export default function ChatScreen() {
               text: responseText || "",
               shouldAnimate: false,
               recommendedSound: recommendedSound,
+              isHuman: isHuman,
             });
           }
         });
@@ -189,12 +193,14 @@ export default function ChatScreen() {
       if (response.success && response.data) {
         const aiResponse = response.data.response;
         const recommendedSound = response.data.recommended_sound || null;
+        const isHuman = response.data.is_human || false;
         const assistantMessage: ChatMessage = {
           id: `m-${Date.now()}-a`,
           role: "assistant",
           text: aiResponse || "",
           shouldAnimate: true,
           recommendedSound: recommendedSound,
+          isHuman: isHuman,
         };
         setIsAnimating(true);
         setMessages((prev) => [...prev, assistantMessage]);
@@ -262,6 +268,7 @@ export default function ChatScreen() {
           text: data.response || "Here is a recommended sound healing session for you:",
           shouldAnimate: true,
           recommendedSound: data.recommended_sound || null,
+          isHuman: data.is_human || false,
         };
         setMessages((prev) => [...prev, newMsg]);
       } else {
@@ -324,6 +331,7 @@ export default function ChatScreen() {
                   text={m.text}
                   shouldAnimate={m.shouldAnimate}
                   recommendedSound={m.recommendedSound}
+                  isHuman={m.isHuman}
                   onAnimationComplete={
                     index === messages.length - 1 ? () => setIsAnimating(false) : undefined
                   }
