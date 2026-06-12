@@ -26,8 +26,18 @@ const getSubcategoryName = (
 
 export default function NowPlayingScreen() {
   const router = useRouter();
-  const { title, artist, image, url, id, categoryId, artist_name, subcategory_id, startTime } =
-    useLocalSearchParams();
+  const {
+    title,
+    artist,
+    image,
+    url,
+    id,
+    categoryId,
+    artist_name,
+    subcategory_id,
+    startTime,
+    from,
+  } = useLocalSearchParams();
 
   const [sounds, setSounds] = useState<any[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
@@ -223,7 +233,19 @@ export default function NowPlayingScreen() {
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right", "bottom"]}>
         <View style={styles.flex1}>
           {/* Header */}
-          <AppHeader title="Now Playing" leftIcon="arrow-left" titleColor="#FFF" iconColor="#FFF" />
+          <AppHeader
+            title="Now Playing"
+            leftIcon="arrow-left"
+            titleColor="#FFF"
+            iconColor="#FFF"
+            onLeftPress={() => {
+              if (from === "chat") {
+                router.push("/sound-healing-flow");
+              } else {
+                router.back();
+              }
+            }}
+          />
 
           <View style={styles.contentContainer}>
             {/* Artwork */}
