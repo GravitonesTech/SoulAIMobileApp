@@ -27,13 +27,15 @@ export default function AuthOptionsScreen() {
   useEffect(() => {
     let checkDone = false;
     let timerDone = false;
-    let checkedUser: any = null;
+    let timerId: any;
 
     const checkUserSession = async () => {
       try {
         const { isAuthenticated, user } = await AuthService.checkAuth();
         if (isAuthenticated && user) {
-          checkedUser = user;
+          if (timerId) clearTimeout(timerId);
+          AuthService.navigateToCorrectScreen(user);
+          return;
         }
       } catch (error) {
         console.error("Auth check error:", error);
@@ -51,22 +53,21 @@ export default function AuthOptionsScreen() {
           useNativeDriver: true,
         }).start(() => {
           setShowSplash(false);
-          if (checkedUser) {
-            AuthService.navigateToCorrectScreen(checkedUser);
-          }
         });
       }
     };
 
-    const timer = setTimeout(() => {
+    timerId = setTimeout(() => {
       timerDone = true;
       maybeHideSplash();
-    }, 2200);
+    }, 1000);
 
     checkUserSession();
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [fadeAnim]);
 
   return (
     <View style={{ flex: 1 }}>
