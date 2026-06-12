@@ -51,6 +51,8 @@ export const ENDPOINTS = {
     sessions: "/chat/sessions",
     /** GET — Retrieve session details (Chat History) */
     sessionDetails: (sessionId: string) => `/chat/sessions/${sessionId}`,
+    /** POST — Fetch sound healing based on chat history */
+    soundHealing: "/chat/chat/sound-healing",
   },
   master: {
     /** GET — Fetch available therapies */

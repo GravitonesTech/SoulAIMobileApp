@@ -1,5 +1,6 @@
 import { ChatBubble } from "@/components/chat/ChatBubble";
 import { ChatInput } from "@/components/chat/ChatInput";
+import { ChatQuickActions } from "@/components/chat/ChatQuickActions";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { ENDPOINTS } from "@/constants/endpoints";
@@ -55,6 +56,7 @@ export default function ChatScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isSoundHealingLoading, setIsSoundHealingLoading] = useState(false);
   const isKeyboardVisible = useKeyboardVisibility();
   const scrollViewRef = useRef<ScrollView>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -242,6 +244,37 @@ export default function ChatScreen() {
     }
   };
 
+  const handleSoundHealing = async () => {
+    if (!sessionId || isNaN(Number(sessionId)) === false) {
+      toast.error("Error", "Please start a conversation first.");
+      return;
+    }
+    setIsSoundHealingLoading(true);
+    try {
+      const response = await apiClient.post<any>(ENDPOINTS.chat.soundHealing, {
+        session_id: sessionId,
+      });
+      if (response.success && response.data) {
+        const data = response.data;
+        const newMsg: ChatMessage = {
+          id: `sh-${Date.now()}`,
+          role: "assistant",
+          text: data.response || "Here is a recommended sound healing session for you:",
+          shouldAnimate: true,
+          recommendedSound: data.recommended_sound || null,
+        };
+        setMessages((prev) => [...prev, newMsg]);
+      } else {
+        toast.error("Error", response.message || "Failed to fetch sound healing session.");
+      }
+    } catch (error) {
+      console.error("[Chat] Error fetching sound healing:", error);
+      toast.error("Error", "Failed to retrieve sound healing recommendation.");
+    } finally {
+      setIsSoundHealingLoading(false);
+    }
+  };
+
   return (
     <LinearGradient
       colors={["#FFFFFF", "#E2F4FF"]}
@@ -301,12 +334,23 @@ export default function ChatScreen() {
             {isLoading && <TypingIndicator />}
           </ScrollView>
 
+          {/* Quick Actions Bar */}
+          {!isKeyboardVisible && (
+            <ChatQuickActions
+              onSoundHealingPress={handleSoundHealing}
+              // onBreathingPress={() => router.push("/breathing")}
+              onBreathingPress={() => {}}
+              isSoundHealingLoading={isSoundHealingLoading}
+              disabled={isLoading || isAnimating || isHistoryLoading}
+            />
+          )}
+
           {/* Input Bar */}
           <ChatInput
             value={inputText}
             onChangeText={setInputText}
             onSend={handleSend}
-            disabled={isLoading || isAnimating || isHistoryLoading}
+            disabled={isLoading || isAnimating || isHistoryLoading || isSoundHealingLoading}
           />
         </KeyboardAvoidingView>
       </SafeAreaView>
