@@ -71,12 +71,6 @@ export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    if (player && sound.sound && isVisible) {
-      safePlay(player);
-    }
-  }, [player, sound.sound, isVisible]);
-
-  useEffect(() => {
     if (!isFocused) {
       safePause(player);
       if (activePlayer === player) {
