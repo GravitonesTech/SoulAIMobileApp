@@ -111,13 +111,6 @@ export const ChatAudioPlayer = ({
     };
   }, [player]);
 
-  useEffect(() => {
-    // If playback finishes, reset position to start so it can be replayed
-    if (!status.playing && status.duration > 0 && status.currentTime >= status.duration - 0.5) {
-      safeSeekTo(player, 0);
-    }
-  }, [status.playing, status.currentTime, status.duration, player]);
-
   const handlePlayPause = () => {
     if (status.playing) {
       safePause(player);
