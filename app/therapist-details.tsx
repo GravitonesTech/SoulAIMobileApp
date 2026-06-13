@@ -1,48 +1,20 @@
 import { AvailabilitySlots } from "@/components/therapist/AvailabilitySlots";
+import { BookingButton } from "@/components/therapist/BookingButton";
 import { RatingsSummary } from "@/components/therapist/RatingsSummary";
 import { SpecialtiesList } from "@/components/therapist/SpecialtiesList";
+import { TherapistHeaderInfo } from "@/components/therapist/TherapistHeaderInfo";
 import { AppHeader } from "@/components/ui/AppHeader";
-import { Typography } from "@/constants/Typography";
-import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
-import { Feather } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams } from "expo-router";
-import React, { useMemo, useState, useEffect } from "react";
-import { apiClient } from "@/utils/api";
 import { ENDPOINTS } from "@/constants/endpoints";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Typography } from "@/constants/Typography";
+import { ReviewFromApi, Therapist } from "@/types/therapist";
+import { apiClient } from "@/utils/api";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
+import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { toast } from "@/utils/toast";
+import React, { useEffect, useMemo, useState } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-interface Therapist {
-  id: number;
-  email: string;
-  full_name: string;
-  phone: string | null;
-  profile_photo: string | null;
-  license_number: string | null;
-  specialization: string[];
-  experience_years: number;
-  bio: string;
-  clinic_address: string | null;
-  is_approved: boolean;
-  average_rating: number;
-  total_reviews: number;
-  schedules: {
-    day_of_week: string;
-    time_slots: string[];
-  }[];
-}
-
-interface ReviewFromApi {
-  id: number;
-  therapist_id: number;
-  patient_email: string;
-  patient_name: string;
-  rating: number;
-  review_text: string;
-  created_at: string;
-  updated_at: string;
-}
 
 const formatReviewTime = (dateStr: string) => {
   try {
@@ -68,6 +40,7 @@ const formatReviewTime = (dateStr: string) => {
 };
 
 export default function TherapistDetailsScreen() {
+  const router = useRouter();
   const { therapistJson } = useLocalSearchParams<{ therapistJson?: string }>();
 
   const therapist = useMemo<Therapist | null>(() => {
@@ -81,9 +54,9 @@ export default function TherapistDetailsScreen() {
 
   // State for selected slot
   const [selectedSlot, setSelectedSlot] = useState<{
-    day: "today" | "tomorrow";
+    day: string;
     slot: string;
-  } | null>({ day: "today", slot: "10:00 AM" });
+  } | null>(null);
 
   const [reviews, setReviews] = useState<
     {
@@ -122,7 +95,7 @@ export default function TherapistDetailsScreen() {
 
   // Generate reviews for presentation
   const reviewsToDisplay = useMemo(() => {
-    if (loadingReviews) return [];
+    if (loadingReviews || !therapist || therapist.total_reviews === 0) return [];
     if (reviews.length > 0) return reviews;
     // Fallback reviews to keep the page visually stunning if no real reviews yet
     return [
@@ -145,7 +118,7 @@ export default function TherapistDetailsScreen() {
         content: "Amazingly Talented!",
       },
     ];
-  }, [reviews, loadingReviews]);
+  }, [reviews, loadingReviews, therapist?.total_reviews]);
 
   if (!therapist) {
     return (
@@ -173,38 +146,8 @@ export default function TherapistDetailsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {/* Rating and Experience Summary */}
-          <View style={styles.summaryBlock}>
-            <Text style={styles.summaryText}>
-              {therapist.average_rating > 0 ? therapist.average_rating.toFixed(1) : "0.0"} Rating •{" "}
-              {therapist.experience_years}+ years experience
-            </Text>
-            <Text style={styles.specializationText}>
-              {therapist.specialization && therapist.specialization.length > 0
-                ? `Specialized in ${therapist.specialization.join(", ")}`
-                : "General Practitioner"}
-            </Text>
-          </View>
-
-          {/* Large Therapist Image */}
-          <View style={styles.imageCard}>
-            {therapist.profile_photo ? (
-              <Image source={{ uri: therapist.profile_photo }} style={styles.profileImage} />
-            ) : (
-              <Image
-                source={require("@/assets/images/therapist.png")}
-                style={styles.profileImage}
-              />
-            )}
-          </View>
-
-          {/* Bio */}
-          <View style={styles.bioContainer}>
-            <Text style={styles.bioText}>
-              {therapist.bio ||
-                `${therapist.full_name} is a licensed therapist dedicated to helping you navigate life's challenges with clarity and compassion.`}
-            </Text>
-          </View>
+          {/* Therapist Hero / Header Info */}
+          <TherapistHeaderInfo therapist={therapist} />
 
           {/* Specialties Section */}
           <SpecialtiesList specializations={therapist.specialization} />
@@ -225,10 +168,22 @@ export default function TherapistDetailsScreen() {
         </ScrollView>
 
         {/* Floating/Sticky Action Button at Bottom Right */}
-        <TouchableOpacity style={styles.floatingButton} activeOpacity={0.85}>
-          <Feather name="plus-circle" size={normalize(20)} color="#FFF" style={styles.buttonIcon} />
-          <Text style={styles.floatingButtonText}>Rs. 100</Text>
-        </TouchableOpacity>
+        <BookingButton
+          priceText="Rs. 100"
+          onPress={() => {
+            if (!selectedSlot) {
+              toast.error("Slot Required", "Please select an availability slot first.");
+              return;
+            }
+            router.push({
+              pathname: "/book-session",
+              params: {
+                therapistJson: JSON.stringify(therapist),
+                selectedSlotJson: JSON.stringify(selectedSlot),
+              },
+            });
+          }}
+        />
       </SafeAreaView>
     </LinearGradient>
   );
@@ -260,76 +215,5 @@ const styles = StyleSheet.create({
     fontSize: normalize(16),
     color: "#E53935",
     textAlign: "center",
-  },
-  summaryBlock: {
-    marginTop: hp(1.5),
-    marginBottom: hp(2),
-  },
-  summaryText: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(13),
-    color: "#666",
-    letterSpacing: 0.2,
-  },
-  specializationText: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(15),
-    color: "#999",
-    marginTop: hp(0.5),
-  },
-  imageCard: {
-    backgroundColor: "#FFF",
-    borderRadius: normalize(16),
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-    marginBottom: hp(2.5),
-    aspectRatio: 1.1,
-    alignSelf: "center",
-    width: "100%",
-  },
-  profileImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-    alignSelf: "center",
-  },
-  bioContainer: {
-    marginBottom: hp(3),
-  },
-  bioText: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(14),
-    lineHeight: normalize(22),
-    color: "#555",
-  },
-  floatingButton: {
-    position: "absolute",
-    bottom: hp(4),
-    right: wp(5),
-    backgroundColor: "#3C61DD",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: moderateScale(12),
-    paddingHorizontal: moderateScale(20),
-    borderRadius: normalize(30),
-    shadowColor: "#3C61DD",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-    gap: moderateScale(8),
-  },
-  buttonIcon: {
-    marginRight: moderateScale(2),
-  },
-  floatingButtonText: {
-    fontFamily: Typography.fonts.bold,
-    fontSize: normalize(16),
-    color: "#FFF",
   },
 });

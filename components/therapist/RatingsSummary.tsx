@@ -50,6 +50,17 @@ export const RatingsSummary = ({ averageRating, totalReviews, reviews }: Ratings
     };
   }, [averageRating, totalReviews]);
 
+  if (totalReviews === 0) {
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>RATINGS</Text>
+        <View style={styles.ratingsCard}>
+          <Text style={styles.noRatingsText}>No ratings yet</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.section}>
       <Text style={styles.sectionLabel}>RATINGS</Text>
@@ -204,5 +215,12 @@ const styles = StyleSheet.create({
     color: "#3C61DD",
     opacity: 0.8,
     marginTop: hp(0.2),
+  },
+  noRatingsText: {
+    fontFamily: Typography.fonts.medium,
+    fontSize: normalize(14),
+    color: "#666",
+    textAlign: "center",
+    paddingVertical: moderateScale(20),
   },
 });

@@ -1,11 +1,11 @@
 import { Typography } from "@/constants/Typography";
-import { UserAvatar } from "./UserAvatar";
 import { useAppSelector } from "@/store/hooks";
 import { moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation, useRouter } from "expo-router";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { UserAvatar } from "./UserAvatar";
 
 interface AppHeaderProps {
   leftIcon?: keyof typeof Feather.glyphMap;

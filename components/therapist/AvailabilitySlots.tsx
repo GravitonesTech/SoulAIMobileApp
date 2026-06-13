@@ -1,6 +1,7 @@
+import { AVAILABLE_TIMES } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
-import React, { useCallback, useMemo } from "react";
+import React, { useMemo } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface Schedule {
@@ -10,182 +11,182 @@ interface Schedule {
 
 interface AvailabilitySlotsProps {
   schedules: Schedule[];
-  selectedSlot: { day: "today" | "tomorrow"; slot: string } | null;
-  onChangeSlot: (slot: { day: "today" | "tomorrow"; slot: string }) => void;
+  selectedSlot: { day: string; slot: string } | null;
+  onChangeSlot: (slot: { day: string; slot: string } | null) => void;
 }
-
-const STANDARD_SLOTS = ["10:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM"];
 
 export const AvailabilitySlots = ({
   schedules,
   selectedSlot,
   onChangeSlot,
 }: AvailabilitySlotsProps) => {
-  // Get Today's and Tomorrow's info
-  const dateInfo = useMemo(() => {
+  const isTimeSlotInPast = (slotStr: string) => {
+    const match = slotStr.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+    if (!match) return false;
+
+    let hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const ampm = match[3].toUpperCase();
+
+    if (ampm === "PM" && hours < 12) {
+      hours += 12;
+    } else if (ampm === "AM" && hours === 12) {
+      hours = 0;
+    }
+
+    const slotTime = new Date();
+    slotTime.setHours(hours, minutes, 0, 0);
+
+    return new Date() > slotTime;
+  };
+
+  const getDayOffset = (dayName: string) => {
     const daysOfWeek = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
     ];
     const now = new Date();
+    const currentDayIndex = now.getDay();
 
-    const todayIndex = now.getDay();
-    const todayDayName = daysOfWeek[todayIndex];
+    const targetDayIndex = daysOfWeek.indexOf(dayName.toLowerCase());
+    if (targetDayIndex === -1) return 999;
 
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
-    const tomorrowIndex = tomorrow.getDay();
-    const tomorrowDayName = daysOfWeek[tomorrowIndex];
+    let diff = targetDayIndex - currentDayIndex;
+    if (diff < 0) {
+      diff += 7;
+    }
 
-    const options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
-    const tomorrowLabel = `Tomorrow, ${tomorrow.toLocaleDateString("en-US", options)}`;
-
-    return {
-      today: { name: todayDayName, label: "Today" },
-      tomorrow: { name: tomorrowDayName, label: tomorrowLabel },
-    };
-  }, []);
-
-  // Helper to map available slots
-  const getSlotsForDay = useCallback(
-    (dayName: string) => {
+    // If day name matches today, check if all slots have already passed
+    if (diff === 0) {
       const daySchedule = schedules?.find(
         (s) => s.day_of_week.toLowerCase() === dayName.toLowerCase(),
       );
-      const availableSlots = daySchedule?.time_slots || [];
+      const timeSlots = daySchedule?.time_slots || [];
+      if (timeSlots.length > 0 && timeSlots.every(isTimeSlotInPast)) {
+        diff = 7; // Shift to next week
+      }
+    }
 
-      return STANDARD_SLOTS.map((slot) => {
-        const isAvailable = availableSlots.some(
-          (as) => as.replace(/\s+/g, "").toLowerCase() === slot.replace(/\s+/g, "").toLowerCase(),
-        );
-        return {
-          time: slot,
-          isAvailable,
-        };
-      });
-    },
-    [schedules],
-  );
+    return diff;
+  };
 
-  const todaySlots = useMemo(
-    () => getSlotsForDay(dateInfo.today.name),
-    [getSlotsForDay, dateInfo.today.name],
-  );
-  const tomorrowSlots = useMemo(
-    () => getSlotsForDay(dateInfo.tomorrow.name),
-    [getSlotsForDay, dateInfo.tomorrow.name],
-  );
+  const getDayLabel = (dayName: string) => {
+    const diff = getDayOffset(dayName);
+    const now = new Date();
+    const targetDate = new Date(now);
+    targetDate.setDate(now.getDate() + diff);
+
+    const month = targetDate.toLocaleDateString("en-US", { month: "short" });
+    const dateNum = targetDate.getDate();
+
+    if (diff === 0) {
+      return "Today";
+    } else if (diff === 1) {
+      return `Tomorrow, ${month} ${dateNum}`;
+    } else {
+      return `${dayName}, ${month} ${dateNum}`;
+    }
+  };
+
+  const sortedSchedules = useMemo(() => {
+    if (!schedules) return [];
+    return [...schedules].sort((a, b) => getDayOffset(a.day_of_week) - getDayOffset(b.day_of_week));
+  }, [schedules]);
+
+  if (!schedules || schedules.length === 0) {
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>AVAILABILITY SLOTS</Text>
+        <View style={styles.slotsCard}>
+          <Text style={styles.noSlotsText}>No availability schedules listed.</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.section}>
       <Text style={styles.sectionLabel}>AVAILABILITY SLOTS</Text>
       <View style={styles.slotsCard}>
-        {/* Today */}
-        <Text style={styles.daySublabel}>{dateInfo.today.label}</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.slotsRow}
-        >
-          {todaySlots.map((slot, index) => {
-            const isSelected = selectedSlot?.day === "today" && selectedSlot?.slot === slot.time;
-            return (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.slotButton,
-                  slot.isAvailable ? styles.slotAvailable : styles.slotUnavailable,
-                  isSelected && styles.slotSelected,
-                ]}
-                onPress={() => {
-                  if (slot.isAvailable) {
-                    onChangeSlot({ day: "today", slot: slot.time });
-                  }
-                }}
-                disabled={!slot.isAvailable}
-              >
-                <Text
-                  style={[
-                    styles.slotTimeText,
-                    slot.isAvailable
-                      ? styles.slotTimeAvailableText
-                      : styles.slotTimeUnavailableText,
-                    isSelected && styles.slotTextSelected,
-                  ]}
-                >
-                  {slot.time}
-                </Text>
-                <Text
-                  style={[
-                    styles.slotStatusText,
-                    slot.isAvailable
-                      ? styles.slotStatusAvailableText
-                      : styles.slotStatusUnavailableText,
-                    isSelected && styles.slotTextSelected,
-                  ]}
-                >
-                  {slot.isAvailable ? "Available" : "Unavailable"}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+        {sortedSchedules.map((schedule, dayIndex) => {
+          const diff = getDayOffset(schedule.day_of_week);
 
-        {/* Tomorrow */}
-        <Text style={[styles.daySublabel, { marginTop: hp(2) }]}>{dateInfo.tomorrow.label}</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.slotsRow}
-        >
-          {tomorrowSlots.map((slot, index) => {
-            const isSelected = selectedSlot?.day === "tomorrow" && selectedSlot?.slot === slot.time;
-            return (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.slotButton,
-                  slot.isAvailable ? styles.slotAvailable : styles.slotUnavailable,
-                  isSelected && styles.slotSelected,
-                ]}
-                onPress={() => {
-                  if (slot.isAvailable) {
-                    onChangeSlot({ day: "tomorrow", slot: slot.time });
-                  }
-                }}
-                disabled={!slot.isAvailable}
+          return (
+            <View key={schedule.day_of_week} style={dayIndex > 0 ? { marginTop: hp(2) } : null}>
+              <Text style={styles.daySublabel}>{getDayLabel(schedule.day_of_week)}</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.slotsRow}
               >
-                <Text
-                  style={[
-                    styles.slotTimeText,
-                    slot.isAvailable
-                      ? styles.slotTimeAvailableText
-                      : styles.slotTimeUnavailableText,
-                    isSelected && styles.slotTextSelected,
-                  ]}
-                >
-                  {slot.time}
-                </Text>
-                <Text
-                  style={[
-                    styles.slotStatusText,
-                    slot.isAvailable
-                      ? styles.slotStatusAvailableText
-                      : styles.slotStatusUnavailableText,
-                    isSelected && styles.slotTextSelected,
-                  ]}
-                >
-                  {slot.isAvailable ? "Available" : "Unavailable"}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+                {AVAILABLE_TIMES.map((slot, index) => {
+                  const isSlotScheduled = schedule.time_slots.some(
+                    (as) =>
+                      as.replace(/\s+/g, "").toLowerCase() ===
+                      slot.replace(/\s+/g, "").toLowerCase(),
+                  );
+                  // Slot is available if it is scheduled AND (not today or not in the past today)
+                  const isPast = diff === 0 && isTimeSlotInPast(slot);
+                  const isAvailable = isSlotScheduled && !isPast;
+
+                  const isSelected =
+                    selectedSlot?.day.toLowerCase() === schedule.day_of_week.toLowerCase() &&
+                    selectedSlot?.slot === slot;
+
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.slotButton,
+                        isAvailable ? styles.slotAvailable : styles.slotUnavailable,
+                        isSelected && styles.slotSelected,
+                      ]}
+                      onPress={() => {
+                        if (isAvailable) {
+                          if (isSelected) {
+                            onChangeSlot(null);
+                          } else {
+                            onChangeSlot({ day: schedule.day_of_week, slot });
+                          }
+                        }
+                      }}
+                      disabled={!isAvailable}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          styles.slotTimeText,
+                          isAvailable
+                            ? styles.slotTimeAvailableText
+                            : styles.slotTimeUnavailableText,
+                          isSelected && styles.slotTextSelected,
+                        ]}
+                      >
+                        {slot}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.slotStatusText,
+                          isAvailable
+                            ? styles.slotStatusAvailableText
+                            : styles.slotStatusUnavailableText,
+                          isSelected && styles.slotTextSelected,
+                        ]}
+                      >
+                        {isAvailable ? "Available" : "Unavailable"}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          );
+        })}
       </View>
     </View>
   );
@@ -227,19 +228,20 @@ const styles = StyleSheet.create({
   },
   slotButton: {
     width: moderateScale(105),
-    height: moderateScale(54),
-    borderRadius: normalize(8),
+    height: moderateScale(56),
+    borderRadius: normalize(14),
+    borderWidth: 1,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
+    gap: hp(0.2),
   },
   slotAvailable: {
     backgroundColor: "#FFFFFF",
     borderColor: "#3C61DD",
   },
   slotUnavailable: {
-    backgroundColor: "#F9FAFC",
-    borderColor: "rgba(0,0,0,0.03)",
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E5E5EA",
   },
   slotSelected: {
     backgroundColor: "#3C61DD",
@@ -253,20 +255,27 @@ const styles = StyleSheet.create({
     color: "#3C61DD",
   },
   slotTimeUnavailableText: {
-    color: "#8A8A8E",
+    color: "#5B7BE9",
+    opacity: 0.7,
   },
   slotStatusText: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(10),
-    marginTop: hp(0.3),
+    fontFamily: Typography.fonts.regular,
+    fontSize: normalize(12),
   },
   slotStatusAvailableText: {
-    color: "#3C61DD",
+    color: "#333333",
   },
   slotStatusUnavailableText: {
-    color: "#8A8A8E",
+    color: "#666666",
   },
   slotTextSelected: {
     color: "#FFFFFF",
+  },
+  noSlotsText: {
+    fontFamily: Typography.fonts.regular,
+    fontSize: normalize(13),
+    color: "#8A8A8E",
+    paddingHorizontal: moderateScale(4),
+    paddingVertical: moderateScale(4),
   },
 });

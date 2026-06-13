@@ -48,6 +48,8 @@ export const ENDPOINTS = {
     reviews: (therapistId: number | string) => `/users/reviews/${therapistId}`,
     /** GET — Fetch user appointments */
     myAppointments: "/users/appointments/my-appointments",
+    /** POST — Book/create an appointment */
+    bookAppointment: "/users/appointments/book",
   },
 
   chat: {
