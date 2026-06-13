@@ -43,16 +43,23 @@ type ChatMessage = {
 
 export default function ChatScreen() {
   const router = useRouter();
-  const { therapy, initialMessage, sessionId, selected_therapy, showNewChatButton, greetingMessage, isNewSession } =
-    useLocalSearchParams<{
-      therapy?: string;
-      initialMessage?: string;
-      sessionId?: string;
-      selected_therapy?: string;
-      showNewChatButton?: string;
-      greetingMessage?: string;
-      isNewSession?: string;
-    }>();
+  const {
+    therapy,
+    initialMessage,
+    sessionId,
+    selected_therapy,
+    showNewChatButton,
+    greetingMessage,
+    isNewSession,
+  } = useLocalSearchParams<{
+    therapy?: string;
+    initialMessage?: string;
+    sessionId?: string;
+    selected_therapy?: string;
+    showNewChatButton?: string;
+    greetingMessage?: string;
+    isNewSession?: string;
+  }>();
 
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -279,7 +286,11 @@ export default function ChatScreen() {
           isNewSession: "true",
         });
       } else {
-        router.setParams({ sessionId: Date.now().toString(), greetingMessage: "", isNewSession: "" });
+        router.setParams({
+          sessionId: Date.now().toString(),
+          greetingMessage: "",
+          isNewSession: "",
+        });
       }
     } catch (error) {
       console.error("[Chat] Error creating new session:", error);
@@ -387,6 +398,9 @@ export default function ChatScreen() {
               onSoundHealingPress={handleSoundHealing}
               // onBreathingPress={() => router.push("/breathing")}
               onBreathingPress={() => {}}
+              onTherapistPress={() => {
+                router.push("/(drawer)/human-therapists");
+              }}
               isSoundHealingLoading={isSoundHealingLoading}
               disabled={isLoading || isAnimating || isHistoryLoading}
             />

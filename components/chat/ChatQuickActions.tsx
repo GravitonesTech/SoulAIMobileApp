@@ -6,6 +6,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity } fro
 interface ChatQuickActionsProps {
   onSoundHealingPress: () => void;
   onBreathingPress: () => void;
+  onTherapistPress: () => void;
   isSoundHealingLoading?: boolean;
   disabled?: boolean;
 }
@@ -13,6 +14,7 @@ interface ChatQuickActionsProps {
 export const ChatQuickActions = ({
   onSoundHealingPress,
   onBreathingPress,
+  onTherapistPress,
   isSoundHealingLoading = false,
   disabled = false,
 }: ChatQuickActionsProps) => {
@@ -46,19 +48,11 @@ export const ChatQuickActions = ({
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.button, disabled && styles.buttonDisabled]}
-        onPress={onBreathingPress}
+        onPress={onTherapistPress}
         activeOpacity={0.7}
         disabled={disabled || isSoundHealingLoading}
       >
-        <Text style={styles.buttonText}>Breathing Exercise</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.button, disabled && styles.buttonDisabled]}
-        onPress={onBreathingPress}
-        activeOpacity={0.7}
-        disabled={disabled || isSoundHealingLoading}
-      >
-        <Text style={styles.buttonText}>Breathing Exercise</Text>
+        <Text style={styles.buttonText}>Human Therapist</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -66,8 +60,8 @@ export const ChatQuickActions = ({
 
 const styles = StyleSheet.create({
   container: {
-    maxHeight: normalize(52),
-    marginBottom: normalize(8),
+    maxHeight: normalize(44),
+    marginBottom: normalize(6),
   },
   scrollContent: {
     flexDirection: "row",
@@ -82,17 +76,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#EAF2FD", // Soft matching background
     borderWidth: 1.2,
     borderColor: "#3C61DD", // Border brand blue
-    paddingVertical: normalize(10),
+    paddingVertical: normalize(6),
     paddingHorizontal: normalize(16),
     borderRadius: normalize(20),
-    minHeight: normalize(42),
+    minHeight: normalize(34),
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: normalize(14),
+    fontSize: normalize(12),
     color: "#3C61DD",
     textAlign: "center",
   },
