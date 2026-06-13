@@ -17,6 +17,10 @@ type RecommendedSound = {
 
 interface ChatAudioPlayerProps {
   sound: RecommendedSound;
+  sessionId?: string;
+  therapy?: string;
+  selected_therapy?: string;
+  showNewChatButton?: string;
 }
 
 let activePlayer: any = null;
@@ -63,7 +67,13 @@ const safeSeekTo = (player: any, seconds: number) => {
   }
 };
 
-export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
+export const ChatAudioPlayer = ({
+  sound,
+  sessionId,
+  therapy,
+  selected_therapy,
+  showNewChatButton,
+}: ChatAudioPlayerProps) => {
   const router = useRouter();
   const player = useAudioPlayer(sound.sound);
   const status = useAudioPlayerStatus(player);
@@ -134,6 +144,10 @@ export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
         url: sound.sound,
         startTime: String(status.currentTime),
         from: "chat",
+        sessionId: sessionId || "",
+        therapy: therapy || "",
+        selected_therapy: selected_therapy || "",
+        showNewChatButton: showNewChatButton || "",
       },
     });
   };

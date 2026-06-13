@@ -22,6 +22,10 @@ interface ChatBubbleProps {
   shouldAnimate?: boolean;
   recommendedSound?: RecommendedSound | null;
   isHuman?: boolean;
+  sessionId?: string;
+  therapy?: string;
+  selected_therapy?: string;
+  showNewChatButton?: string;
 }
 
 export const ChatBubble = ({
@@ -31,6 +35,10 @@ export const ChatBubble = ({
   shouldAnimate = true,
   recommendedSound,
   isHuman,
+  sessionId,
+  therapy,
+  selected_therapy,
+  showNewChatButton,
 }: ChatBubbleProps) => {
   const router = useRouter();
   const isUser = role === "user";
@@ -85,7 +93,15 @@ export const ChatBubble = ({
             <Text style={[styles.bubbleText, styles.assistantText]}>{displayedText}</Text>
           </View>
         ) : null}
-        {recommendedSound && <ChatAudioPlayer sound={recommendedSound} />}
+        {recommendedSound && (
+          <ChatAudioPlayer
+            sound={recommendedSound}
+            sessionId={sessionId}
+            therapy={therapy}
+            selected_therapy={selected_therapy}
+            showNewChatButton={showNewChatButton}
+          />
+        )}
         {isHuman && (
           <TouchableOpacity
             onPress={() => router.push("/human-therapists")}

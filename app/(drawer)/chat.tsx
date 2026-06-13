@@ -371,6 +371,10 @@ export default function ChatScreen() {
                   shouldAnimate={m.shouldAnimate}
                   recommendedSound={m.recommendedSound}
                   isHuman={m.isHuman}
+                  sessionId={sessionId}
+                  therapy={therapy}
+                  selected_therapy={selected_therapy}
+                  showNewChatButton={showNewChatButton}
                   onAnimationComplete={
                     index === messages.length - 1 ? () => setIsAnimating(false) : undefined
                   }
