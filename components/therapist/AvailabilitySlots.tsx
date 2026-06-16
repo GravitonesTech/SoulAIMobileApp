@@ -125,10 +125,15 @@ export const AvailabilitySlots = ({
                 contentContainerStyle={styles.slotsRow}
               >
                 {AVAILABLE_TIMES.map((slot, index) => {
+                  const normalizeTimeStr = (str: string) => {
+                    return str
+                      .replace(/\s+/g, "")
+                      .toLowerCase()
+                      .replace(/(?:^|[^0-9])0([0-9]:)/g, "$1");
+                  };
+
                   const isSlotScheduled = schedule.time_slots.some(
-                    (as) =>
-                      as.replace(/\s+/g, "").toLowerCase() ===
-                      slot.replace(/\s+/g, "").toLowerCase(),
+                    (as) => normalizeTimeStr(as) === normalizeTimeStr(slot)
                   );
                   // Slot is available if it is scheduled AND (not today or not in the past today)
                   const isPast = diff === 0 && isTimeSlotInPast(slot);

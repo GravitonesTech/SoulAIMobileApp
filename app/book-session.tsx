@@ -166,9 +166,16 @@ export default function BookSessionScreen() {
       (s) => s.day_of_week.toLowerCase() === selectedSlot.day.toLowerCase()
     );
     if (daySchedule) {
+      const normalizeTimeStr = (str: string) => {
+        return str
+          .replace(/\s+/g, "")
+          .toLowerCase()
+          .replace(/(?:^|[^0-9])0([0-9]:)/g, "$1");
+      };
+
       const matchedOriginalSlot = daySchedule.time_slots.find(
         (as) =>
-          as.replace(/\s+/g, "").toLowerCase().includes(selectedSlot.slot.replace(/\s+/g, "").toLowerCase())
+          normalizeTimeStr(as).includes(normalizeTimeStr(selectedSlot.slot))
       );
       if (matchedOriginalSlot) {
         apiTimeSlot = matchedOriginalSlot;

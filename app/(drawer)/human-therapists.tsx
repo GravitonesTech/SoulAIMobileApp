@@ -1,4 +1,5 @@
 import { RecentTherapistCard } from "@/components/therapist/RecentTherapistCard";
+import { TherapistFilterModal } from "@/components/therapist/TherapistFilterModal";
 import { TherapistListItem } from "@/components/therapist/TherapistListItem";
 import { TherapistSearchBar } from "@/components/therapist/TherapistSearchBar";
 import { TopTherapistsList } from "@/components/therapist/TopTherapistsList";
@@ -15,12 +16,10 @@ import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Keyboard,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -37,6 +36,46 @@ export default function HumanTherapistsScreen() {
   const [isAppointmentsLoading, setIsAppointmentsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
+
+  // Filter states
+  const [activeFilters, setActiveFilters] = useState({
+    therapy: "All Therapy Types",
+    availability: "Any time",
+    experience: 1,
+    rating: "Any rating",
+  });
+
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
+  const [therapyOptions, setTherapyOptions] = useState<string[]>(["All Therapy Types"]);
+
+  // Fetch therapy options on mount
+  useEffect(() => {
+    const fetchTherapies = async () => {
+      try {
+        const response = await apiClient.get<Array<{ name: string }>>(ENDPOINTS.master.therapies);
+        if (response.success && response.data) {
+          const names = response.data.map((t) => t.name);
+          setTherapyOptions(["All Therapy Types", ...names]);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch therapies master:", err);
+      }
+    };
+    fetchTherapies();
+  }, []);
+
+  const handleOpenFilter = () => {
+    setIsFilterVisible(true);
+  };
+
+  const handleCancelFilter = () => {
+    setIsFilterVisible(false);
+  };
+
+  const handleApplyFilter = (filters: typeof activeFilters) => {
+    setActiveFilters(filters);
+    setIsFilterVisible(false);
+  };
 
   const fetchTherapistsAndAppointments = useCallback(async () => {
     setIsLoading(true);
@@ -77,9 +116,15 @@ export default function HumanTherapistsScreen() {
     }, [fetchTherapistsAndAppointments]),
   );
 
-  const performSearch = useCallback(async (query: string) => {
+  const performSearch = useCallback(async (query: string, filters: typeof activeFilters) => {
     const trimmed = query.trim();
-    if (!trimmed) {
+    const hasActiveFilters =
+      filters.therapy !== "All Therapy Types" ||
+      filters.availability !== "Any time" ||
+      filters.experience > 1 ||
+      filters.rating !== "Any rating";
+
+    if (!trimmed && !hasActiveFilters) {
       setSearchedTherapists([]);
       setIsSearching(false);
       setSearchError(null);
@@ -89,19 +134,37 @@ export default function HumanTherapistsScreen() {
     setIsSearching(true);
     setSearchError(null);
     try {
+      const params: any = {
+        page: 1,
+        page_size: 10,
+      };
+
+      if (trimmed) {
+        params.search_query = trimmed;
+      }
+      if (filters.therapy !== "All Therapy Types") {
+        params.therapy_type = filters.therapy;
+      }
+      if (filters.availability !== "Any time") {
+        params.available_time = filters.availability;
+      }
+      if (filters.experience > 1) {
+        params.experience_level = filters.experience;
+      }
+      if (filters.rating !== "Any rating") {
+        const ratingVal = parseFloat(filters.rating.split(" ")[0]);
+        if (!isNaN(ratingVal)) {
+          params.min_rating = ratingVal;
+        }
+      }
+
       const response = await apiClient.get<{
         total_count: number;
         page: number;
         page_size: number;
         total_pages: number;
         therapists: Therapist[];
-      }>(ENDPOINTS.users.getAllTherapists, {
-        params: {
-          page: 1,
-          page_size: 10,
-          search_query: trimmed,
-        },
-      });
+      }>(ENDPOINTS.users.getAllTherapists, { params });
 
       if (response.success && response.data) {
         setSearchedTherapists(response.data.therapists || []);
@@ -116,7 +179,13 @@ export default function HumanTherapistsScreen() {
   }, []);
 
   useEffect(() => {
-    if (searchText.trim()) {
+    const hasActiveFilters =
+      activeFilters.therapy !== "All Therapy Types" ||
+      activeFilters.availability !== "Any time" ||
+      activeFilters.experience > 1 ||
+      activeFilters.rating !== "Any rating";
+
+    if (searchText.trim() || hasActiveFilters) {
       setIsSearching(true);
     } else {
       setIsSearching(false);
@@ -125,15 +194,21 @@ export default function HumanTherapistsScreen() {
     }
 
     const handler = setTimeout(() => {
-      performSearch(searchText);
+      performSearch(searchText, activeFilters);
     }, 400);
 
     return () => {
       clearTimeout(handler);
     };
-  }, [searchText, performSearch]);
+  }, [searchText, activeFilters, performSearch]);
 
-  const showSearchResults = searchText.length > 0;
+  const hasActiveFilters =
+    activeFilters.therapy !== "All Therapy Types" ||
+    activeFilters.availability !== "Any time" ||
+    activeFilters.experience > 1 ||
+    activeFilters.rating !== "Any rating";
+
+  const showSearchResults = searchText.length > 0 || hasActiveFilters;
 
   const navigateToTherapistDetails = (therapist: Therapist) => {
     setSearchText("");
@@ -155,106 +230,162 @@ export default function HumanTherapistsScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={{ flex: 1 }}>
-        <LinearGradient
-          colors={["#FFFFFF", "#E2F4FF"]}
-          start={{ x: 0.1, y: 0.1 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.container}
-        >
-          <SafeAreaView style={styles.safeArea} edges={["top"]}>
-            {/* Header */}
-            <AppHeader leftIcon="arrow-left" title="Human Therapists" />
+    <View style={{ flex: 1 }}>
+      <LinearGradient
+        colors={["#FFFFFF", "#E2F4FF"]}
+        start={{ x: 0.1, y: 0.1 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.container}
+      >
+        <SafeAreaView style={styles.safeArea} edges={["top"]}>
+          {/* Header */}
+          <AppHeader leftIcon="arrow-left" title="Human Therapists" />
 
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
-              keyboardShouldPersistTaps="handled"
-            >
-              {/* Search Bar */}
-              <TherapistSearchBar
-                value={searchText}
-                onChangeText={setSearchText}
-                isFocused={isFocused}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                onSubmit={() => performSearch(searchText)}
-                showClear={searchText.length > 0}
-                onClear={() => setSearchText("")}
-              />
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            alwaysBounceVertical={true}
+            overScrollMode="always"
+          >
+            {/* Search Bar */}
+            <TherapistSearchBar
+              value={searchText}
+              onChangeText={setSearchText}
+              isFocused={isFocused}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onSubmit={() => performSearch(searchText, activeFilters)}
+              showClear={searchText.length > 0}
+              onClear={() => setSearchText("")}
+              onFilterPress={handleOpenFilter}
+            />
 
-              {showSearchResults ? (
-                /* Search Results */
-                <View style={styles.searchResultsContainer}>
-                  {isSearching ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="large" color="#3C61DD" />
+            {hasActiveFilters && (
+              <View style={styles.activeFiltersRow}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.activeFiltersScroll}
+                >
+                  {activeFilters.therapy !== "All Therapy Types" && (
+                    <View style={styles.filterChip}>
+                      <Text style={styles.filterChipText}>{activeFilters.therapy}</Text>
                     </View>
-                  ) : searchError ? (
-                    <View style={styles.errorContainer}>
-                      <Text style={styles.errorText}>{searchError}</Text>
-                      <TouchableOpacity
-                        style={styles.retryButton}
-                        onPress={() => performSearch(searchText)}
-                      >
-                        <Text style={styles.retryText}>Retry</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : searchedTherapists.length === 0 ? (
-                    <>
-                      <View style={styles.noResultContainer}>
-                        <Text style={styles.noResultTitle}>No results found</Text>
-                        <Text style={styles.noResultSubtitle}>
-                          {`No result found for “${searchText}” Please find another keyword or browse our top therapists below.`}
-                        </Text>
-                      </View>
-                      <TopTherapistsList
-                        therapists={therapists}
-                        isLoading={isLoading}
-                        error={error}
-                        onRetry={fetchTherapistsAndAppointments}
-                        onTherapistPress={navigateToTherapistDetails}
-                      />
-                    </>
-                  ) : (
-                    searchedTherapists.map((therapist) => (
-                      <TherapistListItem
-                        key={therapist.id}
-                        therapist={therapist}
-                        onPress={() => navigateToTherapistDetails(therapist)}
-                      />
-                    ))
                   )}
-                </View>
-              ) : (
-                <>
-                  {/* Upcoming Appointment */}
-                  <UpcomingAppointments
-                    appointments={upcomingAppointments}
-                    isLoading={isAppointmentsLoading}
-                    onJoinSession={handleJoinSession}
-                    onCancelSession={handleCancelSession}
-                  />
+                  {activeFilters.availability !== "Any time" && (
+                    <View style={styles.filterChip}>
+                      <Text style={styles.filterChipText}>{activeFilters.availability}</Text>
+                    </View>
+                  )}
+                  {activeFilters.experience > 1 && (
+                    <View style={styles.filterChip}>
+                      <Text style={styles.filterChipText}>{`>= ${activeFilters.experience} yrs`}</Text>
+                    </View>
+                  )}
+                  {activeFilters.rating !== "Any rating" && (
+                    <View style={styles.filterChip}>
+                      <Text style={styles.filterChipText}>{`${activeFilters.rating}`}</Text>
+                    </View>
+                  )}
+                  <TouchableOpacity
+                    onPress={() =>
+                      setActiveFilters({
+                        therapy: "All Therapy Types",
+                        availability: "Any time",
+                        experience: 1,
+                        rating: "Any rating",
+                      })
+                    }
+                    style={styles.clearFiltersChip}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.clearFiltersChipText}>Clear All</Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
+            )}
 
-                  {/* Recent */}
-                  <RecentTherapistCard />
+            {showSearchResults ? (
+              /* Search Results */
+              <View style={styles.searchResultsContainer}>
+                {isSearching ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#3C61DD" />
+                  </View>
+                ) : searchError ? (
+                  <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{searchError}</Text>
+                    <TouchableOpacity
+                      style={styles.retryButton}
+                      onPress={() => performSearch(searchText, activeFilters)}
+                    >
+                      <Text style={styles.retryText}>Retry</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : searchedTherapists.length === 0 ? (
+                  <>
+                    <View style={styles.noResultContainer}>
+                      <Text style={styles.noResultTitle}>No results found</Text>
+                      <Text style={styles.noResultSubtitle}>
+                        {`No results match your criteria. Please clear filters or search for another keyword.`}
+                      </Text>
+                    </View>
+                    <TopTherapistsList
+                      therapists={therapists}
+                      isLoading={isLoading}
+                      error={error}
+                      onRetry={fetchTherapistsAndAppointments}
+                      onTherapistPress={navigateToTherapistDetails}
+                    />
+                  </>
+                ) : (
+                  searchedTherapists.map((therapist) => (
+                    <TherapistListItem
+                      key={therapist.id}
+                      therapist={therapist}
+                      onPress={() => navigateToTherapistDetails(therapist)}
+                    />
+                  ))
+                )}
+              </View>
+            ) : (
+              <>
+                {/* Upcoming Appointment */}
+                <UpcomingAppointments
+                  appointments={upcomingAppointments}
+                  isLoading={isAppointmentsLoading}
+                  onJoinSession={handleJoinSession}
+                  onCancelSession={handleCancelSession}
+                />
 
-                  {/* Top Therapists */}
-                  <TopTherapistsList
-                    therapists={therapists}
-                    isLoading={isLoading}
-                    error={error}
-                    onRetry={fetchTherapistsAndAppointments}
-                    onTherapistPress={navigateToTherapistDetails}
-                  />
-                </>
-              )}
-            </ScrollView>
-          </SafeAreaView>
-        </LinearGradient>
-      </View>
-    </TouchableWithoutFeedback>
+                {/* Recent */}
+                <RecentTherapistCard />
+
+                {/* Top Therapists */}
+                <TopTherapistsList
+                  therapists={therapists}
+                  isLoading={isLoading}
+                  error={error}
+                  onRetry={fetchTherapistsAndAppointments}
+                  onTherapistPress={navigateToTherapistDetails}
+                />
+              </>
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </LinearGradient>
+
+      {/* FILTER MODAL */}
+      <TherapistFilterModal
+        visible={isFilterVisible}
+        onClose={handleCancelFilter}
+        activeFilters={activeFilters}
+        onApply={handleApplyFilter}
+        therapyOptions={therapyOptions}
+      />
+    </View>
   );
 }
 
@@ -266,6 +397,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: moderateScale(20),
     paddingBottom: hp(4),
   },
@@ -321,5 +453,40 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.bold,
     fontSize: normalize(13),
     color: "#FFF",
+  },
+  activeFiltersRow: {
+    marginTop: hp(1),
+    marginBottom: hp(0.5),
+  },
+  activeFiltersScroll: {
+    paddingLeft: moderateScale(4),
+    alignItems: "center",
+  },
+  filterChip: {
+    backgroundColor: "#E2F4FF",
+    borderRadius: normalize(12),
+    paddingVertical: moderateScale(6),
+    paddingHorizontal: moderateScale(12),
+    marginRight: moderateScale(8),
+    borderWidth: 1,
+    borderColor: "#CCE5FF",
+  },
+  filterChipText: {
+    fontFamily: Typography.fonts.medium,
+    fontSize: normalize(12),
+    color: "#3C61DD",
+  },
+  clearFiltersChip: {
+    backgroundColor: "#FFF",
+    borderRadius: normalize(12),
+    paddingVertical: moderateScale(6),
+    paddingHorizontal: moderateScale(12),
+    borderWidth: 1,
+    borderColor: "#E5E5EA",
+  },
+  clearFiltersChipText: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(12),
+    color: "#FF3B30",
   },
 });
