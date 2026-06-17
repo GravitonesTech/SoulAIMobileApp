@@ -37,10 +37,7 @@ export default function ProfileScreen() {
   const [isUploading, setIsUploading] = useState(false);
   const { showConfirmation } = useAppConfirmation();
   const user = useAppSelector((state) => state.auth.user);
-  const [assessmentStatus, setAssessmentStatus] = useState<{
-    phq9Submitted: boolean;
-    gad7Submitted: boolean;
-  }>({ phq9Submitted: false, gad7Submitted: false });
+  const [assessmentCompleted, setAssessmentCompleted] = useState(false);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
 
   const userResponseStyle =
@@ -78,16 +75,18 @@ export default function ProfileScreen() {
             {
               form_code: string;
               submitted: boolean;
+              is_onboarding?: boolean;
             }[]
           >(ENDPOINTS.users.assessmentStatus);
 
           if (response.success && response.data && isMounted) {
-            const phq9 = response.data.find((f) => f.form_code === "PHQ-9");
-            const gad7 = response.data.find((f) => f.form_code === "GAD-7");
-            setAssessmentStatus({
-              phq9Submitted: !!phq9?.submitted,
-              gad7Submitted: !!gad7?.submitted,
+            const allOnboardingSubmitted = response.data.length > 0 && response.data.every((f) => {
+              if (f.is_onboarding) {
+                return f.submitted;
+              }
+              return true;
             });
+            setAssessmentCompleted(allOnboardingSubmitted);
           }
         } catch (error) {
           console.error("[ProfileScreen] Error fetching assessment status:", error);
@@ -233,7 +232,7 @@ export default function ProfileScreen() {
               <Text style={styles.linkText}>
                 {isLoadingStatus
                   ? "Checking Status..."
-                  : assessmentStatus.phq9Submitted && assessmentStatus.gad7Submitted
+                  : assessmentCompleted
                     ? "Retake Personality Test"
                     : "Take Personality Test"}
               </Text>
