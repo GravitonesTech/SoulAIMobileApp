@@ -52,13 +52,7 @@ type Category = {
 
 export default function SoundHealingScreen() {
   const router = useRouter();
-  const {
-    from,
-    sessionId,
-    therapy,
-    selected_therapy,
-    showNewChatButton,
-  } = useLocalSearchParams<{
+  const { from, sessionId, therapy, selected_therapy, showNewChatButton } = useLocalSearchParams<{
     from?: string;
     sessionId?: string;
     therapy?: string;

@@ -21,7 +21,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ExperienceScreen() {
   const router = useRouter();
-  const [selectedExperience, setSelectedExperience] = useState<{ id: number; name: string } | null>(null);
+  const [selectedExperience, setSelectedExperience] = useState<{ id: number; name: string } | null>(
+    null,
+  );
   const [experienceLevels, setExperienceLevels] = useState<{ id: number; name: string }[]>([]);
 
   useEffect(() => {
