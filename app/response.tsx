@@ -30,7 +30,11 @@ export default function ResponseScreen() {
   const user = useAppSelector((state) => state.auth.user);
 
   const [selectedTone, setSelectedTone] = useState<{ id: number; name: string } | null>(() => {
-    if (from === "profile" && Array.isArray(user?.response_styles) && user.response_styles.length > 0) {
+    if (
+      from === "profile" &&
+      Array.isArray(user?.response_styles) &&
+      user.response_styles.length > 0
+    ) {
       return user.response_styles[0];
     }
     return null;
