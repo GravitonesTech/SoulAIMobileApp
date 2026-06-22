@@ -37,11 +37,34 @@ export default function ProfileScreen() {
   const [isUploading, setIsUploading] = useState(false);
   const { showConfirmation } = useAppConfirmation();
   const user = useAppSelector((state) => state.auth.user);
-  const [assessmentStatus, setAssessmentStatus] = useState<{
-    phq9Submitted: boolean;
-    gad7Submitted: boolean;
-  }>({ phq9Submitted: false, gad7Submitted: false });
+  const [assessmentCompleted, setAssessmentCompleted] = useState(false);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+
+  const userResponseStyle =
+    Array.isArray(user?.response_styles) && user.response_styles.length > 0
+      ? user.response_styles[0].name || "Warm and Nurturing"
+      : typeof user?.response_styles === "string"
+        ? user.response_styles
+        : "Warm and Nurturing";
+
+  const userSupportTypes =
+    Array.isArray(user?.support_types) && user.support_types.length > 0
+      ? user.support_types.map((s: any) => (s && typeof s === "object" ? s.name : s))
+      : ["Stress"];
+
+  const openEditTherapyStyle = () => {
+    router.push({
+      pathname: "/response",
+      params: { from: "profile" },
+    } as any);
+  };
+
+  const openEditSupportNeeded = () => {
+    router.push({
+      pathname: "/support",
+      params: { from: "profile" },
+    } as any);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -52,16 +75,18 @@ export default function ProfileScreen() {
             {
               form_code: string;
               submitted: boolean;
+              is_onboarding?: boolean;
             }[]
           >(ENDPOINTS.users.assessmentStatus);
 
           if (response.success && response.data && isMounted) {
-            const phq9 = response.data.find((f) => f.form_code === "PHQ-9");
-            const gad7 = response.data.find((f) => f.form_code === "GAD-7");
-            setAssessmentStatus({
-              phq9Submitted: !!phq9?.submitted,
-              gad7Submitted: !!gad7?.submitted,
+            const allOnboardingSubmitted = response.data.length > 0 && response.data.every((f) => {
+              if (f.is_onboarding) {
+                return f.submitted;
+              }
+              return true;
             });
+            setAssessmentCompleted(allOnboardingSubmitted);
           }
         } catch (error) {
           console.error("[ProfileScreen] Error fetching assessment status:", error);
@@ -72,11 +97,23 @@ export default function ProfileScreen() {
         }
       };
 
+      const fetchUserProfile = async () => {
+        try {
+          const response = await apiClient.get(ENDPOINTS.users.me);
+          if (response.success && response.data && isMounted) {
+            dispatch(updateUser(response.data));
+          }
+        } catch (error) {
+          console.error("[ProfileScreen] Error fetching user profile:", error);
+        }
+      };
+
       fetchStatus();
+      fetchUserProfile();
       return () => {
         isMounted = false;
       };
-    }, []),
+    }, [dispatch]),
   );
 
   const handleUpdateProfilePhoto = async (base64: string) => {
@@ -195,10 +232,44 @@ export default function ProfileScreen() {
               <Text style={styles.linkText}>
                 {isLoadingStatus
                   ? "Checking Status..."
-                  : assessmentStatus.phq9Submitted && assessmentStatus.gad7Submitted
+                  : assessmentCompleted
                     ? "Retake Personality Test"
                     : "Take Personality Test"}
               </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Therapy Style */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>THERAPY STYLE</Text>
+            <View style={styles.card}>
+              <View style={[styles.cardItem, styles.noBorder]}>
+                <Text style={styles.cardItemText}>{userResponseStyle}</Text>
+              </View>
+            </View>
+            <TouchableOpacity style={styles.linkButton} onPress={openEditTherapyStyle}>
+              <Text style={styles.linkText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Support Needed */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>SUPPORT NEEDED</Text>
+            <View style={styles.card}>
+              {userSupportTypes.map((item: string, index: number) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.cardItem,
+                    index === userSupportTypes.length - 1 && styles.noBorder,
+                  ]}
+                >
+                  <Text style={styles.cardItemText}>{item}</Text>
+                </View>
+              ))}
+            </View>
+            <TouchableOpacity style={styles.linkButton} onPress={openEditSupportNeeded}>
+              <Text style={styles.linkText}>Edit</Text>
             </TouchableOpacity>
           </View>
 

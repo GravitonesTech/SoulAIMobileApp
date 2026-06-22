@@ -50,6 +50,8 @@ export const ENDPOINTS = {
     myAppointments: "/users/appointments/my-appointments",
     /** POST — Book/create an appointment */
     bookAppointment: "/users/appointments/book",
+    /** GET — Fetch metadata */
+    metadata: "/users/metadata",
   },
 
   chat: {
@@ -59,6 +61,8 @@ export const ENDPOINTS = {
     sessions: "/chat/sessions",
     /** GET — Retrieve session details (Chat History) */
     sessionDetails: (sessionId: string) => `/chat/sessions/${sessionId}`,
+    /** POST — Fetch sound healing based on chat history */
+    soundHealing: "/chat/chat/sound-healing",
   },
   master: {
     /** GET — Fetch available therapies */

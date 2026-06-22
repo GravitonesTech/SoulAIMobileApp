@@ -39,6 +39,18 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
                 if (route === "privacy-policy" || route === "terms" || route === "profile") {
                   navigation.closeDrawer();
                   router.push(`/${route}` as any);
+                } else if (route === "sound-healing-flow") {
+                  navigation.closeDrawer();
+                  navigation.navigate("sound-healing-flow", {
+                    screen: "index",
+                    params: {
+                      from: undefined,
+                      sessionId: undefined,
+                      therapy: undefined,
+                      selected_therapy: undefined,
+                      showNewChatButton: undefined,
+                    },
+                  } as any);
                 } else {
                   navigation.navigate(route as any);
                 }

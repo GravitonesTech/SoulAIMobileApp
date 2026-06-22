@@ -4,7 +4,7 @@ import { Feather } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type RecommendedSound = {
@@ -17,6 +17,10 @@ type RecommendedSound = {
 
 interface ChatAudioPlayerProps {
   sound: RecommendedSound;
+  sessionId?: string;
+  therapy?: string;
+  selected_therapy?: string;
+  showNewChatButton?: string;
 }
 
 let activePlayer: any = null;
@@ -63,17 +67,18 @@ const safeSeekTo = (player: any, seconds: number) => {
   }
 };
 
-export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
+export const ChatAudioPlayer = ({
+  sound,
+  sessionId,
+  therapy,
+  selected_therapy,
+  showNewChatButton,
+}: ChatAudioPlayerProps) => {
   const router = useRouter();
   const player = useAudioPlayer(sound.sound);
   const status = useAudioPlayerStatus(player);
   const isFocused = useIsFocused();
-
-  useEffect(() => {
-    if (player && sound.sound) {
-      safePlay(player);
-    }
-  }, [player, sound.sound]);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     if (!isFocused) {
@@ -106,13 +111,6 @@ export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
     };
   }, [player]);
 
-  useEffect(() => {
-    // If playback finishes, reset position to start so it can be replayed
-    if (!status.playing && status.duration > 0 && status.currentTime >= status.duration - 0.5) {
-      safeSeekTo(player, 0);
-    }
-  }, [status.playing, status.currentTime, status.duration, player]);
-
   const handlePlayPause = () => {
     if (status.playing) {
       safePause(player);
@@ -138,14 +136,38 @@ export const ChatAudioPlayer = ({ sound }: ChatAudioPlayerProps) => {
         image: sound.image,
         url: sound.sound,
         startTime: String(status.currentTime),
+        from: "chat",
+        sessionId: sessionId || "",
+        therapy: therapy || "",
+        selected_therapy: selected_therapy || "",
+        showNewChatButton: showNewChatButton || "",
       },
     });
   };
 
+  const handleDismiss = () => {
+    safePause(player);
+    if (activePlayer === player) {
+      activePlayer = null;
+    }
+    setIsVisible(false);
+  };
+
   const progressPercent = status.duration > 0 ? (status.currentTime / status.duration) * 100 : 0;
+
+  if (!isVisible) return null;
 
   return (
     <View style={styles.card}>
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={handleDismiss}
+        activeOpacity={0.7}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <Feather name="x" size={normalize(14)} color="#8A8A8E" />
+      </TouchableOpacity>
+
       <View style={styles.mainRow}>
         <TouchableOpacity
           style={styles.contentPressable}
@@ -183,14 +205,14 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "#D2E0FC", // Soft light blue border to match the design mock
     alignSelf: "flex-start",
-    width: normalize(260), // Shorter width for a more compact, pixel-perfect design
+    width: normalize(280), // Compact, pixel-perfect design width
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 10,
     elevation: 2,
     marginBottom: normalize(10),
-    overflow: "hidden", // Ensures progress bar respects the rounded corners
+    position: "relative",
   },
   mainRow: {
     flexDirection: "row",
@@ -236,14 +258,38 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingLeft: normalize(4),
     paddingRight: normalize(8),
+    marginRight: normalize(8),
   },
   progressContainer: {
     height: normalize(5),
     backgroundColor: "#E2F4FF", // A very soft light blue track
     width: "100%",
+    borderBottomLeftRadius: normalize(14),
+    borderBottomRightRadius: normalize(14),
+    overflow: "hidden",
   },
   progressBar: {
     height: "100%",
     backgroundColor: "#3C61DD", // Vibrant brand blue progress indicator
+    borderBottomLeftRadius: normalize(14),
+  },
+  closeButton: {
+    position: "absolute",
+    top: normalize(-2),
+    right: normalize(-2),
+    width: normalize(28),
+    height: normalize(28),
+    borderRadius: normalize(14),
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#D2E0FC",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
 });

@@ -11,7 +11,15 @@ import * as FileSystem from "expo-file-system/legacy";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  BackHandler,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -26,8 +34,37 @@ const getSubcategoryName = (
 
 export default function NowPlayingScreen() {
   const router = useRouter();
-  const { title, artist, image, url, id, categoryId, artist_name, subcategory_id, startTime } =
-    useLocalSearchParams();
+  const {
+    title,
+    artist,
+    image,
+    url,
+    id,
+    categoryId,
+    artist_name,
+    subcategory_id,
+    startTime,
+    from,
+    sessionId,
+    therapy,
+    selected_therapy,
+    showNewChatButton,
+  } = useLocalSearchParams<{
+    title?: string;
+    artist?: string;
+    image?: string;
+    url?: string;
+    id?: string;
+    categoryId?: string;
+    artist_name?: string;
+    subcategory_id?: string;
+    startTime?: string;
+    from?: string;
+    sessionId?: string;
+    therapy?: string;
+    selected_therapy?: string;
+    showNewChatButton?: string;
+  }>();
 
   const [sounds, setSounds] = useState<any[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
@@ -118,6 +155,27 @@ export default function NowPlayingScreen() {
       }
     }
   }, [isFocused, player]);
+
+  useEffect(() => {
+    if (isFocused && from === "chat") {
+      const backAction = () => {
+        router.replace({
+          pathname: "/chat",
+          params: {
+            from: "chat",
+            sessionId: sessionId || "",
+            therapy: therapy || "",
+            selected_therapy: selected_therapy || "",
+            showNewChatButton: showNewChatButton || "",
+          },
+        } as any);
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+      return () => backHandler.remove();
+    }
+  }, [isFocused, from, sessionId, therapy, selected_therapy, showNewChatButton]);
 
   const hasSoughtRef = useRef(false);
 
@@ -223,7 +281,28 @@ export default function NowPlayingScreen() {
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right", "bottom"]}>
         <View style={styles.flex1}>
           {/* Header */}
-          <AppHeader title="Now Playing" leftIcon="arrow-left" titleColor="#FFF" iconColor="#FFF" />
+          <AppHeader
+            title="Now Playing"
+            leftIcon="arrow-left"
+            titleColor="#FFF"
+            iconColor="#FFF"
+            onLeftPress={() => {
+              if (from === "chat") {
+                router.replace({
+                  pathname: "/sound-healing-flow",
+                  params: {
+                    from: "chat",
+                    sessionId: sessionId || "",
+                    therapy: therapy || "",
+                    selected_therapy: selected_therapy || "",
+                    showNewChatButton: showNewChatButton || "",
+                  },
+                } as any);
+              } else {
+                router.back();
+              }
+            }}
+          />
 
           <View style={styles.contentContainer}>
             {/* Artwork */}

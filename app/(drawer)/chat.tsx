@@ -1,5 +1,6 @@
 import { ChatBubble } from "@/components/chat/ChatBubble";
 import { ChatInput } from "@/components/chat/ChatInput";
+import { ChatQuickActions } from "@/components/chat/ChatQuickActions";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { ENDPOINTS } from "@/constants/endpoints";
@@ -37,35 +38,59 @@ type ChatMessage = {
   text: string;
   shouldAnimate?: boolean;
   recommendedSound?: RecommendedSound | null;
+  isHuman?: boolean;
 };
 
 export default function ChatScreen() {
   const router = useRouter();
-  const { therapy, initialMessage, sessionId, selected_therapy, showNewChatButton } =
-    useLocalSearchParams<{
-      therapy?: string;
-      initialMessage?: string;
-      sessionId?: string;
-      selected_therapy?: string;
-      showNewChatButton?: string;
-    }>();
+  const {
+    therapy,
+    initialMessage,
+    sessionId,
+    selected_therapy,
+    showNewChatButton,
+    greetingMessage,
+    isNewSession,
+  } = useLocalSearchParams<{
+    therapy?: string;
+    initialMessage?: string;
+    sessionId?: string;
+    selected_therapy?: string;
+    showNewChatButton?: string;
+    greetingMessage?: string;
+    isNewSession?: string;
+  }>();
 
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isSoundHealingLoading, setIsSoundHealingLoading] = useState(false);
   const isKeyboardVisible = useKeyboardVisibility();
   const scrollViewRef = useRef<ScrollView>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const isNewSessionRef = useRef(false);
+  const prevSessionIdRef = useRef<string | undefined>(undefined);
 
   const fetchChatHistory = async (id: string) => {
     setIsHistoryLoading(true);
     try {
       const response = await apiClient.get<any>(ENDPOINTS.chat.sessionDetails(id));
-      if (response.success && response.data?.history) {
-        const history = response.data.history;
+      if (response.success && response.data) {
+        const history = response.data.history || [];
         const mappedMessages: ChatMessage[] = [];
+
+        const greeting = response.data.greeting_message || response.data.greeting;
+        if (greeting) {
+          console.log("[ChatScreen] Found greeting message in history details:", greeting);
+          mappedMessages.push({
+            id: "greeting",
+            role: "assistant",
+            text: greeting,
+            shouldAnimate: false,
+          });
+        }
 
         history.forEach((item: any, index: number) => {
           if (item.user_input) {
@@ -85,6 +110,8 @@ export default function ChatScreen() {
           const recommendedSound =
             item.recommended_sound || item.responses?.recommended_sound || null;
 
+          const isHuman = item.is_human || item.responses?.is_human || false;
+
           if (responseText || recommendedSound) {
             mappedMessages.push({
               id: `hist-a-${index}`,
@@ -92,6 +119,7 @@ export default function ChatScreen() {
               text: responseText || "",
               shouldAnimate: false,
               recommendedSound: recommendedSound,
+              isHuman: isHuman,
             });
           }
         });
@@ -107,15 +135,36 @@ export default function ChatScreen() {
   };
 
   useEffect(() => {
-    // Reset all messages and state when the session/path changes to prevent
-    // stale animation or loading flags from locking the chat inputs.
-    setMessages([]);
-    setIsLoading(false);
-    setIsHistoryLoading(false);
-    setIsAnimating(false);
-    setInputText("");
+    // Only reset state if we are actually switching to a different session
+    if (sessionId !== prevSessionIdRef.current) {
+      setMessages([]);
+      setIsLoading(false);
+      setIsHistoryLoading(false);
+      setIsAnimating(false);
+      setInputText("");
+      isNewSessionRef.current = false;
+      prevSessionIdRef.current = sessionId;
+    }
 
-    if (sessionId && isNaN(Number(sessionId)) && !initialMessage) {
+    if (isNewSession === "true") {
+      isNewSessionRef.current = true;
+    }
+
+    if (greetingMessage) {
+      console.log("[ChatScreen] Received greetingMessage parameter:", greetingMessage);
+      setMessages([
+        {
+          id: "greeting",
+          role: "assistant",
+          text: String(greetingMessage),
+          shouldAnimate: true,
+        },
+      ]);
+      setIsAnimating(true);
+      router.setParams({ greetingMessage: "", isNewSession: "" });
+    }
+
+    if (sessionId && isNaN(Number(sessionId)) && !initialMessage && !isNewSessionRef.current) {
       fetchChatHistory(sessionId);
     }
 
@@ -125,7 +174,7 @@ export default function ChatScreen() {
         abortControllerRef.current = null;
       }
     };
-  }, [sessionId, therapy, selected_therapy]);
+  }, [sessionId, therapy, selected_therapy, greetingMessage, isNewSession]);
 
   useEffect(() => {
     if (initialMessage) {
@@ -157,10 +206,8 @@ export default function ChatScreen() {
       text: trimmed,
     };
 
-    if (typeof textOverride === "string") {
-      setMessages([userMessage]);
-    } else {
-      setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
+    if (typeof textOverride !== "string") {
       setInputText("");
     }
     setIsLoading(true);
@@ -187,12 +234,14 @@ export default function ChatScreen() {
       if (response.success && response.data) {
         const aiResponse = response.data.response;
         const recommendedSound = response.data.recommended_sound || null;
+        const isHuman = response.data.is_human || false;
         const assistantMessage: ChatMessage = {
           id: `m-${Date.now()}-a`,
           role: "assistant",
           text: aiResponse || "",
           shouldAnimate: true,
           recommendedSound: recommendedSound,
+          isHuman: isHuman,
         };
         setIsAnimating(true);
         setMessages((prev) => [...prev, assistantMessage]);
@@ -219,6 +268,7 @@ export default function ChatScreen() {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
+    isNewSessionRef.current = false;
     setMessages([]);
     setIsLoading(true);
     setIsAnimating(false);
@@ -230,15 +280,55 @@ export default function ChatScreen() {
         title: "New Chat",
       });
       if (response.success && response.data?.session_id) {
-        router.setParams({ sessionId: response.data.session_id });
+        router.setParams({
+          sessionId: response.data.session_id,
+          greetingMessage: response.data.greeting_message || "",
+          isNewSession: "true",
+        });
       } else {
-        router.setParams({ sessionId: Date.now().toString() });
+        router.setParams({
+          sessionId: Date.now().toString(),
+          greetingMessage: "",
+          isNewSession: "",
+        });
       }
     } catch (error) {
       console.error("[Chat] Error creating new session:", error);
       router.setParams({ sessionId: Date.now().toString() });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSoundHealing = async () => {
+    if (!sessionId || isNaN(Number(sessionId)) === false) {
+      toast.error("Error", "Please start a conversation first.");
+      return;
+    }
+    setIsSoundHealingLoading(true);
+    try {
+      const response = await apiClient.post<any>(ENDPOINTS.chat.soundHealing, {
+        session_id: sessionId,
+      });
+      if (response.success && response.data) {
+        const data = response.data;
+        const newMsg: ChatMessage = {
+          id: `sh-${Date.now()}`,
+          role: "assistant",
+          text: data.response || "Here is a recommended sound healing session for you:",
+          shouldAnimate: true,
+          recommendedSound: data.recommended_sound || null,
+          isHuman: data.is_human || false,
+        };
+        setMessages((prev) => [...prev, newMsg]);
+      } else {
+        toast.error("Error", response.message || "Failed to fetch sound healing session.");
+      }
+    } catch (error) {
+      console.error("[Chat] Error fetching sound healing:", error);
+      toast.error("Error", "Failed to retrieve sound healing recommendation.");
+    } finally {
+      setIsSoundHealingLoading(false);
     }
   };
 
@@ -291,6 +381,11 @@ export default function ChatScreen() {
                   text={m.text}
                   shouldAnimate={m.shouldAnimate}
                   recommendedSound={m.recommendedSound}
+                  isHuman={m.isHuman}
+                  sessionId={sessionId}
+                  therapy={therapy}
+                  selected_therapy={selected_therapy}
+                  showNewChatButton={showNewChatButton}
                   onAnimationComplete={
                     index === messages.length - 1 ? () => setIsAnimating(false) : undefined
                   }
@@ -301,12 +396,26 @@ export default function ChatScreen() {
             {isLoading && <TypingIndicator />}
           </ScrollView>
 
+          {/* Quick Actions Bar */}
+          {!isKeyboardVisible && (
+            <ChatQuickActions
+              onSoundHealingPress={handleSoundHealing}
+              // onBreathingPress={() => router.push("/breathing")}
+              onBreathingPress={() => {}}
+              onTherapistPress={() => {
+                router.push("/(drawer)/human-therapists");
+              }}
+              isSoundHealingLoading={isSoundHealingLoading}
+              disabled={isLoading || isAnimating || isHistoryLoading}
+            />
+          )}
+
           {/* Input Bar */}
           <ChatInput
             value={inputText}
             onChangeText={setInputText}
             onSend={handleSend}
-            disabled={isLoading || isAnimating || isHistoryLoading}
+            disabled={isLoading || isAnimating || isHistoryLoading || isSoundHealingLoading}
           />
         </KeyboardAvoidingView>
       </SafeAreaView>

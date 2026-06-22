@@ -5,10 +5,12 @@ import { apiClient } from "@/utils/api";
 import { moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useIsFocused } from "@react-navigation/native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  BackHandler,
   Image,
   RefreshControl,
   ScrollView,
@@ -50,10 +52,39 @@ type Category = {
 
 export default function SoundHealingScreen() {
   const router = useRouter();
+  const { from, sessionId, therapy, selected_therapy, showNewChatButton } = useLocalSearchParams<{
+    from?: string;
+    sessionId?: string;
+    therapy?: string;
+    selected_therapy?: string;
+    showNewChatButton?: string;
+  }>();
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused && from === "chat") {
+      const backAction = () => {
+        router.replace({
+          pathname: "/chat",
+          params: {
+            from: "chat",
+            sessionId: sessionId || "",
+            therapy: therapy || "",
+            selected_therapy: selected_therapy || "",
+            showNewChatButton: showNewChatButton || "",
+          },
+        } as any);
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+      return () => backHandler.remove();
+    }
+  }, [isFocused, from, sessionId, therapy, selected_therapy, showNewChatButton]);
 
   const fetchData = useCallback(async (showLoadingIndicator = true) => {
     try {
@@ -114,7 +145,26 @@ export default function SoundHealingScreen() {
     >
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right", "bottom"]}>
         <View style={styles.flex1}>
-          <AppHeader title="Sound Healing" leftIcon="arrow-left" />
+          <AppHeader
+            title="Sound Healing"
+            leftIcon="arrow-left"
+            onLeftPress={() => {
+              if (from === "chat") {
+                router.replace({
+                  pathname: "/chat",
+                  params: {
+                    from: "chat",
+                    sessionId: sessionId || "",
+                    therapy: therapy || "",
+                    selected_therapy: selected_therapy || "",
+                    showNewChatButton: showNewChatButton || "",
+                  },
+                } as any);
+              } else {
+                router.back();
+              }
+            }}
+          />
 
           <ScrollView
             showsVerticalScrollIndicator={false}
