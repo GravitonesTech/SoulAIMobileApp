@@ -80,12 +80,14 @@ export default function ProfileScreen() {
           >(ENDPOINTS.users.assessmentStatus);
 
           if (response.success && response.data && isMounted) {
-            const allOnboardingSubmitted = response.data.length > 0 && response.data.every((f) => {
-              if (f.is_onboarding) {
-                return f.submitted;
-              }
-              return true;
-            });
+            const allOnboardingSubmitted =
+              response.data.length > 0 &&
+              response.data.every((f) => {
+                if (f.is_onboarding) {
+                  return f.submitted;
+                }
+                return true;
+              });
             setAssessmentCompleted(allOnboardingSubmitted);
           }
         } catch (error) {

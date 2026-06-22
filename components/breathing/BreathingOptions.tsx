@@ -1,6 +1,6 @@
 import { Typography } from "@/constants/Typography";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 
 interface BreathingOptionsProps {
@@ -22,15 +22,22 @@ export const BreathingOptions = ({
   isLoading,
   onOptionSelect,
 }: BreathingOptionsProps) => {
+  const scrollViewRef = useRef<ScrollView>(null);
+
   let options: string[] = [];
   if (step === 1) options = durationOptions;
   else if (step === 2) options = patternOptions;
   else if (step === 3) options = musicOptions;
 
+  useEffect(() => {
+    scrollViewRef.current?.scrollTo({ x: 0, animated: false });
+  }, [step]);
+
   if (step === 4) return null;
 
   return (
     <ScrollView
+      ref={scrollViewRef}
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.optionsScrollContent}

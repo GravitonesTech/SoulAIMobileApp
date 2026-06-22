@@ -27,7 +27,7 @@ export const ChatInput = ({
             value={value}
             onChangeText={onChangeText}
             placeholder={placeholder}
-            placeholderTextColor="#8E8E93"
+            placeholderTextColor="#747474"
             style={styles.input}
             onSubmitEditing={!disabled ? onSend : undefined}
             returnKeyType="send"
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     flex: 1,
-    backgroundColor: "#D9E3F0", // Adjusted to match the light blue-gray tone in the image
+    backgroundColor: "rgba(0, 0, 0, 0.04)", // Adjusted to match the light blue-gray tone in the image
     height: normalize(48),
     borderRadius: normalize(24),
     justifyContent: "center",
