@@ -1,169 +1,391 @@
-import { TOP_THERAPISTS } from "@/constants/StaticData";
+import { RecentTherapistCard } from "@/components/therapist/RecentTherapistCard";
+import { TherapistFilterModal } from "@/components/therapist/TherapistFilterModal";
+import { TherapistListItem } from "@/components/therapist/TherapistListItem";
+import { TherapistSearchBar } from "@/components/therapist/TherapistSearchBar";
+import { TopTherapistsList } from "@/components/therapist/TopTherapistsList";
+import { UpcomingAppointments } from "@/components/therapist/UpcomingAppointments";
 import { AppHeader } from "@/components/ui/AppHeader";
+import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { Appointment, Therapist } from "@/types/therapist";
+import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
-import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useMemo, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  Image,
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HumanTherapistsScreen() {
+  const router = useRouter();
   const [searchText, setSearchText] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [therapists, setTherapists] = useState<Therapist[]>([]);
+  const [searchedTherapists, setSearchedTherapists] = useState<Therapist[]>([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isAppointmentsLoading, setIsAppointmentsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
-  const filteredTherapists = useMemo(() => {
-    if (!searchText.trim()) return [];
-    return TOP_THERAPISTS.filter((t) => t.name.toLowerCase().includes(searchText.toLowerCase()));
-  }, [searchText]);
+  // Filter states
+  const [activeFilters, setActiveFilters] = useState({
+    therapy: "All Therapy Types",
+    availability: "Any time",
+    experience: 1,
+    rating: "Any rating",
+  });
 
-  const showSearchResults = searchText.length > 0;
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
+  const [therapyOptions, setTherapyOptions] = useState<string[]>(["All Therapy Types"]);
+
+  // Fetch therapy options on mount
+  useEffect(() => {
+    const fetchTherapies = async () => {
+      try {
+        const response = await apiClient.get<Array<{ name: string }>>(ENDPOINTS.master.therapies);
+        if (response.success && response.data) {
+          const names = response.data.map((t) => t.name);
+          setTherapyOptions(["All Therapy Types", ...names]);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch therapies master:", err);
+      }
+    };
+    fetchTherapies();
+  }, []);
+
+  const handleOpenFilter = () => {
+    setIsFilterVisible(true);
+  };
+
+  const handleCancelFilter = () => {
+    setIsFilterVisible(false);
+  };
+
+  const handleApplyFilter = (filters: typeof activeFilters) => {
+    setActiveFilters(filters);
+    setIsFilterVisible(false);
+  };
+
+  const fetchTherapistsAndAppointments = useCallback(async () => {
+    setIsLoading(true);
+    setIsAppointmentsLoading(true);
+    setError(null);
+
+    const [therapistsRes, appointmentsRes] = await Promise.allSettled([
+      apiClient.get<Therapist[]>(ENDPOINTS.users.topRatedTherapists),
+      apiClient.get<{ upcoming: Appointment[]; past: any[] }>(ENDPOINTS.users.myAppointments),
+    ]);
+
+    if (
+      therapistsRes.status === "fulfilled" &&
+      therapistsRes.value.success &&
+      therapistsRes.value.data
+    ) {
+      setTherapists(therapistsRes.value.data);
+    } else {
+      const msg =
+        therapistsRes.status === "fulfilled" ? therapistsRes.value.message : "Network error";
+      setError(msg || "Failed to load therapists");
+    }
+    setIsLoading(false);
+
+    if (
+      appointmentsRes.status === "fulfilled" &&
+      appointmentsRes.value.success &&
+      appointmentsRes.value.data
+    ) {
+      setUpcomingAppointments(appointmentsRes.value.data.upcoming || []);
+    }
+    setIsAppointmentsLoading(false);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchTherapistsAndAppointments();
+    }, [fetchTherapistsAndAppointments]),
+  );
+
+  const performSearch = useCallback(async (query: string, filters: typeof activeFilters) => {
+    const trimmed = query.trim();
+    const hasActiveFilters =
+      filters.therapy !== "All Therapy Types" ||
+      filters.availability !== "Any time" ||
+      filters.experience > 1 ||
+      filters.rating !== "Any rating";
+
+    if (!trimmed && !hasActiveFilters) {
+      setSearchedTherapists([]);
+      setIsSearching(false);
+      setSearchError(null);
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError(null);
+    try {
+      const params: any = {
+        page: 1,
+        page_size: 10,
+      };
+
+      if (trimmed) {
+        params.search_query = trimmed;
+      }
+      if (filters.therapy !== "All Therapy Types") {
+        params.therapy_type = filters.therapy;
+      }
+      if (filters.availability !== "Any time") {
+        params.available_time = filters.availability;
+      }
+      if (filters.experience > 1) {
+        params.experience_level = filters.experience;
+      }
+      if (filters.rating !== "Any rating") {
+        const ratingVal = parseFloat(filters.rating.split(" ")[0]);
+        if (!isNaN(ratingVal)) {
+          params.min_rating = ratingVal;
+        }
+      }
+
+      const response = await apiClient.get<{
+        total_count: number;
+        page: number;
+        page_size: number;
+        total_pages: number;
+        therapists: Therapist[];
+      }>(ENDPOINTS.users.getAllTherapists, { params });
+
+      if (response.success && response.data) {
+        setSearchedTherapists(response.data.therapists || []);
+      } else {
+        setSearchError(response.message || "Failed to search therapists");
+      }
+    } catch {
+      setSearchError("An unexpected network error occurred");
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const hasActiveFilters =
+      activeFilters.therapy !== "All Therapy Types" ||
+      activeFilters.availability !== "Any time" ||
+      activeFilters.experience > 1 ||
+      activeFilters.rating !== "Any rating";
+
+    if (searchText.trim() || hasActiveFilters) {
+      setIsSearching(true);
+    } else {
+      setIsSearching(false);
+      setSearchedTherapists([]);
+      setSearchError(null);
+    }
+
+    const handler = setTimeout(() => {
+      performSearch(searchText, activeFilters);
+    }, 400);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchText, activeFilters, performSearch]);
+
+  const hasActiveFilters =
+    activeFilters.therapy !== "All Therapy Types" ||
+    activeFilters.availability !== "Any time" ||
+    activeFilters.experience > 1 ||
+    activeFilters.rating !== "Any rating";
+
+  const showSearchResults = searchText.length > 0 || hasActiveFilters;
+
+  const navigateToTherapistDetails = (therapist: Therapist) => {
+    setSearchText("");
+    router.push({
+      pathname: "/therapist-details",
+      params: {
+        id: therapist.id.toString(),
+        therapistJson: JSON.stringify(therapist),
+      },
+    } as any);
+  };
+
+  const handleJoinSession = (appointment: Appointment) => {
+    toast.info("Joining Session", `Connecting you with ${appointment.therapist_name}...`);
+  };
+
+  const handleCancelSession = (appointment: Appointment) => {
+    toast.info("Cancel Session", "Please contact support to cancel your session.");
+  };
 
   return (
-    <LinearGradient
-      colors={["#FFFFFF", "#E2F4FF"]}
-      start={{ x: 0.1, y: 0.1 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.container}
-    >
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        {/* Header */}
-        <AppHeader leftIcon="arrow-left" title="Human Therapists" />
+    <View style={{ flex: 1 }}>
+      <LinearGradient
+        colors={["#FFFFFF", "#E2F4FF"]}
+        start={{ x: 0.1, y: 0.1 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.container}
+      >
+        <SafeAreaView style={styles.safeArea} edges={["top"]}>
+          {/* Header */}
+          <AppHeader leftIcon="arrow-left" title="Human Therapists" />
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Search Bar */}
-          <View style={styles.searchSection}>
-            <View
-              style={[styles.searchBar, (isFocused || showSearchResults) && styles.searchBarActive]}
-            >
-              <TextInput
-                placeholder="Search for a therapist"
-                placeholderTextColor="#A0A0A0"
-                style={styles.searchInput}
-                value={searchText}
-                onChangeText={setSearchText}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-              />
-            </View>
-            <TouchableOpacity style={styles.filterButton}>
-              <MaterialIcons name="filter-list" size={normalize(24)} color="#333" />
-            </TouchableOpacity>
-          </View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            alwaysBounceVertical={true}
+            overScrollMode="always"
+          >
+            {/* Search Bar */}
+            <TherapistSearchBar
+              value={searchText}
+              onChangeText={setSearchText}
+              isFocused={isFocused}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onSubmit={() => performSearch(searchText, activeFilters)}
+              showClear={searchText.length > 0}
+              onClear={() => setSearchText("")}
+              onFilterPress={handleOpenFilter}
+            />
 
-          {showSearchResults ? (
-            /* Search Results */
-            <View style={styles.searchResultsContainer}>
-              {filteredTherapists.map((therapist) => (
-                <TouchableOpacity
-                  key={therapist.id}
-                  style={styles.searchResultItem}
-                  onPress={() => {
-                    setSearchText("");
-                    // navigation to therapist details could go here
-                  }}
+            {hasActiveFilters && (
+              <View style={styles.activeFiltersRow}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.activeFiltersScroll}
                 >
-                  <View style={styles.searchResultLeft}>
-                    <Feather name="sun" size={normalize(20)} color="#333" />
-                    <Text style={styles.searchResultName}>{therapist.name}</Text>
-                  </View>
-                  <Feather name="arrow-right" size={normalize(18)} color="#A0A0A0" />
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : (
-            <>
-              {/* Upcoming Appointment */}
-              <View style={styles.section}>
-                <Text style={styles.sectionLabel}>UPCOMING APPOINTMENT</Text>
-                <View style={styles.appointmentCard}>
-                  <View style={styles.appointmentHeader}>
-                    <View>
-                      <Text style={styles.therapistName}>Dr. Z Chen</Text>
-                      <Text style={styles.sessionInfo}>30 minutes Session</Text>
+                  {activeFilters.therapy !== "All Therapy Types" && (
+                    <View style={styles.filterChip}>
+                      <Text style={styles.filterChipText}>{activeFilters.therapy}</Text>
                     </View>
-                    <Text style={styles.appointmentTime}>April 26, 2026 at 5:00 PM</Text>
-                  </View>
-
-                  <TouchableOpacity style={styles.actionRow}>
-                    <View style={styles.actionLeft}>
-                      <Feather name="user" size={normalize(20)} color="#333" />
-                      <Text style={styles.actionText}>Join Session</Text>
+                  )}
+                  {activeFilters.availability !== "Any time" && (
+                    <View style={styles.filterChip}>
+                      <Text style={styles.filterChipText}>{activeFilters.availability}</Text>
                     </View>
-                    <Feather name="chevron-right" size={normalize(18)} color="#A0A0A0" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={[styles.actionRow, styles.noBorder]}>
-                    <View style={styles.actionLeft}>
-                      <Feather name="alert-circle" size={normalize(20)} color="#E53935" />
-                      <Text style={[styles.actionText, styles.cancelText]}>Cancel Session</Text>
+                  )}
+                  {activeFilters.experience > 1 && (
+                    <View style={styles.filterChip}>
+                      <Text style={styles.filterChipText}>{`>= ${activeFilters.experience} yrs`}</Text>
                     </View>
-                    <Feather name="chevron-right" size={normalize(18)} color="#A0A0A0" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Recent */}
-              <View style={styles.section}>
-                <Text style={styles.sectionLabel}>RECENT</Text>
-                <View style={styles.recentCard}>
-                  <View style={styles.recentHeader}>
-                    <View>
-                      <Text style={styles.therapistName}>Dr. John Nolan</Text>
-                      <Text style={styles.ratingText}>4.1 Rating</Text>
-                      <Text style={styles.specializationText}>
-                        Specialized in Cognitive Therapy
-                      </Text>
+                  )}
+                  {activeFilters.rating !== "Any rating" && (
+                    <View style={styles.filterChip}>
+                      <Text style={styles.filterChipText}>{`${activeFilters.rating}`}</Text>
                     </View>
-                    <Feather name="chevron-right" size={normalize(24)} color="#A0A0A0" />
-                  </View>
-                  <Image
-                    source={require("@/assets/images/therapist.png")}
-                    style={styles.recentImage}
-                  />
-                </View>
-              </View>
-
-              {/* Top Therapists */}
-              <View style={styles.section}>
-                <Text style={styles.sectionLabel}>TOP THERAPISTS</Text>
-                {TOP_THERAPISTS.map((therapist, index) => (
+                  )}
                   <TouchableOpacity
-                    key={index}
-                    style={styles.therapistListItem}
+                    onPress={() =>
+                      setActiveFilters({
+                        therapy: "All Therapy Types",
+                        availability: "Any time",
+                        experience: 1,
+                        rating: "Any rating",
+                      })
+                    }
+                    style={styles.clearFiltersChip}
                     activeOpacity={0.7}
                   >
-                    <View style={styles.therapistListLeft}>
-                      <View style={styles.listAvatarContainer}>
-                        <Image source={therapist.image} style={styles.avatar} />
-                      </View>
-                      <View style={styles.listInfo}>
-                        <Text style={styles.therapistName}>{therapist.name}</Text>
-                        <Text style={styles.ratingText}>{therapist.rating}</Text>
-                        <Text style={styles.specializationText}>{therapist.specialization}</Text>
-                      </View>
-                    </View>
-                    <Feather name="chevron-right" size={normalize(24)} color="#A0A0A0" />
+                    <Text style={styles.clearFiltersChipText}>Clear All</Text>
                   </TouchableOpacity>
-                ))}
+                </ScrollView>
               </View>
-            </>
-          )}
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+            )}
+
+            {showSearchResults ? (
+              /* Search Results */
+              <View style={styles.searchResultsContainer}>
+                {isSearching ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#3C61DD" />
+                  </View>
+                ) : searchError ? (
+                  <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{searchError}</Text>
+                    <TouchableOpacity
+                      style={styles.retryButton}
+                      onPress={() => performSearch(searchText, activeFilters)}
+                    >
+                      <Text style={styles.retryText}>Retry</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : searchedTherapists.length === 0 ? (
+                  <>
+                    <View style={styles.noResultContainer}>
+                      <Text style={styles.noResultTitle}>No results found</Text>
+                      <Text style={styles.noResultSubtitle}>
+                        {`No results match your criteria. Please clear filters or search for another keyword.`}
+                      </Text>
+                    </View>
+                    <TopTherapistsList
+                      therapists={therapists}
+                      isLoading={isLoading}
+                      error={error}
+                      onRetry={fetchTherapistsAndAppointments}
+                      onTherapistPress={navigateToTherapistDetails}
+                    />
+                  </>
+                ) : (
+                  searchedTherapists.map((therapist) => (
+                    <TherapistListItem
+                      key={therapist.id}
+                      therapist={therapist}
+                      onPress={() => navigateToTherapistDetails(therapist)}
+                    />
+                  ))
+                )}
+              </View>
+            ) : (
+              <>
+                {/* Upcoming Appointment */}
+                <UpcomingAppointments
+                  appointments={upcomingAppointments}
+                  isLoading={isAppointmentsLoading}
+                  onJoinSession={handleJoinSession}
+                  onCancelSession={handleCancelSession}
+                />
+
+                {/* Recent */}
+                <RecentTherapistCard />
+
+                {/* Top Therapists */}
+                <TopTherapistsList
+                  therapists={therapists}
+                  isLoading={isLoading}
+                  error={error}
+                  onRetry={fetchTherapistsAndAppointments}
+                  onTherapistPress={navigateToTherapistDetails}
+                />
+              </>
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </LinearGradient>
+
+      {/* FILTER MODAL */}
+      <TherapistFilterModal
+        visible={isFilterVisible}
+        onClose={handleCancelFilter}
+        activeFilters={activeFilters}
+        onApply={handleApplyFilter}
+        therapyOptions={therapyOptions}
+      />
+    </View>
   );
 }
 
@@ -175,197 +397,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: moderateScale(20),
     paddingBottom: hp(4),
-  },
-  searchSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: hp(1),
-    marginBottom: hp(3),
-    gap: moderateScale(15),
-  },
-  searchBar: {
-    flex: 1,
-    height: moderateScale(48),
-    backgroundColor: "rgba(0,0,0,0.04)",
-    borderRadius: normalize(24),
-    paddingHorizontal: moderateScale(20),
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "transparent",
-  },
-  searchBarActive: {
-    backgroundColor: "#FFF",
-    borderColor: "#3C61DD",
-  },
-  searchInput: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(14),
-    color: "#000",
-  },
-  filterButton: {
-    padding: moderateScale(5),
-  },
-  section: {
-    marginBottom: hp(3),
-  },
-  sectionLabel: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(12),
-    color: "#666",
-    marginBottom: hp(1.5),
-    letterSpacing: 0.5,
-  },
-  appointmentCard: {
-    backgroundColor: "#FFF",
-    borderRadius: normalize(16),
-    padding: moderateScale(16),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  appointmentHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: hp(2),
-  },
-  therapistName: {
-    fontFamily: Typography.fonts.bold,
-    fontSize: normalize(16),
-    color: "#000",
-  },
-  sessionInfo: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(13),
-    color: "#666",
-    marginTop: hp(0.5),
-  },
-  appointmentTime: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(12),
-    lineHeight: normalize(18),
-    color: "#E53935",
-    textAlign: "right",
-  },
-  actionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: moderateScale(14),
-    borderTopWidth: 1,
-    borderTopColor: "rgba(0,0,0,0.05)",
-  },
-  noBorder: {
-    borderTopWidth: 1,
-  },
-  actionLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: moderateScale(12),
-  },
-  actionText: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(14),
-    color: "#000",
-  },
-  cancelText: {
-    color: "#E53935",
-  },
-  recentCard: {
-    backgroundColor: "#FFF",
-    borderRadius: normalize(16),
-    padding: moderateScale(16),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  recentHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: hp(2),
-  },
-  ratingText: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(12),
-    color: "#666",
-    marginTop: hp(0.3),
-  },
-  specializationText: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(13),
-    color: "#999",
-    marginTop: hp(0.5),
-  },
-  recentImage: {
-    width: "100%",
-    height: hp(35),
-    borderRadius: normalize(12),
-    resizeMode: "cover",
-  },
-  therapistListItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#FFF",
-    borderRadius: normalize(16),
-    padding: moderateScale(12),
-    marginBottom: hp(1.5),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 1,
-  },
-  therapistListLeft: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: moderateScale(15),
-  },
-  listAvatarContainer: {
-    width: moderateScale(50),
-    height: moderateScale(50),
-    borderRadius: normalize(25),
-    backgroundColor: "#D1E5FF",
-    overflow: "hidden",
-  },
-  avatar: {
-    width: "100%",
-    height: "100%",
-  },
-  listInfo: {
-    flex: 1,
   },
   searchResultsContainer: {
     marginTop: hp(1),
   },
-  searchResultItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: moderateScale(16),
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.05)",
-  },
-  searchResultLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: moderateScale(15),
-  },
-  searchResultName: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(16),
-    color: "#000",
-  },
   noResultContainer: {
     alignItems: "center",
-    marginTop: hp(5),
+    marginTop: hp(4),
   },
   noResultTitle: {
     fontFamily: Typography.fonts.bold,
@@ -382,31 +423,70 @@ const styles = StyleSheet.create({
     paddingHorizontal: moderateScale(10),
     marginBottom: hp(4),
   },
-  suggestionsCard: {
-    width: "100%",
-    backgroundColor: "#FFF",
-    borderRadius: normalize(16),
-    paddingHorizontal: moderateScale(16),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  suggestionItem: {
-    flexDirection: "row",
+  loadingContainer: {
+    paddingVertical: hp(4),
+    justifyContent: "center",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: moderateScale(16),
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.05)",
   },
-  noBottomBorder: {
-    borderBottomWidth: 0,
+  errorContainer: {
+    paddingVertical: hp(3),
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 59, 48, 0.05)",
+    borderRadius: normalize(12),
+    paddingHorizontal: moderateScale(15),
   },
-  suggestionName: {
+  errorText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: normalize(15),
-    color: "#000",
+    fontSize: normalize(14),
+    color: "#FF3B30",
+    textAlign: "center",
+    marginBottom: hp(1.5),
+  },
+  retryButton: {
+    backgroundColor: "#3C61DD",
+    paddingHorizontal: moderateScale(20),
+    paddingVertical: moderateScale(8),
+    borderRadius: normalize(20),
+  },
+  retryText: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(13),
+    color: "#FFF",
+  },
+  activeFiltersRow: {
+    marginTop: hp(1),
+    marginBottom: hp(0.5),
+  },
+  activeFiltersScroll: {
+    paddingLeft: moderateScale(4),
+    alignItems: "center",
+  },
+  filterChip: {
+    backgroundColor: "#E2F4FF",
+    borderRadius: normalize(12),
+    paddingVertical: moderateScale(6),
+    paddingHorizontal: moderateScale(12),
+    marginRight: moderateScale(8),
+    borderWidth: 1,
+    borderColor: "#CCE5FF",
+  },
+  filterChipText: {
+    fontFamily: Typography.fonts.medium,
+    fontSize: normalize(12),
+    color: "#3C61DD",
+  },
+  clearFiltersChip: {
+    backgroundColor: "#FFF",
+    borderRadius: normalize(12),
+    paddingVertical: moderateScale(6),
+    paddingHorizontal: moderateScale(12),
+    borderWidth: 1,
+    borderColor: "#E5E5EA",
+  },
+  clearFiltersChipText: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(12),
+    color: "#FF3B30",
   },
 });

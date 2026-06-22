@@ -40,6 +40,16 @@ export const ENDPOINTS = {
     assessmentSubmissionsBulk: "/users/assessments/submissions/bulk",
     /** GET — Get form completion statuses */
     assessmentStatus: "/users/assessments/status",
+    /** GET — Fetch top rated therapists */
+    topRatedTherapists: "/users/therapists/top-rated",
+    /** GET — Fetch all therapists (with page, page_size, search_query) */
+    getAllTherapists: "/users/getalltherapists",
+    /** GET — Fetch reviews for a specific therapist */
+    reviews: (therapistId: number | string) => `/users/reviews/${therapistId}`,
+    /** GET — Fetch user appointments */
+    myAppointments: "/users/appointments/my-appointments",
+    /** POST — Book/create an appointment */
+    bookAppointment: "/users/appointments/book",
     /** GET — Fetch metadata */
     metadata: "/users/metadata",
   },

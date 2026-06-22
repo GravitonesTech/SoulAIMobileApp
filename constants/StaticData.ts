@@ -195,3 +195,14 @@ export const TOP_THERAPISTS = [
     image: require("@/assets/images/avatar.png"),
   },
 ];
+
+export const USER_AVATAR_COLORS = [
+  "#FF3366", // Vibrant Pink/Red
+  "#20B2AA", // Light Sea Green
+  "#9370DB", // Medium Purple
+  "#FF8C00", // Dark Orange
+  "#00BFFF", // Deep Sky Blue
+  "#32CD32", // Lime Green
+];
+
+export const AVAILABLE_TIMES = ["10:00 AM", "12:00 PM", "02:00 PM", "04:00 PM", "06:00 PM"];
