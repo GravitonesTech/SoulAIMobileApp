@@ -1,19 +1,25 @@
+import { ChatBubble } from "@/components/chat/ChatBubble";
 import { ChatInput } from "@/components/chat/ChatInput";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { AppHeader } from "@/components/ui/AppHeader";
-import { Typography } from "@/constants/Typography";
+import { ENDPOINTS } from "@/constants/endpoints";
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility";
-import { hp, moderateScale, normalize } from "@/utils/responsive";
+import { apiClient } from "@/utils/api";
+import { moderateScale } from "@/utils/responsive";
+import { useIsFocused } from "@react-navigation/native";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import { BreathingBeginButton } from "@/components/breathing/BreathingBeginButton";
+import { BreathingOptions } from "@/components/breathing/BreathingOptions";
 
 type Message = {
   id: string;
@@ -28,17 +34,81 @@ const MUSIC_OPTIONS = ["No, I like silence", "Mindfulness", "Relaxing", "Nature"
 export default function BreathingExerciseScreen() {
   const [step, setStep] = useState(1);
   const [inputText, setInputText] = useState("");
-  const [messages, setMessages] = useState<Message[]>([
-    { id: "1", text: "How long would you like to do this exercise for?", sender: "app" },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [patternOptions, setPatternOptions] = useState<string[]>(PATTERN_OPTIONS);
+  const isFocused = useIsFocused();
   const scrollViewRef = useRef<ScrollView>(null);
   const isKeyboardVisible = useKeyboardVisibility();
 
+  const startSession = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiClient.post<any>(ENDPOINTS.chat.sessions, {
+        therapy_type: "breathing_exercise",
+        title: "Breathing Exercise",
+      });
+      if (response.success && response.data) {
+        setSessionId(response.data.session_id);
+        setIsAnimating(true);
+        setMessages([
+          {
+            id: "greeting",
+            text:
+              response.data.greeting_message ||
+              "Hello and welcome! Let's get your breathing exercise ready. Would you like a quick 1–3 minute session or something longer, like 5, 10, or 20 minutes?",
+            sender: "app",
+          },
+        ]);
+      } else {
+        setIsAnimating(true);
+        setMessages([
+          {
+            id: "1",
+            text: "Hello and welcome! Let's get your breathing exercise ready. Would you like a quick 1–3 minute session or something longer, like 5, 10, or 20 minutes?",
+            sender: "app",
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("[Breathing] Error starting session:", error);
+      setIsAnimating(true);
+      setMessages([
+        {
+          id: "1",
+          text: "Hello and welcome! Let's get your breathing exercise ready. Would you like a quick 1–3 minute session or something longer, like 5, 10, or 20 minutes?",
+          sender: "app",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchBreathingPatterns = async () => {
+    try {
+      const response = await apiClient.get<any>(ENDPOINTS.master.breathingPatterns);
+      if (response.success && Array.isArray(response.data)) {
+        const names = response.data.map((item: any) => item.display_name);
+        if (names.length > 0) {
+          setPatternOptions(names);
+        }
+      }
+    } catch (error) {
+      console.error("[Breathing] Error fetching breathing patterns:", error);
+    }
+  };
+
   useEffect(() => {
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  }, [messages]);
+    if (isFocused) {
+      setStep(1);
+      setInputText("");
+      startSession();
+      fetchBreathingPatterns();
+    }
+  }, [isFocused]);
 
   const handleSend = () => {
     if (inputText.trim()) {
@@ -48,63 +118,67 @@ export default function BreathingExerciseScreen() {
     }
   };
 
-  const handleOptionSelect = (option: string) => {
+  const handleOptionSelect = async (option: string) => {
+    if (isLoading || isAnimating) return;
+    setIsAnimating(true);
+
     const userMessage: Message = { id: Date.now().toString(), text: option, sender: "user" };
     setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
 
-    setTimeout(() => {
-      if (step === 1) {
+    try {
+      const response = await apiClient.post<any>(ENDPOINTS.chat.send, {
+        session_id: sessionId || "",
+        user_input: option,
+        selected_therapy: "breathing_exercise",
+      });
+
+      if (response.success && response.data) {
         setMessages((prev) => [
           ...prev,
           {
             id: (Date.now() + 1).toString(),
-            text: "What breathing pattern do you prefer?",
+            text: response.data.response || "",
             sender: "app",
           },
         ]);
-        setStep(2);
-      } else if (step === 2) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: (Date.now() + 1).toString(),
-            text: "Would you like a background music while you do the breathing exercise?",
-            sender: "app",
-          },
-        ]);
-        setStep(3);
-      } else if (step === 3) {
-        setStep(4);
+        setStep((prev) => prev + 1);
+      } else {
+        handleFallback();
       }
-    }, 500);
+    } catch (error) {
+      console.error("[Breathing] Error sending message:", error);
+      handleFallback();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const renderOptions = () => {
-    let options: string[] = [];
-    if (step === 1) options = DURATION_OPTIONS;
-    else if (step === 2) options = PATTERN_OPTIONS;
-    else if (step === 3) options = MUSIC_OPTIONS;
-
-    if (step === 4) return null;
-
-    return (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.optionsScrollContent}
-        style={styles.optionsScroll}
-      >
-        {options.map((option, _index) => (
-          <TouchableOpacity
-            key={_index}
-            style={styles.optionChip}
-            onPress={() => handleOptionSelect(option)}
-          >
-            <Text style={styles.optionText}>{option}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    );
+  const handleFallback = () => {
+    if (step === 1) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          text: "What breathing pattern do you prefer?",
+          sender: "app",
+        },
+      ]);
+      setStep(2);
+    } else if (step === 2) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          text: "Would you like a background music while you do the breathing exercise?",
+          sender: "app",
+        },
+      ]);
+      setStep(3);
+    } else if (step === 3) {
+      setStep(4);
+      setIsAnimating(false);
+    }
   };
 
   return (
@@ -115,47 +189,67 @@ export default function BreathingExerciseScreen() {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : isKeyboardVisible ? "height" : undefined}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
         <View style={styles.content}>
-          <View style={styles.titleSection}>
-            <Text style={styles.title}>Meditating</Text>
-            <Text style={styles.updateText}>Last Update: 12.02.26</Text>
-          </View>
-
-          <ScrollView
-            ref={scrollViewRef}
-            style={styles.chatArea}
-            contentContainerStyle={styles.chatContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {messages.map((msg) => (
-              <View
-                key={msg.id}
-                style={[
-                  styles.messageBubble,
-                  msg.sender === "user" ? styles.userBubble : styles.appBubble,
-                ]}
-              >
-                <Text style={[styles.messageText, msg.sender === "user" && styles.userMessageText]}>
-                  {msg.text}
-                </Text>
-              </View>
-            ))}
-          </ScrollView>
+          {messages.length === 0 && isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#3C61DD" />
+            </View>
+          ) : (
+            <ScrollView
+              ref={scrollViewRef}
+              style={styles.chatArea}
+              contentContainerStyle={styles.chatContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+            >
+              {messages.map((msg, index) => (
+                <ChatBubble
+                  key={msg.id}
+                  role={msg.sender === "user" ? "user" : "assistant"}
+                  text={msg.text}
+                  shouldAnimate={msg.sender !== "user"}
+                  onAnimationComplete={
+                    index === messages.length - 1 && msg.sender !== "user"
+                      ? () => setIsAnimating(false)
+                      : undefined
+                  }
+                />
+              ))}
+              {messages.length > 0 && isLoading && <TypingIndicator />}
+            </ScrollView>
+          )}
         </View>
 
-        {renderOptions()}
-
-        {step === 4 ? (
-          <View style={styles.footer}>
-            <TouchableOpacity style={styles.beginButton} onPress={() => {}}>
-              <Text style={styles.beginButtonText}>Begin Exercise</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <ChatInput value={inputText} onChangeText={setInputText} onSend={handleSend} />
+        {sessionId !== null && (
+          <BreathingOptions
+            step={step}
+            durationOptions={DURATION_OPTIONS}
+            patternOptions={patternOptions}
+            musicOptions={MUSIC_OPTIONS}
+            isAnimating={isAnimating}
+            isLoading={isLoading}
+            onOptionSelect={handleOptionSelect}
+          />
         )}
+
+        {sessionId !== null &&
+          (step === 4 ? (
+            <BreathingBeginButton
+              onPress={() => {
+                console.log("[Breathing] Beginning exercise with session:", sessionId);
+              }}
+              disabled={isAnimating || isLoading}
+            />
+          ) : (
+            <ChatInput
+              value={inputText}
+              onChangeText={setInputText}
+              onSend={handleSend}
+              disabled={isAnimating || isLoading}
+            />
+          ))}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -166,109 +260,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F2F9FF",
   },
-  header: {
-    // Redundant but keeping placeholder if needed later
-  },
-  avatar: {
-    width: "100%",
-    height: "100%",
-  },
   content: {
     flex: 1,
     paddingHorizontal: moderateScale(20),
   },
-  titleSection: {
-    marginTop: hp(2),
-    marginBottom: hp(3),
-  },
-  title: {
-    fontFamily: Typography.fonts.bold,
-    fontSize: normalize(24),
-    color: "#000",
-  },
-  updateText: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(12),
-    color: "#999",
-    marginTop: hp(0.5),
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   chatArea: {
     flex: 1,
   },
   chatContent: {
     paddingBottom: moderateScale(2),
-  },
-  messageBubble: {
-    maxWidth: "80%",
-    paddingHorizontal: moderateScale(16),
-    paddingVertical: moderateScale(12),
-    borderRadius: normalize(16),
-    marginBottom: hp(1.5),
-  },
-  appBubble: {
-    backgroundColor: "#FFF",
-    alignSelf: "flex-start",
-    borderTopLeftRadius: normalize(4),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  userBubble: {
-    backgroundColor: "#3C61DD",
-    alignSelf: "flex-end",
-    borderTopRightRadius: normalize(4),
-  },
-  messageText: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(15),
-    color: "#333",
-    lineHeight: normalize(22),
-  },
-  userMessageText: {
-    color: "#FFF",
-  },
-  optionsScroll: {
-    maxHeight: hp(8),
-  },
-  optionsScrollContent: {
-    paddingHorizontal: moderateScale(20),
-    gap: moderateScale(10),
-    alignItems: "center",
-  },
-  optionChip: {
-    paddingHorizontal: moderateScale(20),
-    paddingVertical: moderateScale(10),
-    borderRadius: normalize(25),
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "#3C61DD",
-  },
-  optionText: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(14),
-    color: "#3C61DD",
-  },
-  footer: {
-    paddingHorizontal: moderateScale(20),
-    paddingBottom: hp(4),
-  },
-  beginButton: {
-    backgroundColor: "#3C61DD",
-    height: moderateScale(56),
-    borderRadius: normalize(28),
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#3C61DD",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  beginButtonText: {
-    fontFamily: Typography.fonts.bold,
-    fontSize: normalize(18),
-    color: "#FFF",
   },
 });

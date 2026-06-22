@@ -64,6 +64,21 @@ export const ChatBubble = ({
     return () => clearInterval(interval);
   }, [isUser, text, shouldAnimate]);
 
+  const renderFormattedText = (textStr: string) => {
+    if (!textStr) return null;
+    const parts = textStr.split("**");
+    return parts.map((part, index) => {
+      if (index % 2 === 1) {
+        return (
+          <Text key={index} style={{ fontFamily: Typography.fonts.bold }}>
+            {part}
+          </Text>
+        );
+      }
+      return part;
+    });
+  };
+
   if (isUser) {
     return (
       <View style={[styles.bubbleRow, styles.bubbleRowRight]}>
@@ -73,7 +88,7 @@ export const ChatBubble = ({
           end={{ x: 1, y: 1 }}
           style={[styles.bubble, styles.userBubble]}
         >
-          <Text style={[styles.bubbleText, styles.userText]}>{text}</Text>
+          <Text style={[styles.bubbleText, styles.userText]}>{renderFormattedText(text)}</Text>
         </LinearGradient>
       </View>
     );
@@ -90,7 +105,9 @@ export const ChatBubble = ({
               { maxWidth: "100%", marginBottom: recommendedSound ? normalize(8) : 0 },
             ]}
           >
-            <Text style={[styles.bubbleText, styles.assistantText]}>{displayedText}</Text>
+            <Text style={[styles.bubbleText, styles.assistantText]}>
+              {renderFormattedText(displayedText)}
+            </Text>
           </View>
         ) : null}
         {recommendedSound && (
