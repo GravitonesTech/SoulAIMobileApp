@@ -219,11 +219,9 @@ export default function BreathingExerciseScreen() {
     } else {
       setIsExerciseActive(false);
       setIsPaused(false);
-      stopBreathAnimation();
+      stopBreathAnimation(true);
       setSecondsRemaining(0);
       setCycleSecondsRemaining(0);
-      breathScale.setValue(0);
-      currentScaleVal.current = 0;
     }
   }, [isFocused]);
 
@@ -244,7 +242,7 @@ export default function BreathingExerciseScreen() {
         setSecondsRemaining((prev) => {
           if (prev <= 1) {
             setIsExerciseActive(false);
-            stopBreathAnimation();
+            stopBreathAnimation(true);
             toast.success("Completed", "Great job! You have completed the breathing exercise.");
             return 0;
           }
@@ -393,8 +391,16 @@ export default function BreathingExerciseScreen() {
     }).start();
   };
 
-  const stopBreathAnimation = () => {
-    breathScale.stopAnimation();
+  const stopBreathAnimation = (resetToZero?: boolean) => {
+    if (resetToZero) {
+      breathScale.stopAnimation();
+      breathScale.setValue(0);
+      currentScaleVal.current = 0;
+    } else {
+      breathScale.stopAnimation((value) => {
+        currentScaleVal.current = value;
+      });
+    }
   };
 
   const handleBeginExercise = () => {
@@ -425,7 +431,9 @@ export default function BreathingExerciseScreen() {
   const handleCancel = () => {
     setIsExerciseActive(false);
     setIsPaused(false);
-    stopBreathAnimation();
+    stopBreathAnimation(true);
+    setSecondsRemaining(0);
+    setCycleSecondsRemaining(0);
     setStep(4);
     if (player) {
       try {
