@@ -1,3 +1,4 @@
+import BreathingAnimation from "@/components/breathing/BreathingAnimation";
 import { BreathingOptions } from "@/components/breathing/BreathingOptions";
 import { ChatBubble } from "@/components/chat/ChatBubble";
 import { ChatInput } from "@/components/chat/ChatInput";
@@ -11,14 +12,19 @@ import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { useIsFocused } from "@react-navigation/native";
+import { useAudioPlayer } from "expo-audio";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
+  Easing,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
+  Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -47,13 +53,7 @@ const getStepFromBackend = (backendStep: string | null | undefined, config: any)
   if (normalized.includes("music")) {
     return 3;
   }
-  if (
-    normalized.includes("begin") ||
-    normalized.includes("start") ||
-    normalized.includes("complete") ||
-    normalized.includes("finish") ||
-    normalized.includes("config")
-  ) {
+  if (normalized.includes("ready")) {
     return 4;
   }
 
@@ -70,8 +70,93 @@ export default function BreathingExerciseScreen() {
   const [patternOptions, setPatternOptions] = useState<string[]>(PATTERN_OPTIONS);
   const [breathingConfig, setBreathingConfig] = useState<any>(null);
   const isFocused = useIsFocused();
+
   const scrollViewRef = useRef<ScrollView>(null);
   const isKeyboardVisible = useKeyboardVisibility();
+
+  // Breathing active state variables
+  const [isExerciseActive, setIsExerciseActive] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [currentBreathState, setCurrentBreathState] = useState<
+    "inhale" | "hold_in" | "exhale" | "hold_out"
+  >("inhale");
+  const [secondsRemaining, setSecondsRemaining] = useState(300);
+  const [cycleSecondsRemaining, setCycleSecondsRemaining] = useState(4);
+
+  // Audio Player for background music
+  const soundUrl = breathingConfig?.recommended_sound?.sound;
+  const player = useAudioPlayer(soundUrl || null);
+
+  useEffect(() => {
+    if (player) {
+      player.loop = true;
+    }
+  }, [player]);
+
+  useEffect(() => {
+    if (!player) return;
+    if (isExerciseActive && !isPaused) {
+      try {
+        player.play();
+      } catch (e) {
+        console.warn("[Breathing] Failed to play background music:", e);
+      }
+    } else {
+      try {
+        player.pause();
+      } catch (e) {
+        console.warn("[Breathing] Failed to pause background music:", e);
+      }
+    }
+  }, [isExerciseActive, isPaused, player]);
+
+  useEffect(() => {
+    if (!isFocused && player) {
+      try {
+        player.pause();
+        player.seekTo(0);
+      } catch (e) {
+        console.warn("[Breathing] Failed to pause player on blur:", e);
+      }
+    }
+  }, [isFocused, player]);
+
+  const breathScale = useRef(new Animated.Value(0)).current;
+  const currentScaleVal = useRef(0);
+
+  useEffect(() => {
+    const id = breathScale.addListener(({ value }) => {
+      currentScaleVal.current = value;
+    });
+    return () => breathScale.removeListener(id);
+  }, []);
+
+  const scale = breathScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 2.8],
+  });
+
+  const outerScale1 = breathScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1.1, 3.6],
+  });
+
+  const outerScale2 = breathScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1.2, 4.8],
+  });
+
+  const outerScale3 = breathScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1.3, 6.0],
+  });
+
+  // Parse breathing config durations
+  const inhaleDuration = breathingConfig?.pattern_detail?.inhale;
+  const holdInDuration = breathingConfig?.pattern_detail?.hold_in;
+  const exhaleDuration = breathingConfig?.pattern_detail?.exhale;
+  const holdOutDuration = breathingConfig?.pattern_detail?.hold_out;
+  const totalDuration = breathingConfig?.duration_seconds;
 
   const startSession = async () => {
     try {
@@ -82,7 +167,7 @@ export default function BreathingExerciseScreen() {
       });
       if (response.success && response.data) {
         setSessionId(response.data.session_id);
-        setIsAnimating(true);
+        setIsAnimating(false);
         setMessages([
           {
             id: response.data.session_id,
@@ -129,6 +214,16 @@ export default function BreathingExerciseScreen() {
       setBreathingConfig(null);
       startSession();
       fetchBreathingPatterns();
+      breathScale.setValue(0);
+      currentScaleVal.current = 0;
+    } else {
+      setIsExerciseActive(false);
+      setIsPaused(false);
+      stopBreathAnimation();
+      setSecondsRemaining(0);
+      setCycleSecondsRemaining(0);
+      breathScale.setValue(0);
+      currentScaleVal.current = 0;
     }
   }, [isFocused]);
 
@@ -141,6 +236,82 @@ export default function BreathingExerciseScreen() {
     }
   }, [messages]);
 
+  useEffect(() => {
+    let interval: any = null;
+
+    if (isExerciseActive && !isPaused) {
+      interval = setInterval(() => {
+        setSecondsRemaining((prev) => {
+          if (prev <= 1) {
+            setIsExerciseActive(false);
+            stopBreathAnimation();
+            toast.success("Completed", "Great job! You have completed the breathing exercise.");
+            return 0;
+          }
+          return prev - 1;
+        });
+
+        setCycleSecondsRemaining((prevCycle) => {
+          if (prevCycle <= 1) {
+            let nextState: "inhale" | "hold_in" | "exhale" | "hold_out" = "inhale";
+            let nextDuration = inhaleDuration;
+
+            if (currentBreathState === "inhale") {
+              if (holdInDuration > 0) {
+                nextState = "hold_in";
+                nextDuration = holdInDuration;
+              } else {
+                nextState = "exhale";
+                nextDuration = exhaleDuration;
+              }
+            } else if (currentBreathState === "hold_in") {
+              nextState = "exhale";
+              nextDuration = exhaleDuration;
+            } else if (currentBreathState === "exhale") {
+              if (holdOutDuration > 0) {
+                nextState = "hold_out";
+                nextDuration = holdOutDuration;
+              } else {
+                nextState = "inhale";
+                nextDuration = inhaleDuration;
+              }
+            } else if (currentBreathState === "hold_out") {
+              nextState = "inhale";
+              nextDuration = inhaleDuration;
+            }
+
+            setCurrentBreathState(nextState);
+
+            if (nextState === "inhale") {
+              startInhaleAnimation(nextDuration);
+            } else if (nextState === "exhale") {
+              startExhaleAnimation(nextDuration);
+            } else if (nextState === "hold_in") {
+              breathScale.setValue(1);
+            } else if (nextState === "hold_out") {
+              breathScale.setValue(0);
+            }
+
+            return nextDuration;
+          }
+          return prevCycle - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [
+    isExerciseActive,
+    isPaused,
+    currentBreathState,
+    inhaleDuration,
+    holdInDuration,
+    exhaleDuration,
+    holdOutDuration,
+  ]);
+
   const handleSend = () => {
     if (inputText.trim()) {
       const text = inputText.trim();
@@ -151,7 +322,7 @@ export default function BreathingExerciseScreen() {
 
   const handleOptionSelect = async (option: string) => {
     if (isLoading || isAnimating) return;
-    setIsAnimating(true);
+    setIsAnimating(false);
 
     const userMessage: Message = { id: Date.now().toString(), text: option, sender: "user" };
     setMessages((prev) => [...prev, userMessage]);
@@ -188,41 +359,74 @@ export default function BreathingExerciseScreen() {
           setBreathingConfig(response.data.breathing_config);
         }
       } else {
-        handleFallback();
+        toast.error("Error", response.message || "Failed to send message");
       }
     } catch (error) {
       console.error("[Breathing] Error sending message:", error);
-      handleFallback();
+      toast.error("Error", "Failed to send message");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleFallback = () => {
-    if (step === 1) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          text: "What breathing pattern do you prefer?",
-          sender: "assistant",
-        },
-      ]);
-      setStep(2);
-    } else if (step === 2) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          text: "Would you like a background music while you do the breathing exercise?",
-          sender: "assistant",
-        },
-      ]);
-      setStep(3);
-    } else if (step === 3) {
-      setStep(4);
-      setIsAnimating(false);
+  const startInhaleAnimation = (duration: number, fromValue?: number) => {
+    if (fromValue !== undefined) {
+      breathScale.setValue(fromValue);
     }
+    Animated.timing(breathScale, {
+      toValue: 1,
+      duration: duration * 1000,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const startExhaleAnimation = (duration: number, fromValue?: number) => {
+    if (fromValue !== undefined) {
+      breathScale.setValue(fromValue);
+    }
+    Animated.timing(breathScale, {
+      toValue: 0,
+      duration: duration * 1000,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const stopBreathAnimation = () => {
+    breathScale.stopAnimation();
+  };
+
+  const handleBeginExercise = () => {
+    setIsExerciseActive(true);
+    setIsPaused(false);
+    setCurrentBreathState("inhale");
+
+    setSecondsRemaining(totalDuration);
+    setCycleSecondsRemaining(inhaleDuration);
+
+    startInhaleAnimation(inhaleDuration, 0);
+  };
+
+  const handlePauseResume = () => {
+    if (isPaused) {
+      setIsPaused(false);
+      if (currentBreathState === "inhale") {
+        startInhaleAnimation(cycleSecondsRemaining, currentScaleVal.current);
+      } else if (currentBreathState === "exhale") {
+        startExhaleAnimation(cycleSecondsRemaining, currentScaleVal.current);
+      }
+    } else {
+      setIsPaused(true);
+      stopBreathAnimation();
+    }
+  };
+
+  const handleCancel = () => {
+    setIsExerciseActive(false);
+    setIsPaused(false);
+    stopBreathAnimation();
+    setStep(4);
   };
 
   return (
@@ -240,38 +444,58 @@ export default function BreathingExerciseScreen() {
           behavior={Platform.OS === "ios" ? "padding" : isKeyboardVisible ? "height" : undefined}
           style={{ flex: 1 }}
         >
-          <View style={styles.content}>
-            {messages.length === 0 && isLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#3C61DD" />
+          {isExerciseActive ? (
+            <View style={{ flex: 1, position: "relative" }}>
+              <BreathingAnimation
+                currentBreathState={currentBreathState}
+                scale={scale}
+                outerScale1={outerScale1}
+                outerScale2={outerScale2}
+                outerScale3={outerScale3}
+              />
+              <View style={styles.debugOverlay}>
+                <Text style={styles.debugText}>Remaining: {secondsRemaining}s</Text>
+                <Text style={styles.debugText}>Cycle Remaining: {cycleSecondsRemaining}s</Text>
+                <Text style={styles.debugText}>
+                  Inhale: {inhaleDuration ?? 0}s | Hold-In: {holdInDuration ?? 0}s | Exhale:{" "}
+                  {exhaleDuration ?? 0}s | Hold-Out: {holdOutDuration ?? 0}s
+                </Text>
               </View>
-            ) : (
-              <ScrollView
-                ref={scrollViewRef}
-                style={styles.chatArea}
-                contentContainerStyle={styles.chatContent}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-              >
-                {messages.map((msg, index) => (
-                  <ChatBubble
-                    key={msg.id}
-                    role={msg.sender === "user" ? "user" : "assistant"}
-                    text={msg.text}
-                    shouldAnimate={msg.sender !== "user"}
-                    onAnimationComplete={
-                      index === messages.length - 1 && msg.sender !== "user"
-                        ? () => setIsAnimating(false)
-                        : undefined
-                    }
-                  />
-                ))}
-                {messages.length > 0 && isLoading && <TypingIndicator />}
-              </ScrollView>
-            )}
-          </View>
+            </View>
+          ) : (
+            <View style={styles.content}>
+              {messages.length === 0 && isLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#3C61DD" />
+                </View>
+              ) : (
+                <ScrollView
+                  ref={scrollViewRef}
+                  style={styles.chatArea}
+                  contentContainerStyle={styles.chatContent}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {messages.map((msg, index) => (
+                    <ChatBubble
+                      key={msg.id}
+                      role={msg.sender === "user" ? "user" : "assistant"}
+                      text={msg.text}
+                      shouldAnimate={false}
+                      onAnimationComplete={
+                        index === messages.length - 1 && msg.sender !== "user"
+                          ? () => setIsAnimating(false)
+                          : undefined
+                      }
+                    />
+                  ))}
+                  {messages.length > 0 && isLoading && <TypingIndicator />}
+                </ScrollView>
+              )}
+            </View>
+          )}
 
-          {sessionId !== null && (
+          {!isExerciseActive && sessionId !== null && (
             <BreathingOptions
               step={step}
               durationOptions={DURATION_OPTIONS}
@@ -283,19 +507,30 @@ export default function BreathingExerciseScreen() {
             />
           )}
 
-          {sessionId !== null &&
+          {isExerciseActive ? (
+            isPaused ? (
+              <View style={styles.pausedButtonsContainer}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
+                  <Text style={styles.cancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <AppButton
+                  title="Continue"
+                  onPress={handlePauseResume}
+                  style={styles.continueButton}
+                />
+              </View>
+            ) : (
+              <View style={styles.footer}>
+                <AppButton title="Pause" onPress={handlePauseResume} style={styles.pauseButton} />
+              </View>
+            )
+          ) : (
+            sessionId !== null &&
             (step === 4 ? (
               <View style={styles.footer}>
                 <AppButton
                   title="Begin Exercise"
-                  onPress={() => {
-                    console.log(
-                      "[Breathing] Beginning exercise with session:",
-                      sessionId,
-                      "config:",
-                      breathingConfig,
-                    );
-                  }}
+                  onPress={handleBeginExercise}
                   disabled={isAnimating || isLoading}
                   style={styles.beginButton}
                   textStyle={styles.beginButtonText}
@@ -308,7 +543,8 @@ export default function BreathingExerciseScreen() {
                 onSend={handleSend}
                 disabled={isAnimating || isLoading}
               />
-            ))}
+            ))
+          )}
         </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
@@ -322,6 +558,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+
   content: {
     flex: 1,
     paddingHorizontal: moderateScale(20),
@@ -337,9 +574,40 @@ const styles = StyleSheet.create({
   chatContent: {
     paddingBottom: moderateScale(2),
   },
+
   footer: {
     paddingHorizontal: moderateScale(20),
     paddingBottom: hp(3),
+  },
+  pausedButtonsContainer: {
+    flexDirection: "row",
+    gap: normalize(12),
+    paddingHorizontal: moderateScale(20),
+    paddingBottom: hp(3),
+  },
+  cancelBtn: {
+    flex: 1,
+    height: moderateScale(56),
+    borderRadius: normalize(28),
+    borderWidth: 1.5,
+    borderColor: "#FF3B30",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
+  },
+  cancelBtnText: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(18),
+    color: "#FF3B30",
+  },
+  continueButton: {
+    flex: 1,
+    height: moderateScale(56),
+    borderRadius: normalize(28),
+  },
+  pauseButton: {
+    height: moderateScale(56),
+    borderRadius: normalize(28),
   },
   beginButton: {
     height: moderateScale(56),
@@ -353,5 +621,22 @@ const styles = StyleSheet.create({
   beginButtonText: {
     fontFamily: Typography.fonts.bold,
     fontSize: normalize(18),
+  },
+  debugOverlay: {
+    position: "absolute",
+    top: normalize(20),
+    left: normalize(20),
+    right: normalize(20),
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    padding: normalize(12),
+    borderRadius: normalize(8),
+    alignItems: "center",
+    zIndex: 9999,
+  },
+  debugText: {
+    color: "#FFFFFF",
+    fontSize: normalize(14),
+    fontFamily: Typography.fonts.regular,
+    marginVertical: normalize(2),
   },
 });
