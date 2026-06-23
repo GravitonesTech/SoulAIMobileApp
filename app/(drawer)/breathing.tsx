@@ -427,6 +427,14 @@ export default function BreathingExerciseScreen() {
     setIsPaused(false);
     stopBreathAnimation();
     setStep(4);
+    if (player) {
+      try {
+        player.pause();
+        player.seekTo(0);
+      } catch (e) {
+        console.warn("[Breathing] Failed to reset player on cancel:", e);
+      }
+    }
   };
 
   return (
