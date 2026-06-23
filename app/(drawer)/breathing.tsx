@@ -13,6 +13,7 @@ import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { useIsFocused } from "@react-navigation/native";
 import { useAudioPlayer } from "expo-audio";
+import { haptics } from "@/utils/haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -167,7 +168,7 @@ export default function BreathingExerciseScreen() {
       });
       if (response.success && response.data) {
         setSessionId(response.data.session_id);
-        setIsAnimating(false);
+        setIsAnimating(true);
         setMessages([
           {
             id: response.data.session_id,
@@ -251,6 +252,7 @@ export default function BreathingExerciseScreen() {
 
         setCycleSecondsRemaining((prevCycle) => {
           if (prevCycle <= 1) {
+            haptics.medium();
             let nextState: "inhale" | "hold_in" | "exhale" | "hold_out" = "inhale";
             let nextDuration = inhaleDuration;
 
@@ -334,6 +336,7 @@ export default function BreathingExerciseScreen() {
       });
 
       if (response.success && response.data) {
+        setIsAnimating(true);
         setMessages((prev) => [
           ...prev,
           {
@@ -469,14 +472,14 @@ export default function BreathingExerciseScreen() {
                 outerScale2={outerScale2}
                 outerScale3={outerScale3}
               />
-              <View style={styles.debugOverlay}>
+              {/* <View style={styles.debugOverlay}>
                 <Text style={styles.debugText}>Remaining: {secondsRemaining}s</Text>
                 <Text style={styles.debugText}>Cycle Remaining: {cycleSecondsRemaining}s</Text>
                 <Text style={styles.debugText}>
                   Inhale: {inhaleDuration ?? 0}s | Hold-In: {holdInDuration ?? 0}s | Exhale:{" "}
                   {exhaleDuration ?? 0}s | Hold-Out: {holdOutDuration ?? 0}s
                 </Text>
-              </View>
+              </View> */}
             </View>
           ) : (
             <View style={styles.content}>
@@ -497,7 +500,7 @@ export default function BreathingExerciseScreen() {
                       key={msg.id}
                       role={msg.sender === "user" ? "user" : "assistant"}
                       text={msg.text}
-                      shouldAnimate={false}
+                      shouldAnimate={index === messages.length - 1 && msg.sender !== "user"}
                       onAnimationComplete={
                         index === messages.length - 1 && msg.sender !== "user"
                           ? () => setIsAnimating(false)
