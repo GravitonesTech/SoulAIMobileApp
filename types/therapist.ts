@@ -1,3 +1,19 @@
+export interface AvailabilitySlot {
+  time: string;
+  is_available: boolean;
+}
+
+export interface AvailabilityDay {
+  date: string;
+  day_of_week: string;
+  time_slots: AvailabilitySlot[];
+}
+
+export interface Schedule {
+  day_of_week: string;
+  time_slots: string[];
+}
+
 export interface Therapist {
   id: number;
   email: string;
@@ -12,10 +28,9 @@ export interface Therapist {
   is_approved: boolean;
   average_rating: number;
   total_reviews: number;
-  schedules: {
-    day_of_week: string;
-    time_slots: string[];
-  }[];
+  session_cost?: number | null;
+  schedules: Schedule[];
+  availability?: AvailabilityDay[];
 }
 
 export interface ReviewFromApi {

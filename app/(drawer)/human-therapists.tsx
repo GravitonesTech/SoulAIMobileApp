@@ -31,6 +31,7 @@ export default function HumanTherapistsScreen() {
   const [therapists, setTherapists] = useState<Therapist[]>([]);
   const [searchedTherapists, setSearchedTherapists] = useState<Therapist[]>([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [pastAppointments, setPastAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const [isAppointmentsLoading, setIsAppointmentsLoading] = useState(true);
@@ -106,6 +107,7 @@ export default function HumanTherapistsScreen() {
       appointmentsRes.value.data
     ) {
       setUpcomingAppointments(appointmentsRes.value.data.upcoming || []);
+      setPastAppointments(appointmentsRes.value.data.past || []);
     }
     setIsAppointmentsLoading(false);
   }, []);
@@ -229,6 +231,57 @@ export default function HumanTherapistsScreen() {
     toast.info("Cancel Session", "Please contact support to cancel your session.");
   };
 
+  const handleRecentTherapistPress = async (appointment: Appointment) => {
+    // 1. Check if the therapist is already in our loaded `therapists` list (top-rated)
+    const existing = therapists.find((t) => t.id === appointment.therapist_id);
+    if (existing) {
+      navigateToTherapistDetails(existing);
+      return;
+    }
+
+    // 2. Otherwise, fetch/lookup from all therapists
+    toast.info("Loading Details", "Fetching therapist details...");
+    try {
+      const params = {
+        page: 1,
+        page_size: 10,
+        search_query: appointment.therapist_name.trim(),
+      };
+      const response = await apiClient.get<{
+        therapists: Therapist[];
+      }>(ENDPOINTS.users.getAllTherapists, { params });
+
+      if (response.success && response.data?.therapists) {
+        const found = response.data.therapists.find((t) => t.id === appointment.therapist_id);
+        if (found) {
+          navigateToTherapistDetails(found);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to lookup therapist details:", err);
+    }
+
+    // 3. Fallback: construct a partial Therapist object so it doesn't fail
+    const fallbackTherapist: Therapist = {
+      id: appointment.therapist_id,
+      email: appointment.patient_email || "",
+      full_name: appointment.therapist_name,
+      phone: null,
+      profile_photo: appointment.therapist_photo,
+      license_number: null,
+      specialization: appointment.therapist_specialization || [],
+      experience_years: 1,
+      bio: "Professional therapist specialized in supporting you.",
+      clinic_address: null,
+      is_approved: true,
+      average_rating: 4.5,
+      total_reviews: 0,
+      schedules: [],
+    };
+    navigateToTherapistDetails(fallbackTherapist);
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <LinearGradient
@@ -281,7 +334,9 @@ export default function HumanTherapistsScreen() {
                   )}
                   {activeFilters.experience > 1 && (
                     <View style={styles.filterChip}>
-                      <Text style={styles.filterChipText}>{`>= ${activeFilters.experience} yrs`}</Text>
+                      <Text
+                        style={styles.filterChipText}
+                      >{`>= ${activeFilters.experience} yrs`}</Text>
                     </View>
                   )}
                   {activeFilters.rating !== "Any rating" && (
@@ -361,7 +416,20 @@ export default function HumanTherapistsScreen() {
                 />
 
                 {/* Recent */}
-                <RecentTherapistCard />
+                {pastAppointments.length > 0 ? (
+                  <RecentTherapistCard
+                    therapistName={pastAppointments[0].therapist_name}
+                    therapistPhoto={pastAppointments[0].therapist_photo}
+                    specialization={pastAppointments[0].therapist_specialization}
+                    rating={
+                      therapists.find((t) => t.id === pastAppointments[0].therapist_id)
+                        ?.average_rating
+                    }
+                    onPress={() => handleRecentTherapistPress(pastAppointments[0])}
+                  />
+                ) : (
+                  <RecentTherapistCard isEmpty={true} />
+                )}
 
                 {/* Top Therapists */}
                 <TopTherapistsList
