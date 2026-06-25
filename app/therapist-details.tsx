@@ -9,12 +9,14 @@ import { Typography } from "@/constants/Typography";
 import { ReviewFromApi, Therapist } from "@/types/therapist";
 import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
+import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { toast } from "@/utils/toast";
 import React, { useEffect, useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Feather } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const formatReviewTime = (dateStr: string) => {
   try {
@@ -56,7 +58,95 @@ export default function TherapistDetailsScreen() {
   const [selectedSlot, setSelectedSlot] = useState<{
     day: string;
     slot: string;
+    date?: string;
   } | null>(null);
+
+  const [startDate, setStartDate] = useState<Date>(() => new Date());
+  const [endDate, setEndDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d;
+  });
+
+  const [showPicker, setShowPicker] = useState<"start" | "end" | null>(null);
+
+  const maxCustomDate = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 14);
+    return d;
+  }, []);
+
+  const onChangeStartDate = (event: any, selectedDate?: Date) => {
+    setShowPicker(null);
+    if (selectedDate) {
+      setStartDate(selectedDate);
+      setSelectedSlot(null);
+      if (endDate < selectedDate) {
+        const nextEnd = new Date(selectedDate);
+        nextEnd.setDate(nextEnd.getDate() + 7);
+        setEndDate(nextEnd);
+      }
+    }
+  };
+
+  const onChangeEndDate = (event: any, selectedDate?: Date) => {
+    setShowPicker(null);
+    if (selectedDate) {
+      if (selectedDate < startDate) {
+        toast.error("Invalid Date Range", "End date cannot be before start date.");
+        return;
+      }
+      setEndDate(selectedDate);
+      setSelectedSlot(null);
+    }
+  };
+
+  const [loadedTherapist, setLoadedTherapist] = useState<Therapist | null>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
+  const displayTherapist = loadedTherapist || therapist;
+
+  useEffect(() => {
+    if (therapist) {
+      setLoadedTherapist(therapist);
+    }
+  }, [therapist]);
+
+  useEffect(() => {
+    if (!therapist?.id) return;
+    const fetchTherapistDetails = async () => {
+      setLoadingDetails(true);
+      try {
+        const formatDate = (date: Date) => {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        };
+
+        const startStr = formatDate(startDate);
+        const endStr = formatDate(endDate);
+
+        const response = await apiClient.get<Therapist>(
+          ENDPOINTS.users.therapistDetails(therapist.id),
+          {
+            params: {
+              start_date: startStr,
+              end_date: endStr,
+            },
+          },
+        );
+        if (response.success && response.data) {
+          setLoadedTherapist(response.data);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch therapist details:", err);
+      } finally {
+        setLoadingDetails(false);
+      }
+    };
+    fetchTherapistDetails();
+  }, [therapist?.id, startDate, endDate]);
 
   const [reviews, setReviews] = useState<
     {
@@ -69,11 +159,11 @@ export default function TherapistDetailsScreen() {
   const [loadingReviews, setLoadingReviews] = useState(true);
 
   useEffect(() => {
-    if (!therapist) return;
+    if (!displayTherapist) return;
     const fetchReviews = async () => {
       try {
         const response = await apiClient.get<ReviewFromApi[]>(
-          ENDPOINTS.users.reviews(therapist.id),
+          ENDPOINTS.users.reviews(displayTherapist.id),
         );
         if (response.success && response.data) {
           const mappedReviews = response.data.map((r) => ({
@@ -91,36 +181,15 @@ export default function TherapistDetailsScreen() {
       }
     };
     fetchReviews();
-  }, [therapist]);
+  }, [displayTherapist?.id]);
 
   // Generate reviews for presentation
   const reviewsToDisplay = useMemo(() => {
-    if (loadingReviews || !therapist || therapist.total_reviews === 0) return [];
-    if (reviews.length > 0) return reviews;
-    // Fallback reviews to keep the page visually stunning if no real reviews yet
-    return [
-      {
-        author: "Eduardo Fernandez",
-        time: "17 hours ago",
-        rating: 4.5,
-        content: "Amazingly Talented!",
-      },
-      {
-        author: "Eduardo Fernandez",
-        time: "17 hours ago",
-        rating: 2.0,
-        content: "Rude and Selfish",
-      },
-      {
-        author: "Eduardo Fernandez",
-        time: "17 hours ago",
-        rating: 4.5,
-        content: "Amazingly Talented!",
-      },
-    ];
-  }, [reviews, loadingReviews, therapist?.total_reviews]);
+    if (loadingReviews || !displayTherapist || displayTherapist.total_reviews === 0) return [];
+    return reviews;
+  }, [reviews, loadingReviews, displayTherapist?.total_reviews]);
 
-  if (!therapist) {
+  if (!displayTherapist) {
     return (
       <View style={styles.loadingScreen}>
         <AppHeader leftIcon="arrow-left" title="Therapist Details" />
@@ -140,36 +209,103 @@ export default function TherapistDetailsScreen() {
     >
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
         {/* Header */}
-        <AppHeader leftIcon="arrow-left" title={therapist.full_name} showAvatar={true} />
+        <AppHeader leftIcon="arrow-left" title={displayTherapist.full_name} showAvatar={true} />
 
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
           {/* Therapist Hero / Header Info */}
-          <TherapistHeaderInfo therapist={therapist} />
+          <TherapistHeaderInfo therapist={displayTherapist} />
 
           {/* Specialties Section */}
-          <SpecialtiesList specializations={therapist.specialization} />
+          <SpecialtiesList specializations={displayTherapist.specialization} />
+
+          {/* Date Range Selector */}
+          <View style={styles.dateSelectorContainer}>
+            <Text style={styles.dateSelectorLabel}>CHOOSE DATE RANGE</Text>
+            <View style={styles.dateButtonsRow}>
+              <TouchableOpacity
+                style={styles.datePickerButton}
+                onPress={() => setShowPicker("start")}
+                activeOpacity={0.7}
+              >
+                <Feather name="calendar" size={16} color="#3C61DD" />
+                <View style={styles.dateButtonTextContainer}>
+                  <Text style={styles.dateButtonSublabel}>Start Date</Text>
+                  <Text style={styles.dateButtonText}>
+                    {startDate.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.datePickerButton}
+                onPress={() => setShowPicker("end")}
+                activeOpacity={0.7}
+              >
+                <Feather name="calendar" size={16} color="#3C61DD" />
+                <View style={styles.dateButtonTextContainer}>
+                  <Text style={styles.dateButtonSublabel}>End Date</Text>
+                  <Text style={styles.dateButtonText}>
+                    {endDate.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {showPicker === "start" && (
+            <DateTimePicker
+              value={startDate}
+              mode="date"
+              display="default"
+              minimumDate={new Date()}
+              maximumDate={maxCustomDate}
+              onChange={onChangeStartDate}
+            />
+          )}
+
+          {showPicker === "end" && (
+            <DateTimePicker
+              value={endDate}
+              mode="date"
+              display="default"
+              minimumDate={startDate}
+              maximumDate={maxCustomDate}
+              onChange={onChangeEndDate}
+            />
+          )}
 
           {/* Availability Slots Section */}
           <AvailabilitySlots
-            schedules={therapist.schedules}
+            availability={displayTherapist.availability}
             selectedSlot={selectedSlot}
             onChangeSlot={setSelectedSlot}
+            loading={loadingDetails && !displayTherapist.availability}
           />
 
           {/* Ratings Section */}
           <RatingsSummary
-            averageRating={therapist.average_rating}
-            totalReviews={therapist.total_reviews}
+            averageRating={displayTherapist.average_rating}
+            totalReviews={displayTherapist.total_reviews}
             reviews={reviewsToDisplay}
           />
         </ScrollView>
 
         {/* Floating/Sticky Action Button at Bottom Right */}
         <BookingButton
-          priceText="Rs. 100"
+          priceText={
+            displayTherapist.session_cost ? `Rs. ${displayTherapist.session_cost}` : "Rs. 100"
+          }
           onPress={() => {
             if (!selectedSlot) {
               toast.error("Slot Required", "Please select an availability slot first.");
@@ -178,7 +314,7 @@ export default function TherapistDetailsScreen() {
             router.push({
               pathname: "/book-session",
               params: {
-                therapistJson: JSON.stringify(therapist),
+                therapistJson: JSON.stringify(displayTherapist),
                 selectedSlotJson: JSON.stringify(selectedSlot),
               },
             });
@@ -215,5 +351,51 @@ const styles = StyleSheet.create({
     fontSize: normalize(16),
     color: "#E53935",
     textAlign: "center",
+  },
+  dateSelectorContainer: {
+    marginBottom: hp(2.5),
+  },
+  dateSelectorLabel: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(12),
+    color: "#666",
+    marginBottom: hp(1.2),
+    letterSpacing: 0.5,
+  },
+  dateButtonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: moderateScale(12),
+  },
+  datePickerButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: normalize(14),
+    paddingVertical: moderateScale(10),
+    paddingHorizontal: moderateScale(12),
+    borderWidth: 1,
+    borderColor: "#E2F4FF",
+    gap: moderateScale(8),
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  dateButtonTextContainer: {
+    flex: 1,
+  },
+  dateButtonSublabel: {
+    fontFamily: Typography.fonts.regular,
+    fontSize: normalize(10),
+    color: "#8A8A8E",
+  },
+  dateButtonText: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(12),
+    color: "#333333",
+    marginTop: hp(0.2),
   },
 });

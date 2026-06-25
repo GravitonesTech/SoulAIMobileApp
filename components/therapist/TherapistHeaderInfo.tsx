@@ -1,3 +1,4 @@
+import { UserInitialsAvatar } from "@/components/ui/UserInitialsAvatar";
 import { Typography } from "@/constants/Typography";
 import { Therapist } from "@/types/therapist";
 import { hp, normalize } from "@/utils/responsive";
@@ -14,12 +15,10 @@ export const TherapistHeaderInfo = ({ therapist }: TherapistHeaderInfoProps) => 
       {/* Rating and Experience Summary */}
       <View style={styles.summaryBlock}>
         <Text style={styles.summaryText}>
-          {therapist.total_reviews > 0 ? (
-            `${therapist.average_rating.toFixed(1)} Rating`
-          ) : (
-            "No ratings yet"
-          )} •{" "}
-          {therapist.experience_years}+ years experience
+          {therapist.total_reviews > 0
+            ? `${therapist.average_rating.toFixed(1)} Rating`
+            : "No ratings yet"}{" "}
+          • {therapist.experience_years}+ years experience
         </Text>
         <Text style={styles.specializationText}>
           {therapist.specialization && therapist.specialization.length > 0
@@ -33,7 +32,7 @@ export const TherapistHeaderInfo = ({ therapist }: TherapistHeaderInfoProps) => 
         {therapist.profile_photo ? (
           <Image source={{ uri: therapist.profile_photo }} style={styles.profileImage} />
         ) : (
-          <Image source={require("@/assets/images/therapist.png")} style={styles.profileImage} />
+          <UserInitialsAvatar name={therapist.full_name} textSize={normalize(60)} />
         )}
       </View>
 

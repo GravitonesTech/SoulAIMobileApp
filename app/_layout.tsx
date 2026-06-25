@@ -77,6 +77,8 @@ export default function RootLayout() {
             <Stack.Screen name="personality-test" options={{ headerShown: false }} />
             <Stack.Screen name="therapist-details" options={{ headerShown: false }} />
             <Stack.Screen name="book-session" options={{ headerShown: false }} />
+            <Stack.Screen name="add-payment-method" options={{ headerShown: false }} />
+            <Stack.Screen name="booking-success" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style="dark" />
           <Toast config={toastConfig} />

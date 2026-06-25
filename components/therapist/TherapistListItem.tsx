@@ -1,10 +1,10 @@
-import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Feather } from "@expo/vector-icons";
 import { UserInitialsAvatar } from "@/components/ui/UserInitialsAvatar";
 import { Typography } from "@/constants/Typography";
-import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { Therapist } from "@/types/therapist";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
+import { Feather } from "@expo/vector-icons";
+import React from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface TherapistListItemProps {
   therapist: Therapist;
@@ -13,11 +13,7 @@ interface TherapistListItemProps {
 
 export const TherapistListItem = ({ therapist, onPress }: TherapistListItemProps) => {
   return (
-    <TouchableOpacity
-      style={styles.therapistListItem}
-      activeOpacity={0.7}
-      onPress={onPress}
-    >
+    <TouchableOpacity style={styles.therapistListItem} activeOpacity={0.7} onPress={onPress}>
       <View style={styles.therapistListLeft}>
         <View style={styles.listAvatarContainer}>
           {therapist.profile_photo ? (

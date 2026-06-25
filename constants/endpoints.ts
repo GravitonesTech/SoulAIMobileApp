@@ -44,12 +44,18 @@ export const ENDPOINTS = {
     topRatedTherapists: "/users/therapists/top-rated",
     /** GET — Fetch all therapists (with page, page_size, search_query) */
     getAllTherapists: "/users/getalltherapists",
+    /** GET — Fetch specific therapist details by ID */
+    therapistDetails: (id: number | string) => `/users/therapists/${id}`,
     /** GET — Fetch reviews for a specific therapist */
     reviews: (therapistId: number | string) => `/users/reviews/${therapistId}`,
     /** GET — Fetch user appointments */
     myAppointments: "/users/appointments/my-appointments",
     /** POST — Book/create an appointment */
     bookAppointment: "/users/appointments/book",
+    /** POST — Verify appointment payment */
+    verifyAppointmentPayment: "/users/appointments/verify",
+    /** GET — Fetch appointment pricing summary */
+    appointmentPricingSummary: (therapistId: number | string) => `/users/appointments/pricing-summary?therapist_id=${therapistId}`,
     /** GET — Fetch metadata */
     metadata: "/users/metadata",
   },
