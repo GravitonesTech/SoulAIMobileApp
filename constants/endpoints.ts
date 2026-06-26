@@ -55,7 +55,8 @@ export const ENDPOINTS = {
     /** POST — Verify appointment payment */
     verifyAppointmentPayment: "/users/appointments/verify",
     /** GET — Fetch appointment pricing summary */
-    appointmentPricingSummary: (therapistId: number | string) => `/users/appointments/pricing-summary?therapist_id=${therapistId}`,
+    appointmentPricingSummary: (therapistId: number | string) =>
+      `/users/appointments/pricing-summary?therapist_id=${therapistId}`,
     /** POST — Cancel an appointment */
     cancelAppointment: (id: number | string) => `/users/appointments/${id}/cancel`,
     /** GET — Fetch metadata */
