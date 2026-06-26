@@ -283,6 +283,7 @@ export default function BookSessionScreen() {
         console.error("Razorpay Error:", razorpayError);
         toast.error("Payment Failed", razorpayError.description || "Payment cancelled or failed.");
         setIsSubmitting(false);
+        router.push("/payment-failed");
         return;
       }
 
@@ -305,6 +306,7 @@ export default function BookSessionScreen() {
         router.replace("/booking-success");
       } else {
         toast.error("Verification Failed", verifyResponse.message || "Failed to verify payment.");
+        router.push("/payment-failed");
       }
     } catch (e) {
       console.error(e);
