@@ -3,7 +3,14 @@ import { Typography } from "@/constants/Typography";
 import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { toast } from "@/utils/toast";
 import { useRouter } from "expo-router";
 
@@ -68,7 +75,7 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
   const handleSelectSavedMethod = (id: string, method: "card" | "upi") => {
     setSelectedMethodId(id);
     setPaymentMethod(method);
-    
+
     // Set parent states with mock values so validation checks pass
     if (method === "card") {
       const selected = savedMethods.find((m) => m.id === id);
@@ -148,7 +155,12 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
       {/* Coupon Code Row */}
       <View style={styles.couponRow}>
         <View style={styles.couponLeft}>
-          <Feather name="tag" size={normalize(18)} color="#666" style={{ marginRight: moderateScale(10) }} />
+          <Feather
+            name="tag"
+            size={normalize(18)}
+            color="#666"
+            style={{ marginRight: moderateScale(10) }}
+          />
           <TextInput
             placeholder="Coupon Code"
             value={couponText}

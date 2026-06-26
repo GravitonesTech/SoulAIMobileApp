@@ -7,7 +7,15 @@ import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddPaymentMethodScreen() {
@@ -18,7 +26,7 @@ export default function AddPaymentMethodScreen() {
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cvv, setCvv] = useState("");
-  
+
   // Billing Address
   const [streetAddress, setStreetAddress] = useState("");
   const [apartment, setApartment] = useState("");
@@ -172,7 +180,7 @@ export default function AddPaymentMethodScreen() {
 
             {/* General Info Form Section */}
             <Text style={styles.formSectionTitle}>GENERAL INFORMATION</Text>
-            
+
             <AppInput
               placeholder="Full Name"
               value={fullName}
@@ -236,11 +244,7 @@ export default function AddPaymentMethodScreen() {
 
             <View style={styles.rowInputs}>
               <View style={styles.flexHalf}>
-                <AppInput
-                  placeholder="City"
-                  value={city}
-                  onChangeText={setCity}
-                />
+                <AppInput placeholder="City" value={city} onChangeText={setCity} />
               </View>
               <View style={styles.flexHalf}>
                 <AppInput
@@ -270,7 +274,6 @@ export default function AddPaymentMethodScreen() {
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
-
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>

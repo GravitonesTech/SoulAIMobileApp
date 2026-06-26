@@ -31,10 +31,7 @@ export const UpcomingAppointments = ({
         </View>
       ) : (
         appointments.map((appointment) => (
-          <View
-            key={appointment.id}
-            style={[styles.appointmentCard, { marginBottom: hp(1.5) }]}
-          >
+          <View key={appointment.id} style={[styles.appointmentCard, { marginBottom: hp(1.5) }]}>
             <View style={styles.appointmentHeader}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.therapistName}>{appointment.therapist_name}</Text>
@@ -56,15 +53,10 @@ export const UpcomingAppointments = ({
               </View>
             </View>
 
-            <TouchableOpacity
-              style={styles.actionRow}
-              onPress={() => onJoinSession(appointment)}
-            >
+            <TouchableOpacity style={styles.actionRow} onPress={() => onJoinSession(appointment)}>
               <View style={styles.actionLeft}>
                 <Feather name="video" size={normalize(20)} color="#3C61DD" />
-                <Text style={[styles.actionText, { color: "#3C61DD" }]}>
-                  Join Session
-                </Text>
+                <Text style={[styles.actionText, { color: "#3C61DD" }]}>Join Session</Text>
               </View>
               <Feather name="chevron-right" size={normalize(18)} color="#3C61DD" />
             </TouchableOpacity>

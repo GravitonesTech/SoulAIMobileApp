@@ -27,12 +27,12 @@ export default function BreathingAnimation({
       currentBreathState === "inhale"
         ? "Breathe In"
         : currentBreathState === "hold_in"
-        ? "Hold"
-        : currentBreathState === "exhale"
-        ? "Breathe Out"
-        : currentBreathState === "hold_out"
-        ? "Hold"
-        : "";
+          ? "Hold"
+          : currentBreathState === "exhale"
+            ? "Breathe Out"
+            : currentBreathState === "hold_out"
+              ? "Hold"
+              : "";
 
     if (!displayedText) {
       setDisplayedText(newText);

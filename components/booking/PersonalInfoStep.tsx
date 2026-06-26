@@ -98,11 +98,7 @@ export const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
       </View>
 
       {/* Submit Action */}
-      <TouchableOpacity
-        style={styles.actionButton}
-        onPress={onContinue}
-        activeOpacity={0.85}
-      >
+      <TouchableOpacity style={styles.actionButton} onPress={onContinue} activeOpacity={0.85}>
         <Text style={styles.actionButtonText}>Continue to Payment</Text>
       </TouchableOpacity>
     </View>

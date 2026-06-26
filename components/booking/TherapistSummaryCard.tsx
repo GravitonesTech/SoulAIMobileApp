@@ -24,15 +24,7 @@ export const getSlotFormattedDate = (dayName: string, slotTime: string, dateStr?
     }
   }
 
-  const daysOfWeek = [
-    "sunday",
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-  ];
+  const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
   const now = new Date();
   const currentDayIndex = now.getDay();
 

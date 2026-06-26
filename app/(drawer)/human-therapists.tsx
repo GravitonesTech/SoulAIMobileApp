@@ -246,10 +246,13 @@ export default function HumanTherapistsScreen() {
           setIsAppointmentsLoading(true);
           const response = await apiClient.post<any>(
             ENDPOINTS.users.cancelAppointment(appointment.id),
-            {}
+            {},
           );
           if (response.success) {
-            toast.success("Cancelled", response.message || "Your appointment has been cancelled successfully.");
+            toast.success(
+              "Cancelled",
+              response.message || "Your appointment has been cancelled successfully.",
+            );
             fetchTherapistsAndAppointments();
           } else {
             toast.error("Cancel Failed", response.message || "Failed to cancel appointment.");
@@ -264,7 +267,7 @@ export default function HumanTherapistsScreen() {
       {
         cancelLabel: "No",
         confirmLabel: "Yes, Cancel",
-      }
+      },
     );
   };
 
@@ -459,7 +462,9 @@ export default function HumanTherapistsScreen() {
                 {/* Upcoming Appointment */}
                 <UpcomingAppointments
                   appointments={upcomingAppointments}
-                  isLoading={isAppointmentsLoading && upcomingAppointments.length === 0 && !refreshing}
+                  isLoading={
+                    isAppointmentsLoading && upcomingAppointments.length === 0 && !refreshing
+                  }
                   onJoinSession={handleJoinSession}
                   onCancelSession={handleCancelSession}
                 />
