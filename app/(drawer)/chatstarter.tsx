@@ -5,6 +5,7 @@ import { Typography } from "@/constants/Typography";
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility";
 import { useAppSelector } from "@/store/hooks";
 import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
+import { haptics } from "@/utils/haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation, useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -61,6 +62,7 @@ export default function ChatStarterScreen() {
   };
 
   const handleStartTherapy = async (item: Therapy) => {
+    haptics.light();
     if (isStartingSession) return;
     setIsStartingSession(true);
     try {
