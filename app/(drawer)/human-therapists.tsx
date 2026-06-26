@@ -13,9 +13,11 @@ import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router";
+import { useAppConfirmation } from "@/hooks/useAppConfirmation";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -26,6 +28,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HumanTherapistsScreen() {
   const router = useRouter();
+  const { showConfirmation } = useAppConfirmation();
   const [searchText, setSearchText] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [therapists, setTherapists] = useState<Therapist[]>([]);
@@ -37,6 +40,7 @@ export default function HumanTherapistsScreen() {
   const [isAppointmentsLoading, setIsAppointmentsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Filter states
   const [activeFilters, setActiveFilters] = useState({
@@ -111,6 +115,12 @@ export default function HumanTherapistsScreen() {
     }
     setIsAppointmentsLoading(false);
   }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchTherapistsAndAppointments();
+    setRefreshing(false);
+  }, [fetchTherapistsAndAppointments]);
 
   useFocusEffect(
     useCallback(() => {
@@ -228,7 +238,34 @@ export default function HumanTherapistsScreen() {
   };
 
   const handleCancelSession = (appointment: Appointment) => {
-    toast.info("Cancel Session", "Please contact support to cancel your session.");
+    showConfirmation(
+      "Cancel Session",
+      `Are you sure you want to cancel your session with ${appointment.therapist_name}?`,
+      async () => {
+        try {
+          setIsAppointmentsLoading(true);
+          const response = await apiClient.post<any>(
+            ENDPOINTS.users.cancelAppointment(appointment.id),
+            {}
+          );
+          if (response.success) {
+            toast.success("Cancelled", response.message || "Your appointment has been cancelled successfully.");
+            fetchTherapistsAndAppointments();
+          } else {
+            toast.error("Cancel Failed", response.message || "Failed to cancel appointment.");
+          }
+        } catch (err) {
+          console.error("Error cancelling appointment:", err);
+          toast.error("Error", "Could not connect to the server.");
+        } finally {
+          setIsAppointmentsLoading(false);
+        }
+      },
+      {
+        cancelLabel: "No",
+        confirmLabel: "Yes, Cancel",
+      }
+    );
   };
 
   const handleRecentTherapistPress = async (appointment: Appointment) => {
@@ -301,6 +338,14 @@ export default function HumanTherapistsScreen() {
             keyboardDismissMode="on-drag"
             alwaysBounceVertical={true}
             overScrollMode="always"
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={["#3C61DD"]}
+                tintColor="#3C61DD"
+              />
+            }
           >
             {/* Search Bar */}
             <TherapistSearchBar
@@ -362,7 +407,11 @@ export default function HumanTherapistsScreen() {
               </View>
             )}
 
-            {showSearchResults ? (
+            {isLoading && therapists.length === 0 && upcomingAppointments.length === 0 ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#3C61DD" />
+              </View>
+            ) : showSearchResults ? (
               /* Search Results */
               <View style={styles.searchResultsContainer}>
                 {isSearching ? (
@@ -389,7 +438,7 @@ export default function HumanTherapistsScreen() {
                     </View>
                     <TopTherapistsList
                       therapists={therapists}
-                      isLoading={isLoading}
+                      isLoading={isLoading && therapists.length === 0 && !refreshing}
                       error={error}
                       onRetry={fetchTherapistsAndAppointments}
                       onTherapistPress={navigateToTherapistDetails}
@@ -410,7 +459,7 @@ export default function HumanTherapistsScreen() {
                 {/* Upcoming Appointment */}
                 <UpcomingAppointments
                   appointments={upcomingAppointments}
-                  isLoading={isAppointmentsLoading}
+                  isLoading={isAppointmentsLoading && upcomingAppointments.length === 0 && !refreshing}
                   onJoinSession={handleJoinSession}
                   onCancelSession={handleCancelSession}
                 />
@@ -434,7 +483,7 @@ export default function HumanTherapistsScreen() {
                 {/* Top Therapists */}
                 <TopTherapistsList
                   therapists={therapists}
-                  isLoading={isLoading}
+                  isLoading={isLoading && therapists.length === 0 && !refreshing}
                   error={error}
                   onRetry={fetchTherapistsAndAppointments}
                   onTherapistPress={navigateToTherapistDetails}
