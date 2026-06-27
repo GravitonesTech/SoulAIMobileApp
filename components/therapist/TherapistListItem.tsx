@@ -2,7 +2,7 @@ import { UserInitialsAvatar } from "@/components/ui/UserInitialsAvatar";
 import { Typography } from "@/constants/Typography";
 import { Therapist } from "@/types/therapist";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -12,6 +12,26 @@ interface TherapistListItemProps {
 }
 
 export const TherapistListItem = ({ therapist, onPress }: TherapistListItemProps) => {
+  const renderStars = (rating: number) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      if (rating >= i) {
+        stars.push(
+          <FontAwesome key={i} name="star" size={normalize(14)} color="#FFC107" style={styles.starIcon} />
+        );
+      } else if (rating >= i - 0.5) {
+        stars.push(
+          <FontAwesome key={i} name="star-half-o" size={normalize(14)} color="#FFC107" style={styles.starIcon} />
+        );
+      } else {
+        stars.push(
+          <FontAwesome key={i} name="star-o" size={normalize(14)} color="#E0E0E0" style={styles.starIcon} />
+        );
+      }
+    }
+    return stars;
+  };
+
   return (
     <TouchableOpacity style={styles.therapistListItem} activeOpacity={0.7} onPress={onPress}>
       <View style={styles.therapistListLeft}>
@@ -24,11 +44,20 @@ export const TherapistListItem = ({ therapist, onPress }: TherapistListItemProps
         </View>
         <View style={styles.listInfo}>
           <Text style={styles.therapistName}>{therapist.full_name}</Text>
-          <Text style={styles.ratingText}>
-            {therapist.total_reviews > 0
-              ? `${therapist.average_rating.toFixed(1)} Rating (${therapist.total_reviews} reviews)`
-              : "No ratings yet"}
-          </Text>
+          <View style={styles.ratingRow}>
+            {therapist.total_reviews > 0 ? (
+              <>
+                <View style={styles.starsContainer}>
+                  {renderStars(therapist.average_rating)}
+                </View>
+                <Text style={styles.reviewsCountText}>
+                  {`(${therapist.total_reviews} reviews)`}
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.noRatingsText}>No ratings yet</Text>
+            )}
+          </View>
           <Text style={styles.specializationText} numberOfLines={2}>
             {therapist.specialization && therapist.specialization.length > 0
               ? `Specialized in ${therapist.specialization.join(", ")}`
@@ -87,11 +116,28 @@ const styles = StyleSheet.create({
     fontSize: normalize(16),
     color: "#000",
   },
-  ratingText: {
-    fontFamily: Typography.fonts.medium,
+  ratingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: hp(0.3),
+  },
+  starIcon: {
+    marginRight: moderateScale(4),
+  },
+  starsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: moderateScale(2),
+  },
+  reviewsCountText: {
+    fontFamily: Typography.fonts.regular,
     fontSize: normalize(12),
     color: "#666",
-    marginTop: hp(0.3),
+  },
+  noRatingsText: {
+    fontFamily: Typography.fonts.medium,
+    fontSize: normalize(12),
+    color: "#999",
   },
   specializationText: {
     fontFamily: Typography.fonts.regular,
