@@ -6,24 +6,33 @@ import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useAppConfirmation } from "@/hooks/useAppConfirmation";
 import { BackHandler, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LanguageScreen() {
   const router = useRouter();
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+  const { showConfirmation } = useAppConfirmation();
 
-  useEffect(() => {
-    const backAction = () => {
-      BackHandler.exitApp();
-      return true;
-    };
-
-    const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
-
-    return () => backHandler.remove();
-  }, []);
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      showConfirmation(
+        "Exit App",
+        "Are you sure you want to exit?",
+        () => {
+          BackHandler.exitApp();
+        },
+        {
+          confirmLabel: "Exit",
+          cancelLabel: "Cancel",
+        },
+      );
+    }
+  };
 
   return (
     <LinearGradient
@@ -33,7 +42,7 @@ export default function LanguageScreen() {
       style={styles.container}
     >
       <SafeAreaView style={styles.safeArea}>
-        <ProgressHeader progress="13%" onBack={() => BackHandler.exitApp()} />
+        <ProgressHeader progress="13%" onBack={handleBack} />
 
         <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
           {/* Header */}

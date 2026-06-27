@@ -33,6 +33,9 @@ export default function VerifyScreen() {
       return;
     }
     // ✅ OTP correct → proceed
+    if (router.canDismiss()) {
+      router.dismissAll();
+    }
     router.replace("/language");
   };
 
