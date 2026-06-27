@@ -47,14 +47,8 @@ export const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
           onChangeText={setFullName}
           inputStyle={styles.inputField}
           placeholderTextColor="#8A8A8E"
-        />
-        <AppInput
-          placeholder="Phone Number"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          keyboardType="phone-pad"
-          inputStyle={styles.inputField}
-          placeholderTextColor="#8A8A8E"
+          editable={false}
+          style={styles.disabledInput}
         />
         <AppInput
           placeholder="Email ID"
@@ -62,6 +56,16 @@ export const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
           onChangeText={setEmailId}
           keyboardType="email-address"
           autoCapitalize="none"
+          inputStyle={styles.inputField}
+          placeholderTextColor="#8A8A8E"
+          editable={false}
+          style={styles.disabledInput}
+        />
+        <AppInput
+          placeholder="Phone Number"
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+          keyboardType="phone-pad"
           inputStyle={styles.inputField}
           placeholderTextColor="#8A8A8E"
         />
@@ -123,6 +127,11 @@ const styles = StyleSheet.create({
   inputField: {
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(15),
+  },
+  disabledInput: {
+    backgroundColor: "#F2F2F7",
+    borderColor: "#E5E5EA",
+    opacity: 0.65,
   },
   slotsSection: {
     marginBottom: hp(1),

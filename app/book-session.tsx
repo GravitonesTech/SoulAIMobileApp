@@ -11,8 +11,9 @@ import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
+import { useAppSelector } from "@/store/hooks";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import RazorpayCheckout from "react-native-razorpay";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -42,11 +43,27 @@ export default function BookSessionScreen() {
     }
   }, [selectedSlotJson]);
 
+  const user = useAppSelector((state) => state.auth.user);
+
   // Form States
   const [currentStep, setCurrentStep] = useState<1 | 2>(1); // 1 = Personal Info, 2 = Payment
-  const [fullName, setFullName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [emailId, setEmailId] = useState("");
+  const [fullName, setFullName] = useState(user?.full_name || "");
+  const [phoneNumber, setPhoneNumber] = useState(user?.phone || user?.phone_number || "");
+  const [emailId, setEmailId] = useState(user?.email || "");
+
+  useEffect(() => {
+    if (user) {
+      if (user.full_name && !fullName) {
+        setFullName(user.full_name);
+      }
+      if ((user.phone || user.phone_number) && !phoneNumber) {
+        setPhoneNumber(user.phone || user.phone_number || "");
+      }
+      if (user.email && !emailId) {
+        setEmailId(user.email);
+      }
+    }
+  }, [user]);
   const [selectedSlot, setSelectedSlot] = useState<{
     day: string;
     slot: string;
