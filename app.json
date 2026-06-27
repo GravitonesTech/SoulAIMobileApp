@@ -10,11 +10,21 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.soulai"
+      "bundleIdentifier": "com.anonymous.soulai",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Soul AI needs access to your camera to join video therapy sessions.",
+        "NSMicrophoneUsageDescription": "Soul AI needs access to your microphone to participate in audio therapy sessions."
+      }
     },
     "android": {
       "package": "com.anonymous.soulai",
-      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE"],
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS"
+      ],
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#000000",

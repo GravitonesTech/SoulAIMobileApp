@@ -123,6 +123,9 @@ export default function PersonalityTestScreen() {
 
       if (response.success) {
         toast.success("Success", "Assessments submitted successfully");
+        if (router.canDismiss()) {
+          router.dismissAll();
+        }
         router.replace("/chatstarter");
       } else {
         toast.error("Submission Failed", response.message || "Failed to submit assessments");

@@ -1,4 +1,5 @@
 import { toastConfig } from "@/components/ToastConfig";
+import GlobalBackHandler from "@/components/GlobalBackHandler";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AppActionSheet } from "@/hooks/useAppActionSheet";
 import { AppConfirmation } from "@/hooks/useAppConfirmation";
@@ -80,9 +81,11 @@ export default function RootLayout() {
             <Stack.Screen name="add-payment-method" options={{ headerShown: false }} />
             <Stack.Screen name="booking-success" options={{ headerShown: false }} />
             <Stack.Screen name="payment-failed" options={{ headerShown: false }} />
+            <Stack.Screen name="zoom-meeting" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style="dark" />
           <Toast config={toastConfig} />
+          <GlobalBackHandler />
         </ThemeProvider>
         <AppConfirmation />
         <AppActionSheet />

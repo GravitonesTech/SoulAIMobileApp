@@ -59,4 +59,8 @@ export interface Appointment {
   therapist_name: string;
   therapist_photo: string | null;
   therapist_specialization: string[];
+  meeting_url?: string | null;
+  meeting_id?: string | null;
+  meeting_password?: string | null;
+  meeting_provider?: string | null;
 }

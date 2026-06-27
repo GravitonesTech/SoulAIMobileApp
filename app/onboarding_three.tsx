@@ -31,7 +31,12 @@ export default function OnboardingThreeScreen() {
           <View style={styles.footer}>
             <AppButton
               title="Let's Talk"
-              onPress={() => router.replace("/chatstarter")}
+              onPress={() => {
+                if (router.canDismiss()) {
+                  router.dismissAll();
+                }
+                router.replace("/chatstarter");
+              }}
               style={styles.primaryButton}
             />
 

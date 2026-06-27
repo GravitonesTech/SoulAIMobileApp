@@ -36,6 +36,10 @@ function navigateToCorrectScreen(user: UserProfile) {
   const { completed_step } = user;
   console.log(`[Auth] Navigating based on step: ${completed_step}`);
 
+  if (router.canDismiss()) {
+    router.dismissAll();
+  }
+
   if (completed_step === 0) {
     router.replace("/onboarding_one");
   } else if (completed_step === 1) {
@@ -67,6 +71,9 @@ async function loginWithSocialToken(provider: SocialProvider, token: string) {
         store.dispatch(setCredentials({ user }));
         navigateToCorrectScreen(user);
       } else {
+        if (router.canDismiss()) {
+          router.dismissAll();
+        }
         router.replace("/onboarding_one");
       }
 
