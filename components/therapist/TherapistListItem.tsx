@@ -34,6 +34,12 @@ export const TherapistListItem = ({ therapist, onPress }: TherapistListItemProps
               ? `Specialized in ${therapist.specialization.join(", ")}`
               : "General Practitioner"}
           </Text>
+          <View style={styles.costBadge}>
+            <Feather name="tag" size={normalize(12)} color="#3C61DD" style={styles.costIcon} />
+            <Text style={styles.costText}>
+              {`Rs. ${therapist.session_cost ?? 100} / session`}
+            </Text>
+          </View>
         </View>
       </View>
       <Feather name="chevron-right" size={normalize(24)} color="#A0A0A0" />
@@ -92,5 +98,23 @@ const styles = StyleSheet.create({
     fontSize: normalize(13),
     color: "#999",
     marginTop: hp(0.5),
+  },
+  costBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E2F4FF",
+    paddingHorizontal: moderateScale(8),
+    paddingVertical: moderateScale(4),
+    borderRadius: normalize(6),
+    alignSelf: "flex-start",
+    marginTop: hp(0.8),
+  },
+  costIcon: {
+    marginRight: moderateScale(4),
+  },
+  costText: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(12),
+    color: "#3C61DD",
   },
 });
