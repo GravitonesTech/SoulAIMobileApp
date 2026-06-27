@@ -1,11 +1,12 @@
 import { Typography } from "@/constants/Typography";
+import { useAppConfirmation } from "@/hooks/useAppConfirmation";
 import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
+  BackHandler,
   PermissionsAndroid,
   Platform,
   StyleSheet,
@@ -44,6 +45,7 @@ const encodeBase64 = (str: string): string => {
 
 export default function ZoomMeetingScreen() {
   const router = useRouter();
+  const { showConfirmation } = useAppConfirmation();
   const params = useLocalSearchParams<{
     meetingUrl?: string;
     therapistName?: string;
@@ -70,7 +72,7 @@ export default function ZoomMeetingScreen() {
     if (match) {
       const meetingId = match[2];
       const rest = match[3]; // Includes parameters like ?pwd=...
-      resultUrl = `https://zoom.us/wc/join/${meetingId}${rest}`;
+      resultUrl = `https://zoom.us/wc/${meetingId}/join${rest}`;
     }
 
     if (name && resultUrl.includes("/wc/")) {
@@ -115,15 +117,29 @@ export default function ZoomMeetingScreen() {
   }, []);
 
   const handleBackPress = () => {
-    Alert.alert("Leave Session?", "Are you sure you want to end or leave this video session?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Leave",
-        style: "destructive",
-        onPress: () => router.back(),
+    showConfirmation(
+      "Leave Session?",
+      "Are you sure you want to end or leave this video session?",
+      () => {
+        router.back();
       },
-    ]);
+      {
+        confirmLabel: "Leave",
+        cancelLabel: "Cancel",
+      },
+    );
   };
+
+  useEffect(() => {
+    const backAction = () => {
+      handleBackPress();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+    return () => backHandler.remove();
+  }, [showConfirmation]);
 
   const handleReload = () => {
     setError(null);
@@ -139,6 +155,46 @@ export default function ZoomMeetingScreen() {
     default:
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36",
   });
+
+  const injectViewportAndStyles = `
+    (function() {
+      // 1. Set Viewport for responsive mobile rendering
+      var meta = document.querySelector('meta[name="viewport"]');
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('name', 'viewport');
+        document.getElementsByTagName('head')[0].appendChild(meta);
+      }
+      meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+
+      // 2. Inject CSS Styles to force full height, hide overflows and scrollbars
+      var style = document.createElement('style');
+      style.innerHTML = \`
+        * {
+          max-width: 100vw !important;
+          box-sizing: border-box !important;
+        }
+        html, body {
+          width: 100% !important;
+          overflow-x: hidden !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        #root, #zmmtg-root, .meeting-client {
+          width: 100% !important;
+          height: 100% !important;
+          overflow: hidden !important;
+        }
+        /* Enable vertical scroll ONLY on the join/login forms if they exceed height */
+        #join-form, .join-flow, .meeting-info-container {
+          overflow-y: auto !important;
+          max-height: 100% !important;
+        }
+      \`;
+      document.head.appendChild(style);
+    })();
+    true;
+  `;
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
@@ -172,6 +228,10 @@ export default function ZoomMeetingScreen() {
             allowsInlineMediaPlayback={true}
             mediaPlaybackRequiresUserAction={false}
             geolocationEnabled={true}
+            scalesPageToFit={true}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            injectedJavaScript={injectViewportAndStyles}
             onLoadStart={() => setIsLoading(true)}
             onLoadEnd={() => setIsLoading(false)}
             onError={(syntheticEvent) => {
@@ -272,10 +332,14 @@ const styles = StyleSheet.create({
   webviewContainer: {
     flex: 1,
     position: "relative",
+    backgroundColor: "#F8FAFC",
   },
   webview: {
+    width: "98%",
+    paddingHorizontal: 5,
+    alignSelf: "center",
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F8FAFC",
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
