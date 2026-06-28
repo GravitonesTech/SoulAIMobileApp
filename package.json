@@ -21,10 +21,13 @@
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
     "@reduxjs/toolkit": "^2.11.2",
+    "@zoom/meetingsdk-react-native": "^7.0.5",
     "axios": "^1.15.2",
+    "crypto-js": "^4.2.0",
     "expo": "~54.0.33",
     "expo-audio": "~1.1.1",
     "expo-auth-session": "~7.0.10",
+    "expo-build-properties": "^56.0.19",
     "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.13",
     "expo-crypto": "~15.0.8",
@@ -60,6 +63,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
     "@types/react": "~19.1.0",
     "babel-plugin-module-resolver": "^5.0.3",
     "eslint": "^9.25.0",

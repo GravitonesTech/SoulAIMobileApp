@@ -21,7 +21,8 @@
         "foregroundImage": "./assets/images/icon.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "allowBackup": false
     },
     "web": {
       "output": "static",
@@ -43,7 +44,15 @@
       "expo-font",
       "expo-secure-store",
       "@react-native-community/datetimepicker",
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 28
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
