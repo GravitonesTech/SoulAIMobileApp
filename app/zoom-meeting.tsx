@@ -1,6 +1,5 @@
 import { Typography } from "@/constants/Typography";
 import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
-import { getZoomToken } from "@/utils/zoom-auth";
 import { Feather } from "@expo/vector-icons";
 import {
   addZoomEventListener,
@@ -203,7 +202,7 @@ export default function ZoomMeetingScreen() {
           return;
         }
 
-        const token = params.sdkSignature || (await getZoomToken(extractedMeetingId, 0));
+        const token = params.sdkSignature || "";
         setJwtToken(token);
       } catch (err) {
         console.error("Setup error:", err);
@@ -303,7 +302,8 @@ export default function ZoomMeetingScreen() {
             <Feather name="alert-triangle" size={normalize(48)} color="#E53935" />
             <Text style={styles.errorTitle}>Authentication Error</Text>
             <Text style={styles.errorSubtitle}>
-              Could not authenticate with the Zoom server. Please verify environment keys.
+              Could not authenticate with the Zoom server. Meeting token/signature is missing or
+              invalid.
             </Text>
             <TouchableOpacity style={styles.closeButton} onPress={handleBackPress}>
               <Text style={styles.closeButtonText}>Go Back</Text>

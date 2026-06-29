@@ -23,7 +23,6 @@
     "@reduxjs/toolkit": "^2.11.2",
     "@zoom/meetingsdk-react-native": "^7.0.5",
     "axios": "^1.15.2",
-    "crypto-js": "^4.2.0",
     "expo": "~54.0.33",
     "expo-audio": "~1.1.1",
     "expo-auth-session": "~7.0.10",
@@ -63,7 +62,6 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/crypto-js": "^4.2.2",
     "@types/react": "~19.1.0",
     "babel-plugin-module-resolver": "^5.0.3",
     "eslint": "^9.25.0",
