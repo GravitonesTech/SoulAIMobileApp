@@ -7,13 +7,13 @@ import { UpcomingAppointments } from "@/components/therapist/UpcomingAppointment
 import { AppHeader } from "@/components/ui/AppHeader";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { useAppConfirmation } from "@/hooks/useAppConfirmation";
 import { Appointment, Therapist } from "@/types/therapist";
 import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useAppConfirmation } from "@/hooks/useAppConfirmation";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -234,7 +234,30 @@ export default function HumanTherapistsScreen() {
   };
 
   const handleJoinSession = (appointment: Appointment) => {
+    let zoomUrl = appointment.meeting_url || "";
+    if (!zoomUrl && appointment.notes && appointment.notes.includes("zoom.us")) {
+      const match = appointment.notes.match(/https?:\/\/[^\s]+/);
+      if (match) zoomUrl = match[0];
+    }
+
+    if (!zoomUrl && !appointment.meeting_id) {
+      // Fallback zoom link with mock meeting ID and passcode
+      zoomUrl = `https://zoom.us/j/1234567890?pwd=mock_passcode_${appointment.id}`;
+    }
+
     toast.info("Joining Session", `Connecting you with ${appointment.therapist_name}...`);
+
+    router.push({
+      pathname: "/zoom-meeting",
+      params: {
+        meetingId: appointment.meeting_id || "",
+        meetingPassword: appointment.meeting_password || "",
+        meetingUrl: zoomUrl,
+        therapistName: appointment.therapist_name,
+        patientName: appointment.patient_name || "Patient",
+        sdkSignature: appointment.sdk_signature || "",
+      },
+    } as any);
   };
 
   const handleCancelSession = (appointment: Appointment) => {

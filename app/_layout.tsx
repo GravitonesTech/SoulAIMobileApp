@@ -80,6 +80,7 @@ export default function RootLayout() {
             <Stack.Screen name="add-payment-method" options={{ headerShown: false }} />
             <Stack.Screen name="booking-success" options={{ headerShown: false }} />
             <Stack.Screen name="payment-failed" options={{ headerShown: false }} />
+            <Stack.Screen name="zoom-meeting" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style="dark" />
           <Toast config={toastConfig} />
