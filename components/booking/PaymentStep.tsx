@@ -219,7 +219,7 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
         <View style={styles.warningBox}>
           <Feather name="info" size={normalize(18)} color="#3C61DD" style={styles.warningIcon} />
           <Text style={styles.warningText}>
-            Cancellations must be made at least 24 hours in advance to avoid a fee
+            Cancellations must be made at least 48 hours in advance to avoid a fee
           </Text>
         </View>
 
