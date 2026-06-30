@@ -1,4 +1,5 @@
 import { toastConfig } from "@/components/ToastConfig";
+import GlobalBackHandler from "@/components/GlobalBackHandler";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AppActionSheet } from "@/hooks/useAppActionSheet";
 import { AppConfirmation } from "@/hooks/useAppConfirmation";
@@ -84,6 +85,7 @@ export default function RootLayout() {
           </Stack>
           <StatusBar style="dark" />
           <Toast config={toastConfig} />
+          <GlobalBackHandler />
         </ThemeProvider>
         <AppConfirmation />
         <AppActionSheet />
