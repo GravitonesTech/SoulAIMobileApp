@@ -303,9 +303,7 @@ export default function TherapistDetailsScreen() {
 
         {/* Floating/Sticky Action Button at Bottom Right */}
         <BookingButton
-          priceText={
-            displayTherapist.session_cost ? `Rs. ${displayTherapist.session_cost}` : "Rs. 100"
-          }
+          text="Book Session"
           onPress={() => {
             if (!selectedSlot) {
               toast.error("Slot Required", "Please select an availability slot first.");

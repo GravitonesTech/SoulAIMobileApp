@@ -5,15 +5,15 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 interface BookingButtonProps {
-  priceText?: string;
+  text?: string;
   onPress?: () => void;
 }
 
-export const BookingButton = ({ priceText = "Rs. 100", onPress }: BookingButtonProps) => {
+export const BookingButton = ({ text = "Book Session", onPress }: BookingButtonProps) => {
   return (
     <TouchableOpacity style={styles.floatingButton} activeOpacity={0.85} onPress={onPress}>
       <Feather name="plus-circle" size={normalize(20)} color="#FFF" style={styles.buttonIcon} />
-      <Text style={styles.floatingButtonText}>{priceText}</Text>
+      <Text style={styles.floatingButtonText}>{text}</Text>
     </TouchableOpacity>
   );
 };
