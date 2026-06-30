@@ -59,6 +59,8 @@ export const ENDPOINTS = {
       `/users/appointments/pricing-summary?therapist_id=${therapistId}`,
     /** POST — Cancel an appointment */
     cancelAppointment: (id: number | string) => `/users/appointments/${id}/cancel`,
+    /** POST — Validate a coupon code */
+    validateCoupon: "/users/coupons/validate",
     /** GET — Fetch metadata */
     metadata: "/users/metadata",
   },

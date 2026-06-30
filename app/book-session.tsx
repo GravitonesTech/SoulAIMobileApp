@@ -78,16 +78,16 @@ export default function BookSessionScreen() {
     platform_fee: number;
     admin_fee: number;
     total_amount: number;
+    discount_amount?: number;
   } | null>(null);
   const [isLoadingPricing, setIsLoadingPricing] = useState(false);
-  const [discount, setDiscount] = useState(50); // Default to match screenshot!
-  const [couponCode, setCouponCode] = useState("SOUL50"); // Default to match screenshot!
+  const [couponCode, setCouponCode] = useState("");
 
   const finalPayableAmount = useMemo(() => {
-    const base = pricing?.base_fee ?? 250;
-    const admin = pricing?.admin_fee ?? 5.99;
-    const platform = pricing?.platform_fee ?? 1.99;
-    return Math.max(0, base + admin + platform); // - discount
+    if (pricing) {
+      return pricing.total_amount;
+    }
+    return 257.98; // Fallback total
   }, [pricing]);
 
   // Payment States
@@ -188,6 +188,44 @@ export default function BookSessionScreen() {
     }
   };
 
+  const handleApplyCoupon = async (code: string) => {
+    if (!therapist) return;
+    const cleanCode = code.replace(/\s+/g, "");
+    if (!cleanCode) {
+      setCouponCode("");
+      toast.info("Coupon Removed", "Discount coupon cleared.");
+      fetchPricingSummary();
+      return;
+    }
+
+    setIsLoadingPricing(true);
+    try {
+      const response = await apiClient.post<any>(ENDPOINTS.users.validateCoupon, {
+        code: cleanCode,
+        therapist_id: therapist.id,
+      });
+
+      if (response.success && response.data) {
+        setCouponCode(cleanCode.toUpperCase());
+        setPricing({
+          base_fee: response.data.session_cost,
+          platform_fee: response.data.platform_fee,
+          admin_fee: response.data.admin_fee,
+          total_amount: response.data.final_amount,
+          discount_amount: response.data.discount_amount,
+        });
+        toast.success("Coupon Applied", response.message || "Coupon applied successfully!");
+      } else {
+        toast.error("Invalid Coupon", response.message || "Coupon is invalid.");
+      }
+    } catch (err: any) {
+      console.warn("Failed to validate coupon:", err);
+      toast.error("Error", "Failed to validate coupon.");
+    } finally {
+      setIsLoadingPricing(false);
+    }
+  };
+
   const handleContinueToPayment = () => {
     if (validatePersonalInfo()) {
       setCurrentStep(2);
@@ -250,6 +288,7 @@ export default function BookSessionScreen() {
       patient_phone: phoneNumber.trim(),
       contact_email: emailId.trim(),
       notes: notes.trim() || "Looking forward to the session",
+      coupon_code: couponCode || undefined,
     };
 
     try {
@@ -413,10 +452,8 @@ export default function BookSessionScreen() {
                 isLoadingPricing={isLoadingPricing}
                 isSubmitting={isSubmitting}
                 onConfirm={handleConfirmBooking}
-                discount={discount}
-                setDiscount={setDiscount}
                 couponCode={couponCode}
-                setCouponCode={setCouponCode}
+                onApplyCoupon={handleApplyCoupon}
               />
             )}
           </ScrollView>
