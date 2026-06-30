@@ -2,9 +2,10 @@ import { AppInput } from "@/components/ui/AppInput";
 import { Typography } from "@/constants/Typography";
 import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ActivityIndicator,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
@@ -19,6 +20,7 @@ interface PricingDetails {
   platform_fee: number;
   admin_fee: number;
   total_amount: number;
+  discount_amount?: number;
 }
 
 interface PaymentStepProps {
@@ -36,10 +38,8 @@ interface PaymentStepProps {
   isLoadingPricing: boolean;
   isSubmitting: boolean;
   onConfirm: () => void;
-  discount: number;
-  setDiscount: (val: number) => void;
   couponCode: string;
-  setCouponCode: (val: string) => void;
+  onApplyCoupon: (code: string) => void;
 }
 
 const savedMethods = [
@@ -63,14 +63,16 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
   isLoadingPricing,
   isSubmitting,
   onConfirm,
-  discount,
-  setDiscount,
   couponCode,
-  setCouponCode,
+  onApplyCoupon,
 }) => {
   const router = useRouter();
   const [selectedMethodId, setSelectedMethodId] = useState<string>("1");
   const [couponText, setCouponText] = useState(couponCode);
+
+  useEffect(() => {
+    setCouponText(couponCode);
+  }, [couponCode]);
 
   const handleSelectSavedMethod = (id: string, method: "card" | "upi") => {
     setSelectedMethodId(id);
@@ -93,23 +95,16 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
   };
 
   const handleApplyCoupon = () => {
-    if (couponText.trim()) {
-      const code = couponText.trim().toUpperCase();
-      setCouponCode(code);
-      setDiscount(50); // Apply Rs. 50 discount
-      toast.success("Coupon Applied", `Coupon ${code} applied successfully!`);
-    } else {
-      setCouponCode("");
-      setDiscount(0);
-      toast.info("Coupon Removed", "Discount coupon cleared.");
-    }
+    Keyboard.dismiss();
+    const cleanCode = couponText.replace(/\s+/g, "");
+    onApplyCoupon(cleanCode);
   };
 
   // Calculations for display matching the mockup
   const baseFee = pricing?.base_fee ?? 250;
   const adminFee = pricing?.admin_fee ?? 5.99;
   const platformFee = pricing?.platform_fee ?? 1.99;
-  const totalAmount = Math.max(0, baseFee + adminFee + platformFee); // - discount
+  const totalAmount = pricing?.total_amount ?? Math.max(0, baseFee + adminFee + platformFee);
 
   return (
     <View style={styles.stepContent}>
@@ -165,14 +160,27 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
             placeholder="Coupon Code"
             value={couponText}
             onChangeText={setCouponText}
-            style={styles.couponInput}
+            style={[styles.couponInput, couponCode ? { color: "#28A745", fontWeight: "bold" } : null]}
             placeholderTextColor="#8A8A8E"
             autoCapitalize="characters"
+            editable={!couponCode}
           />
         </View>
-        <TouchableOpacity onPress={handleApplyCoupon}>
-          <Feather name="arrow-right" size={normalize(20)} color="#3C61DD" />
-        </TouchableOpacity>
+        {couponCode ? (
+          <TouchableOpacity
+            onPress={() => {
+              setCouponText("");
+              onApplyCoupon("");
+            }}
+            activeOpacity={0.7}
+          >
+            <Feather name="x" size={normalize(20)} color="#FF3B30" style={{ padding: 4 }} />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={handleApplyCoupon} activeOpacity={0.7}>
+            <Feather name="arrow-right" size={normalize(20)} color="#3C61DD" style={{ padding: 4 }} />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Payment Summary Container with Light Blue Background */}
@@ -198,12 +206,12 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
               </View>
 
               {/* Highlighted Discount Row */}
-              {/* {discount > 0 && (
+              {pricing?.discount_amount !== undefined && pricing.discount_amount > 0 && (
                 <View style={styles.discountRow}>
                   <Text style={styles.discountLabel}>Discount</Text>
-                  <Text style={styles.discountValue}>-Rs. {discount.toFixed(2)}</Text>
+                  <Text style={styles.discountValue}>-Rs. {pricing.discount_amount.toFixed(2)}</Text>
                 </View>
-              )} */}
+              )}
 
               <View style={styles.dividerTotal} />
 
