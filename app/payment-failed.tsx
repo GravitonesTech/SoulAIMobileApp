@@ -14,7 +14,7 @@ export default function PaymentFailedScreen() {
   };
 
   const handleContactSupport = () => {
-    router.push("/support");
+    router.push("/customer-support");
   };
 
   return (
