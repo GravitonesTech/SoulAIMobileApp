@@ -63,6 +63,8 @@ export const ENDPOINTS = {
     validateCoupon: "/users/coupons/validate",
     /** GET — Fetch metadata */
     metadata: "/users/metadata",
+    /** PUT — Update user device FCM token */
+    updateFcmToken: "/users/user-update-fcm-token",
   },
 
   chat: {

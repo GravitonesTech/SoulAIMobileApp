@@ -35,4 +35,18 @@ export const toast = {
       bottomOffset: 40,
     });
   },
+  inAppNotification: (title: string, message: string, onPress: () => void) => {
+    Toast.show({
+      type: "inAppNotification",
+      text1: title,
+      text2: message,
+      position: "top",
+      visibilityTime: 5000,
+      autoHide: true,
+      topOffset: 50,
+      props: {
+        onPress,
+      },
+    });
+  },
 };

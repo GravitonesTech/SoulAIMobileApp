@@ -10,10 +10,12 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.soulai"
+      "bundleIdentifier": "com.anonymous.soulai",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "package": "com.anonymous.soulai",
+      "googleServicesFile": "./google-services.json",
       "permissions": ["INTERNET", "ACCESS_NETWORK_STATE"],
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
@@ -52,7 +54,11 @@
             "minSdkVersion": 28
           }
         }
-      ]
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      "./plugins/withCustomGradleProperties",
+      "./plugins/withZoomNetworkSecurity"
     ],
     "experiments": {
       "typedRoutes": true,

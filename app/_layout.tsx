@@ -19,6 +19,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
+import { NotificationService } from "@/utils/notificationService";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -30,6 +31,11 @@ export default function RootLayout() {
     NunitoSans_500Medium,
     NunitoSans_700Bold,
   });
+
+  useEffect(() => {
+    // Initialize push notifications (permissions, listeners, etc.)
+    NotificationService.init();
+  }, []);
 
   useEffect(() => {
     if (loaded) {
