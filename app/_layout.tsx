@@ -19,6 +19,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
+import { OfflineBanner } from "@/components/ui/OfflineBanner";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -87,6 +88,7 @@ export default function RootLayout() {
           <StatusBar style="dark" />
           <Toast config={toastConfig} />
           <GlobalBackHandler />
+          <OfflineBanner />
         </ThemeProvider>
         <AppConfirmation />
         <AppActionSheet />

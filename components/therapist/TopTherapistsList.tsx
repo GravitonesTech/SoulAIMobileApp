@@ -1,9 +1,10 @@
 import React from "react";
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { Typography } from "@/constants/Typography";
 import { hp, normalize } from "@/utils/responsive";
 import { Therapist } from "@/types/therapist";
 import { TherapistListItem } from "./TherapistListItem";
+import { ErrorView } from "@/components/ui/ErrorView";
 
 interface TopTherapistsListProps {
   therapists: Therapist[];
@@ -28,12 +29,7 @@ export const TopTherapistsList = ({
           <ActivityIndicator size="large" color="#3C61DD" />
         </View>
       ) : error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
-            <Text style={styles.retryText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorView message={error} onRetry={onRetry} />
       ) : therapists.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No therapists found</Text>

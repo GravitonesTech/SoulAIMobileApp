@@ -5,6 +5,7 @@ import { TherapistSearchBar } from "@/components/therapist/TherapistSearchBar";
 import { TopTherapistsList } from "@/components/therapist/TopTherapistsList";
 import { UpcomingAppointments } from "@/components/therapist/UpcomingAppointments";
 import { AppHeader } from "@/components/ui/AppHeader";
+import { ErrorView } from "@/components/ui/ErrorView";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
 import { useAppConfirmation } from "@/hooks/useAppConfirmation";
@@ -445,15 +446,10 @@ export default function HumanTherapistsScreen() {
                     <ActivityIndicator size="large" color="#3C61DD" />
                   </View>
                 ) : searchError ? (
-                  <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{searchError}</Text>
-                    <TouchableOpacity
-                      style={styles.retryButton}
-                      onPress={() => performSearch(searchText, activeFilters)}
-                    >
-                      <Text style={styles.retryText}>Retry</Text>
-                    </TouchableOpacity>
-                  </View>
+                  <ErrorView
+                    message={searchError}
+                    onRetry={() => performSearch(searchText, activeFilters)}
+                  />
                 ) : searchedTherapists.length === 0 ? (
                   <>
                     <View style={styles.noResultContainer}>
