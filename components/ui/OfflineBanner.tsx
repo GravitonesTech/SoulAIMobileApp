@@ -1,22 +1,22 @@
+import { Typography } from "@/constants/Typography";
+import { moderateScale, normalize } from "@/utils/responsive";
+import { Feather } from "@expo/vector-icons";
 import NetInfo from "@react-native-community/netinfo";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Platform } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
-import { Typography } from "@/constants/Typography";
-import { normalize, moderateScale } from "@/utils/responsive";
 
 export function OfflineBanner() {
   const [isConnected, setIsConnected] = useState<boolean | null>(true);
   const insets = useSafeAreaInsets();
-  
+
   // Slide animation: translateY initially hidden above the screen
   const translateY = useSharedValue(-100);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
-      // NetInfo state.isConnected can be null initially. 
+      // NetInfo state.isConnected can be null initially.
       // We only treat it as offline if it is explicitly false.
       const connected = state.isConnected !== false;
       setIsConnected(connected);
