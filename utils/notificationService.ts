@@ -1,4 +1,5 @@
 import { ENDPOINTS } from "@/constants/endpoints";
+import { showConfirmationGlobal } from "@/hooks/useAppConfirmation";
 import { apiClient } from "@/utils/api";
 import { storage } from "@/utils/storage";
 import { toast } from "@/utils/toast";
@@ -49,13 +50,27 @@ export const NotificationService = {
       onMessage((message: any) => {
         console.log("📩 [FCM Service] Received foreground message:", message);
 
-        // Show in-app notification toast
         const title = message.notification?.title || "New Notification";
         const body = message.notification?.body || "You have a new message.";
 
-        toast.inAppNotification(title, body, () => {
-          this.handleNotificationNavigation(message.data);
-        });
+        if (message.data?.type === "FEEDBACK_REQUEST") {
+          showConfirmationGlobal(
+            title,
+            body,
+            () => {
+              this.handleNotificationNavigation(message.data);
+            },
+            {
+              confirmLabel: "Review",
+              cancelLabel: "Not Now",
+            }
+          );
+        } else {
+          // Show in-app notification toast
+          toast.inAppNotification(title, body, () => {
+            this.handleNotificationNavigation(message.data);
+          });
+        }
       });
 
       // 3. Listen for Notification click events when the app is in background/killed
