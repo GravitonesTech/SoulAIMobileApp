@@ -25,6 +25,7 @@ import { CHAT_PROMPTS, THERAPY_COLORS } from "@/constants/StaticData";
 import { Therapy } from "@/types/therapy";
 import { apiClient } from "@/utils/api";
 import { AuthService } from "@/utils/auth";
+import { setAppReady } from "@/utils/notificationService";
 
 export default function ChatStarterScreen() {
   const router = useRouter();
@@ -42,6 +43,7 @@ export default function ChatStarterScreen() {
   React.useEffect(() => {
     AuthService.checkAuth();
     fetchTherapies();
+    setAppReady(true);
   }, []);
 
   const fetchTherapies = async () => {
