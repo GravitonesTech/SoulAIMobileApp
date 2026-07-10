@@ -1,8 +1,19 @@
-import messaging from "@react-native-firebase/messaging";
+import {
+  getMessaging,
+  getToken,
+  deleteToken,
+  onTokenRefresh as onFirebaseTokenRefresh,
+  onMessage as onFirebaseMessage,
+  onNotificationOpenedApp,
+  getInitialNotification,
+  setBackgroundMessageHandler,
+} from "@react-native-firebase/messaging";
 import { requestNotifications } from "react-native-permissions";
 
+const messaging = getMessaging();
+
 // Register background handler early in the app lifecycle
-messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+setBackgroundMessageHandler(messaging, async (remoteMessage) => {
   console.log("📱 [FCM Native] Background message received:", remoteMessage);
 });
 
@@ -10,7 +21,7 @@ messaging().setBackgroundMessageHandler(async (remoteMessage) => {
  * Returns the native Firebase Messaging instance.
  */
 export const getMessagingInstance = async () => {
-  return messaging();
+  return messaging;
 };
 
 /**
@@ -40,7 +51,7 @@ export const requestPermission = async (): Promise<boolean> => {
  */
 export const getFCMToken = async (_vapidKey?: string): Promise<string | null> => {
   try {
-    const token = await messaging().getToken();
+    const token = await getToken(messaging);
     console.log("🔑 [FCM Native] Token generated successfully.");
     return token;
   } catch (error) {
@@ -54,7 +65,7 @@ export const getFCMToken = async (_vapidKey?: string): Promise<string | null> =>
  */
 export const deleteFCMToken = async (): Promise<boolean> => {
   try {
-    await messaging().deleteToken();
+    await deleteToken(messaging);
     console.log("🗑️ [FCM Native] Token deleted successfully.");
     return true;
   } catch (error) {
@@ -67,14 +78,14 @@ export const deleteFCMToken = async (): Promise<boolean> => {
  * Subscribes to token refresh events on Native.
  */
 export const onTokenRefresh = (callback: (token: string) => void): (() => void) => {
-  return messaging().onTokenRefresh(callback);
+  return onFirebaseTokenRefresh(messaging, callback);
 };
 
 /**
  * Subscribes to foreground message events on Native.
  */
 export const onMessage = (callback: (message: any) => void): (() => void) => {
-  return messaging().onMessage((remoteMessage) => {
+  return onFirebaseMessage(messaging, (remoteMessage) => {
     // Standardize Native payload structure to match Web
     callback({
       notification: remoteMessage.notification
@@ -93,7 +104,7 @@ export const onMessage = (callback: (message: any) => void): (() => void) => {
  * Subscribes to notification opened events (from background) on Native.
  */
 export const onNotificationOpened = (callback: (data: any) => void): (() => void) => {
-  return messaging().onNotificationOpenedApp((remoteMessage) => {
+  return onNotificationOpenedApp(messaging, (remoteMessage) => {
     console.log(
       "📱 [FCM Native] Notification caused app to open from background state:",
       remoteMessage,
@@ -107,7 +118,7 @@ export const onNotificationOpened = (callback: (data: any) => void): (() => void
  */
 export const getInitialNotificationData = async (): Promise<any | null> => {
   try {
-    const remoteMessage = await messaging().getInitialNotification();
+    const remoteMessage = await getInitialNotification(messaging);
     if (remoteMessage) {
       console.log(
         "📱 [FCM Native] Notification caused app to open from quit state:",
