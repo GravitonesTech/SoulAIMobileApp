@@ -4,6 +4,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AppActionSheet } from "@/hooks/useAppActionSheet";
 import { AppConfirmation } from "@/hooks/useAppConfirmation";
 import { store } from "@/store";
+import { NotificationService } from "@/utils/notificationService";
 import {
   NunitoSans_400Regular,
   NunitoSans_500Medium,
@@ -19,7 +20,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
-import { NotificationService } from "@/utils/notificationService";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -89,6 +89,7 @@ export default function RootLayout() {
             <Stack.Screen name="payment-failed" options={{ headerShown: false }} />
             <Stack.Screen name="zoom-meeting" options={{ headerShown: false }} />
             <Stack.Screen name="customer-support" options={{ headerShown: false }} />
+            <Stack.Screen name="review-session" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style="dark" />
           <Toast config={toastConfig} />

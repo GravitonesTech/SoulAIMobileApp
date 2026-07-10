@@ -256,6 +256,12 @@ export default function HumanTherapistsScreen() {
         therapistName: appointment.therapist_name,
         patientName: appointment.patient_name || "Patient",
         sdkSignature: appointment.sdk_signature || "",
+        therapistId: appointment.therapist_id.toString(),
+        bookingId: appointment.id.toString(),
+        therapistPhoto: appointment.therapist_photo || "",
+        therapistSpecialization: appointment.therapist_specialization
+          ? appointment.therapist_specialization.join(", ")
+          : "",
       },
     } as any);
   };

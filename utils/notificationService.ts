@@ -225,42 +225,174 @@ export const NotificationService = {
   /**
    * Navigation handler based on notification payload data.
    */
-  handleNotificationNavigation(data: any) {
+  async handleNotificationNavigation(data: any) {
     if (!data) return;
 
+    const type = data.type;
+    console.log(`🛎️ [FCM Service] Handling navigation for notification type: ${type}`, data);
+
     try {
-      // Find navigation target in the data payload
-      let screenPath = data.screen || data.path || data.url;
+      switch (type) {
+        // --- PATIENT NOTIFICATIONS ---
+        case "BOOKING_CONFIRMED": {
+          const bookingId = data.booking_id;
+          let message = "Your session booking has been successfully confirmed.";
+          
+          if (bookingId) {
+            try {
+              const response = await apiClient.get<any>(ENDPOINTS.users.myAppointments);
+              if (response.success && response.data) {
+                const allAppointments = [
+                  ...(response.data.upcoming || []),
+                  ...(response.data.past || []),
+                ];
+                const appointment = allAppointments.find((a: any) =>
+                  a.id.toString() === bookingId ||
+                  bookingId.includes(a.id.toString())
+                );
+                if (appointment) {
+                  message = `Your session with ${appointment.therapist_name} on ${appointment.appointment_date} at ${appointment.time_slot} has been confirmed.`;
+                }
+              }
+            } catch (err) {
+              console.warn("Failed to retrieve booking details for confirmation toast:", err);
+            }
+          }
+          
+          toast.success("Session Confirmed", message);
+          router.push("/(drawer)/human-therapists");
+          break;
+        }
 
-      // Fallback: If payload has booking_id, route to the therapists & appointments screen
-      if (!screenPath && data.booking_id) {
-        screenPath = "/(drawer)/human-therapists";
-      }
+        case "CANCELLATION": {
+          const bookingId = data.booking_id;
+          let message = "An upcoming session has been cancelled.";
+          
+          if (bookingId) {
+            try {
+              const response = await apiClient.get<any>(ENDPOINTS.users.myAppointments);
+              if (response.success && response.data) {
+                const allAppointments = [
+                  ...(response.data.upcoming || []),
+                  ...(response.data.past || []),
+                ];
+                const appointment = allAppointments.find((a: any) =>
+                  a.id.toString() === bookingId ||
+                  bookingId.includes(a.id.toString())
+                );
+                if (appointment) {
+                  message = `Your session with ${appointment.therapist_name} on ${appointment.appointment_date} at ${appointment.time_slot} has been cancelled.`;
+                }
+              }
+            } catch (err) {
+              console.warn("Failed to retrieve booking details for cancellation toast:", err);
+            }
+          }
+          
+          toast.info("Session Cancelled", message);
+          router.push("/(drawer)/human-therapists");
+          break;
+        }
 
-      if (!screenPath) {
-        console.log(
-          "ℹ️ [FCM Service] Notification clicked, but no target path specified in payload.",
-        );
-        return;
-      }
+        case "SESSION_REMINDER_24HR": {
+          const bookingId = data.booking_id;
+          let message = "Reminder: You have a therapy session scheduled for tomorrow.";
+          
+          if (bookingId) {
+            try {
+              const response = await apiClient.get<any>(ENDPOINTS.users.myAppointments);
+              if (response.success && response.data?.upcoming) {
+                const appointment = response.data.upcoming.find((a: any) =>
+                  a.id.toString() === bookingId ||
+                  bookingId.includes(a.id.toString())
+                );
+                if (appointment) {
+                  message = `Reminder: Your session with ${appointment.therapist_name} is scheduled for tomorrow (${appointment.appointment_date}) at ${appointment.time_slot}.`;
+                }
+              }
+            } catch (err) {
+              console.warn("Failed to retrieve booking details for 24hr reminder toast:", err);
+            }
+          }
+          
+          toast.info("Upcoming Session Reminder", message);
+          router.push("/(drawer)/human-therapists");
+          break;
+        }
 
-      console.log(`🔄 [FCM Service] Navigating to: ${screenPath}`);
+        case "SESSION_REMINDER_15MIN": {
+          toast.info("Session Starting Soon", "Your session is starting in 15 minutes. Please join from the appointments list.");
+          router.push("/(drawer)/human-therapists");
+          break;
+        }
 
-      // Support query parameters / JSON params if present
-      let params = {};
-      if (data.params) {
-        try {
-          params = typeof data.params === "string" ? JSON.parse(data.params) : data.params;
-        } catch (e) {
-          console.error("❌ [FCM Service] Error parsing payload params:", e);
+        case "FEEDBACK_REQUEST": {
+          const therapistId = data.therapist_id;
+          const bookingId = data.booking_id;
+          if (therapistId) {
+            router.push({
+              pathname: "/review-session",
+              params: {
+                therapistId: therapistId,
+                therapistName: data.therapist_name || "your Therapist",
+                bookingId: bookingId || "",
+                therapistPhoto: data.therapist_photo || "",
+                therapistSpecialization: data.therapist_specialization || "",
+              },
+            } as any);
+          } else {
+            router.push("/(drawer)/human-therapists");
+          }
+          break;
+        }
+
+        case "PAYMENT_FAILED": {
+          const bookingId = data.booking_id;
+          // Note: In PAYMENT_FAILED notifications, the backend sends the therapist's ID in the booking_id field
+          const therapistId = data.therapist_id || bookingId;
+
+          toast.error("Payment Failed", "Please select a slot and attempt booking again.");
+
+          if (therapistId) {
+            router.push({
+              pathname: "/therapist-details",
+              params: { id: therapistId },
+            } as any);
+          } else {
+            router.push("/(drawer)/human-therapists");
+          }
+          break;
+        }
+
+        default: {
+          // Fallback routing logic for generic notifications
+          let screenPath = data.screen || data.path || data.url;
+
+          if (!screenPath && data.booking_id) {
+            screenPath = "/(drawer)/human-therapists";
+          }
+
+          if (!screenPath) {
+            console.log("ℹ️ [FCM Service] No specific routing target or type for payload.");
+            return;
+          }
+
+          let params = {};
+          if (data.params) {
+            try {
+              params = typeof data.params === "string" ? JSON.parse(data.params) : data.params;
+            } catch (e) {
+              console.error("❌ [FCM Service] Error parsing payload params:", e);
+            }
+          }
+
+          router.push({
+            pathname: screenPath,
+            params,
+          } as any);
+          break;
         }
       }
-
-      // Navigate using Expo Router
-      router.push({
-        pathname: screenPath,
-        params,
-      } as any);
     } catch (error) {
       console.error("❌ [FCM Service] Navigation failed:", error);
     }

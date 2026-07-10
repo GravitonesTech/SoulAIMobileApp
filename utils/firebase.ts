@@ -1,6 +1,11 @@
 import messaging from "@react-native-firebase/messaging";
 import { requestNotifications } from "react-native-permissions";
 
+// Register background handler early in the app lifecycle
+messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+  console.log("📱 [FCM Native] Background message received:", remoteMessage);
+});
+
 /**
  * Returns the native Firebase Messaging instance.
  */
