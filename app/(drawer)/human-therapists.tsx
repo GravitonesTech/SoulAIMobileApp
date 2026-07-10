@@ -309,7 +309,6 @@ export default function HumanTherapistsScreen() {
     }
 
     // 2. Otherwise, fetch/lookup from all therapists
-    toast.info("Loading Details", "Fetching therapist details...");
     try {
       const params = {
         page: 1,
