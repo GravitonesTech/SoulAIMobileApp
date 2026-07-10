@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "95811060419",
+    "project_id": "soul-ai-notifications",
+    "storage_bucket": "soul-ai-notifications.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:95811060419:android:d7fde900e96a54cd711876",
+        "android_client_info": {
+          "package_name": "com.anonymous.soulai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrt15Ab1q7bfYjL_prbc2fqPWdCvHPAi0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

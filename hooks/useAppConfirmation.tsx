@@ -1,4 +1,5 @@
 import { Typography } from "@/constants/Typography";
+import { store } from "@/store";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearConfirmation, setConfirmation } from "@/store/slices/confirmationSlice";
 import { Feather } from "@expo/vector-icons";
@@ -61,6 +62,24 @@ export const AppConfirmation = () => {
         </View>
       </View>
     </Modal>
+  );
+};
+
+export const showConfirmationGlobal = (
+  title: string,
+  message: string,
+  onConfirm?: () => void,
+  options?: { cancelLabel?: string; confirmLabel?: string; onCancel?: () => void },
+) => {
+  confirmationCallback = onConfirm;
+  cancelCallback = options?.onCancel;
+  store.dispatch(
+    setConfirmation({
+      title,
+      message,
+      cancelLabel: options?.cancelLabel,
+      confirmLabel: options?.confirmLabel,
+    }),
   );
 };
 

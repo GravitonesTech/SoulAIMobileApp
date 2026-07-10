@@ -3,6 +3,7 @@ import * as SecureStore from "expo-secure-store";
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: "accessToken",
   REFRESH_TOKEN: "refreshToken",
+  FCM_TOKEN: "fcmToken",
 };
 
 async function setItem(key: string, value: string) {
@@ -62,5 +63,17 @@ export const storage = {
 
   async removeRefreshToken() {
     return removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+  },
+
+  async getFcmToken() {
+    return getItem(STORAGE_KEYS.FCM_TOKEN);
+  },
+
+  async setFcmToken(token: string) {
+    return setItem(STORAGE_KEYS.FCM_TOKEN, token);
+  },
+
+  async removeFcmToken() {
+    return removeItem(STORAGE_KEYS.FCM_TOKEN);
   },
 };

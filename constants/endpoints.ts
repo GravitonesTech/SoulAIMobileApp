@@ -48,6 +48,8 @@ export const ENDPOINTS = {
     therapistDetails: (id: number | string) => `/users/therapists/${id}`,
     /** GET — Fetch reviews for a specific therapist */
     reviews: (therapistId: number | string) => `/users/reviews/${therapistId}`,
+    /** POST — Add a review for a therapist */
+    addReview: "/users/reviews/add",
     /** GET — Fetch user appointments */
     myAppointments: "/users/appointments/my-appointments",
     /** POST — Book/create an appointment */
@@ -63,6 +65,8 @@ export const ENDPOINTS = {
     validateCoupon: "/users/coupons/validate",
     /** GET — Fetch metadata */
     metadata: "/users/metadata",
+    /** PUT — Update user device FCM token */
+    updateFcmToken: "/users/user-update-fcm-token",
   },
 
   chat: {

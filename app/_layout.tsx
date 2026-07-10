@@ -4,6 +4,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AppActionSheet } from "@/hooks/useAppActionSheet";
 import { AppConfirmation } from "@/hooks/useAppConfirmation";
 import { store } from "@/store";
+import { NotificationService } from "@/utils/notificationService";
 import {
   NunitoSans_400Regular,
   NunitoSans_500Medium,
@@ -30,6 +31,11 @@ export default function RootLayout() {
     NunitoSans_500Medium,
     NunitoSans_700Bold,
   });
+
+  useEffect(() => {
+    // Initialize push notifications (permissions, listeners, etc.)
+    NotificationService.init();
+  }, []);
 
   useEffect(() => {
     if (loaded) {
@@ -83,6 +89,7 @@ export default function RootLayout() {
             <Stack.Screen name="payment-failed" options={{ headerShown: false }} />
             <Stack.Screen name="zoom-meeting" options={{ headerShown: false }} />
             <Stack.Screen name="customer-support" options={{ headerShown: false }} />
+            <Stack.Screen name="review-session" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style="dark" />
           <Toast config={toastConfig} />

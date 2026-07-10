@@ -6,6 +6,7 @@ import { toast } from "@/utils/toast";
 import { router } from "expo-router";
 import { store } from "@/store";
 import { setCredentials, logout as logoutAction } from "@/store/slices/authSlice";
+import { NotificationService } from "@/utils/notificationService";
 
 export type SocialProvider = "google" | "apple";
 
@@ -20,6 +21,12 @@ async function checkAuth(): Promise<{ isAuthenticated: boolean; user?: UserProfi
 
   if (result.success && result.data) {
     store.dispatch(setCredentials({ user: result.data }));
+
+    // Automatically check / request notification permission and register FCM token
+    NotificationService.requestPermissionAndRegister().catch((err) => {
+      console.error("[Auth] Failed to register FCM token during checkAuth:", err);
+    });
+
     return {
       isAuthenticated: true,
       user: result.data,
@@ -105,6 +112,13 @@ async function resendOtp(email: string) {
  * Clears session and redirects to login
  */
 async function logout() {
+  try {
+    // Call the backend API to remove device token and clear local FCM token
+    await NotificationService.unregister();
+  } catch (error) {
+    console.error("[Auth] Error unregistering notifications on logout:", error);
+  }
+
   await storage.removeAccessToken();
   await storage.removeRefreshToken();
   store.dispatch(logoutAction());
