@@ -13,7 +13,6 @@ import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { useIsFocused } from "@react-navigation/native";
 import { useAudioPlayer } from "expo-audio";
-import { haptics } from "@/utils/haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -26,7 +25,8 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  Vibration,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -252,7 +252,8 @@ export default function BreathingExerciseScreen() {
 
         setCycleSecondsRemaining((prevCycle) => {
           if (prevCycle <= 1) {
-            haptics.medium();
+            Vibration.vibrate();
+            // haptics.heavy();
             let nextState: "inhale" | "hold_in" | "exhale" | "hold_out" = "inhale";
             let nextDuration = inhaleDuration;
 
