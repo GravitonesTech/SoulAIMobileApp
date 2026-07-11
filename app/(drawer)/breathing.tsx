@@ -438,7 +438,14 @@ export default function BreathingExerciseScreen() {
     stopBreathAnimation(true);
     setSecondsRemaining(0);
     setCycleSecondsRemaining(0);
-    setStep(4);
+    
+    // Reset conversation and start a new session
+    setMessages([]);
+    setSessionId(null);
+    setBreathingConfig(null);
+    setStep(1);
+    startSession();
+
     if (player) {
       try {
         player.pause();
