@@ -403,7 +403,16 @@ export default function ChatScreen() {
               // onBreathingPress={() => router.push("/breathing")}
               onBreathingPress={() => {}}
               onTherapistPress={() => {
-                router.push("/(drawer)/human-therapists");
+                router.push({
+                  pathname: "/(drawer)/human-therapists",
+                  params: {
+                    from: "chat",
+                    sessionId: sessionId || "",
+                    therapy: therapy || "",
+                    selected_therapy: selected_therapy || "",
+                    showNewChatButton: showNewChatButton || "",
+                  },
+                } as any);
               }}
               isSoundHealingLoading={isSoundHealingLoading}
               disabled={isLoading || isAnimating || isHistoryLoading}
