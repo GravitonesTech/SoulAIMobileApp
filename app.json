@@ -16,7 +16,11 @@
     "android": {
       "package": "com.anonymous.soulai",
       "googleServicesFile": "./google-services.json",
-      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE"],
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "RECORD_AUDIO"
+      ],
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#000000",
@@ -58,7 +62,8 @@
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       "./plugins/withCustomGradleProperties",
-      "./plugins/withZoomNetworkSecurity"
+      "./plugins/withZoomNetworkSecurity",
+      "expo-speech-recognition"
     ],
     "experiments": {
       "typedRoutes": true,
