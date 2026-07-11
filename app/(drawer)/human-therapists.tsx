@@ -13,7 +13,7 @@ import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -28,6 +28,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HumanTherapistsScreen() {
   const router = useRouter();
+  const { from, sessionId, therapy, selected_therapy, showNewChatButton } = useLocalSearchParams<{
+    from?: string;
+    sessionId?: string;
+    therapy?: string;
+    selected_therapy?: string;
+    showNewChatButton?: string;
+  }>();
   const { showConfirmation } = useAppConfirmation();
   const [searchText, setSearchText] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -360,7 +367,25 @@ export default function HumanTherapistsScreen() {
       >
         <SafeAreaView style={styles.safeArea} edges={["top"]}>
           {/* Header */}
-          <AppHeader leftIcon="arrow-left" title="Human Therapists" />
+          <AppHeader
+            leftIcon="arrow-left"
+            title="Human Therapists"
+            onLeftPress={() => {
+              if (from === "chat") {
+                router.push({
+                  pathname: "/(drawer)/chat",
+                  params: {
+                    sessionId,
+                    therapy,
+                    selected_therapy,
+                    showNewChatButton,
+                  },
+                } as any);
+              } else {
+                router.back();
+              }
+            }}
+          />
 
           <ScrollView
             showsVerticalScrollIndicator={false}
