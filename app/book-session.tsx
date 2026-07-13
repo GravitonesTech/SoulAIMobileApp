@@ -1,17 +1,18 @@
 import { BookingProgressBar } from "@/components/booking/BookingProgressBar";
 import { PaymentStep } from "@/components/booking/PaymentStep";
+import { PaymentVerificationOverlay } from "@/components/booking/PaymentVerificationOverlay";
 import { PersonalInfoStep } from "@/components/booking/PersonalInfoStep";
 import { TherapistSummaryCard } from "@/components/booking/TherapistSummaryCard";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { RAZORPAY_KEY_ID } from "@/constants/Config";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { useAppSelector } from "@/store/hooks";
 import { Therapist } from "@/types/therapist";
 import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
-import { useAppSelector } from "@/store/hooks";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -50,6 +51,7 @@ export default function BookSessionScreen() {
   const [fullName, setFullName] = useState(user?.full_name || "");
   const [phoneNumber, setPhoneNumber] = useState(user?.phone || user?.phone_number || "");
   const [emailId, setEmailId] = useState(user?.email || "");
+  const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -343,6 +345,9 @@ export default function BookSessionScreen() {
         return;
       }
 
+      // Show payment verification screen overlay
+      setIsVerifying(true);
+
       // Verify payment with the backend
       const verifyPayload = {
         appointment_id: appointmentId,
@@ -362,11 +367,13 @@ export default function BookSessionScreen() {
         router.replace("/booking-success");
       } else {
         toast.error("Verification Failed", verifyResponse.message || "Failed to verify payment.");
+        setIsVerifying(false);
         router.push("/payment-failed");
       }
     } catch (e) {
       console.error(e);
       toast.error("Error", "Could not connect to the server.");
+      setIsVerifying(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -459,6 +466,8 @@ export default function BookSessionScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
+
+      <PaymentVerificationOverlay visible={isVerifying} therapistName={therapist.full_name} />
     </LinearGradient>
   );
 }
