@@ -26,6 +26,7 @@ interface ChatBubbleProps {
   therapy?: string;
   selected_therapy?: string;
   showNewChatButton?: string;
+  senderName?: string;
 }
 
 export const ChatBubble = ({
@@ -39,6 +40,7 @@ export const ChatBubble = ({
   therapy,
   selected_therapy,
   showNewChatButton,
+  senderName,
 }: ChatBubbleProps) => {
   const router = useRouter();
   const isUser = role === "user";
@@ -94,6 +96,8 @@ export const ChatBubble = ({
     );
   }
 
+  const isAI = senderName === "Soul AI";
+
   return (
     <View style={[styles.bubbleRow, styles.bubbleRowLeft]}>
       <View style={{ flexDirection: "column", maxWidth: "86%" }}>
@@ -105,6 +109,13 @@ export const ChatBubble = ({
               { maxWidth: "100%", marginBottom: recommendedSound ? normalize(8) : 0 },
             ]}
           >
+            {senderName && (
+              <View style={styles.senderContainerInside}>
+                <Text style={[styles.senderNameInside, isAI && styles.senderNameAIInside]}>
+                  {senderName}
+                </Text>
+              </View>
+            )}
             <Text style={[styles.bubbleText, styles.assistantText]}>
               {renderFormattedText(displayedText)}
             </Text>
@@ -219,5 +230,18 @@ const styles = StyleSheet.create({
   },
   humanLinkArrow: {
     marginLeft: normalize(6),
+  },
+  senderContainerInside: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: normalize(4),
+  },
+  senderNameInside: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(12),
+    color: "#5A7BEF",
+  },
+  senderNameAIInside: {
+    color: "#3C61DD",
   },
 });

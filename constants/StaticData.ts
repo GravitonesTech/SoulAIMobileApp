@@ -31,7 +31,7 @@ export const CONVERSATIONS_QUICK_ACTIONS: QuickAction[] = [
     color: "#333",
     route: "/human-therapists",
   },
-  { id: "group", label: "Group Chat", icon: "users", color: "#333", route: "/coming-soon" },
+  { id: "group", label: "Group Chat", icon: "users", color: "#333", route: "/group-chat" },
   { id: "sos", label: "SOS!", icon: "alert-circle", color: "#FF3B30", route: "/sos" },
 ];
 
@@ -43,7 +43,7 @@ export const MORE_OPTIONS_ITEMS = [
     color: "#333",
     route: "/human-therapists",
   },
-  { id: "group", label: "Group Chat", icon: "layers", color: "#333", route: "/coming-soon" },
+  { id: "group", label: "Group Chat", icon: "layers", color: "#333", route: "/group-chat" },
   {
     id: "conversations",
     label: "Conversations",
