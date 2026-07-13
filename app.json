@@ -55,7 +55,9 @@
         "expo-build-properties",
         {
           "android": {
-            "minSdkVersion": 28
+            "minSdkVersion": 28,
+            "enableMinifyInReleaseBuilds": true,
+            "extraProguardRules": "-keep class com.zipow.** { *; }\n-keep class us.zoom.** { *; }\n-keep class com.zoom.** { *; }\n-dontwarn com.zipow.**\n-dontwarn us.zoom.**\n-keep class com.razorpay.** { *; }\n-dontwarn com.razorpay.**"
           }
         }
       ],
