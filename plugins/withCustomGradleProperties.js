@@ -8,7 +8,7 @@ module.exports = function withCustomGradleProperties(config) {
   return withGradleProperties(config, (config) => {
     const properties = config.modResults;
 
-    const jvmArgs = "-Xmx4096m -XX:MaxMetaspaceSize=1024m";
+    const jvmArgs = "-Xmx8192m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError";
     const existing = properties.find((p) => p.key === "org.gradle.jvmargs");
 
     if (existing) {
