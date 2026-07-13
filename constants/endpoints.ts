@@ -36,6 +36,8 @@ export const ENDPOINTS = {
   users: {
     /** GET / PATCH — Current authenticated user's profile */
     me: "/users/me",
+    /** GET — Search user by email */
+    searchUser: "/users/search-user",
     /** POST — Bulk submit assessment answers */
     assessmentSubmissionsBulk: "/users/assessments/submissions/bulk",
     /** GET — Get form completion statuses */
@@ -78,6 +80,12 @@ export const ENDPOINTS = {
     sessionDetails: (sessionId: string) => `/chat/sessions/${sessionId}`,
     /** POST — Fetch sound healing based on chat history */
     soundHealing: "/chat/chat/sound-healing",
+    /** POST — Create a new group chat */
+    createGroup: "/chat/group-chat/create",
+    /** GET — Fetch all groups the user belongs to */
+    myGroups: "/chat/group-chat/my-groups",
+    /** POST — Respond to group chat invitation (accept/reject) */
+    respondGroupInvite: (groupId: string) => `/chat/group-chat/${groupId}/respond`,
   },
   master: {
     /** GET — Fetch available therapies */

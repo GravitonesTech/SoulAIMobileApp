@@ -90,6 +90,7 @@ export default function RootLayout() {
             <Stack.Screen name="zoom-meeting" options={{ headerShown: false }} />
             <Stack.Screen name="customer-support" options={{ headerShown: false }} />
             <Stack.Screen name="review-session" options={{ headerShown: false }} />
+            <Stack.Screen name="group-chat-room" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style="dark" />
           <Toast config={toastConfig} />
