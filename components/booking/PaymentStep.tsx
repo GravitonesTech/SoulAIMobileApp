@@ -1,8 +1,8 @@
-import { AppInput } from "@/components/ui/AppInput";
 import { Typography } from "@/constants/Typography";
-import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
-import React, { useState, useEffect } from "react";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -12,8 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { toast } from "@/utils/toast";
-import { useRouter } from "expo-router";
 
 interface PricingDetails {
   base_fee: number;
@@ -160,7 +158,10 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
             placeholder="Coupon Code"
             value={couponText}
             onChangeText={setCouponText}
-            style={[styles.couponInput, couponCode ? { color: "#28A745", fontWeight: "bold" } : null]}
+            style={[
+              styles.couponInput,
+              couponCode ? { color: "#28A745", fontWeight: "bold" } : null,
+            ]}
             placeholderTextColor="#8A8A8E"
             autoCapitalize="characters"
             editable={!couponCode}
@@ -178,7 +179,12 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
           </TouchableOpacity>
         ) : (
           <TouchableOpacity onPress={handleApplyCoupon} activeOpacity={0.7}>
-            <Feather name="arrow-right" size={normalize(20)} color="#3C61DD" style={{ padding: 4 }} />
+            <Feather
+              name="arrow-right"
+              size={normalize(20)}
+              color="#3C61DD"
+              style={{ padding: 4 }}
+            />
           </TouchableOpacity>
         )}
       </View>
@@ -209,7 +215,9 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
               {pricing?.discount_amount !== undefined && pricing.discount_amount > 0 && (
                 <View style={styles.discountRow}>
                   <Text style={styles.discountLabel}>Discount</Text>
-                  <Text style={styles.discountValue}>-Rs. {pricing.discount_amount.toFixed(2)}</Text>
+                  <Text style={styles.discountValue}>
+                    -Rs. {pricing.discount_amount.toFixed(2)}
+                  </Text>
                 </View>
               )}
 

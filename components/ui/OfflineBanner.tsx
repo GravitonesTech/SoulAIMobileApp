@@ -12,7 +12,7 @@ export function OfflineBanner() {
   const insets = useSafeAreaInsets();
 
   // Slide animation: translateY initially hidden above the screen
-  const translateY = useSharedValue(-100);
+  const translateY = useSharedValue(-200);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -26,12 +26,12 @@ export function OfflineBanner() {
         translateY.value = withTiming(0, { duration: 300 });
       } else {
         // Slide up to hidden position
-        translateY.value = withTiming(-100, { duration: 300 });
+        translateY.value = withTiming(-200, { duration: 300 });
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [translateY]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -40,12 +40,11 @@ export function OfflineBanner() {
     };
   });
 
-  if (isConnected) {
-    return null;
-  }
-
   return (
-    <Animated.View style={[styles.container, animatedStyle]}>
+    <Animated.View
+      style={[styles.container, animatedStyle]}
+      pointerEvents={isConnected ? "none" : "auto"}
+    >
       <View style={styles.content}>
         <Feather name="wifi-off" size={normalize(16)} color="#FFFFFF" style={styles.icon} />
         <Text style={styles.text}>You are currently offline. Check your connection.</Text>

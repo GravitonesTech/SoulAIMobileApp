@@ -63,29 +63,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  errorContainer: {
-    paddingVertical: hp(4),
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  errorText: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(14),
-    color: "#E53935",
-    textAlign: "center",
-  },
-  retryButton: {
-    marginTop: hp(1.5),
-    backgroundColor: "#3C61DD",
-    paddingVertical: hp(1),
-    paddingHorizontal: hp(2.5),
-    borderRadius: normalize(8),
-  },
-  retryText: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(14),
-    color: "#FFF",
-  },
   emptyContainer: {
     paddingVertical: hp(4),
     justifyContent: "center",
