@@ -1,9 +1,10 @@
 import React from "react";
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { Typography } from "@/constants/Typography";
 import { hp, normalize } from "@/utils/responsive";
 import { Therapist } from "@/types/therapist";
 import { TherapistListItem } from "./TherapistListItem";
+import { ErrorView } from "@/components/ui/ErrorView";
 
 interface TopTherapistsListProps {
   therapists: Therapist[];
@@ -28,12 +29,7 @@ export const TopTherapistsList = ({
           <ActivityIndicator size="large" color="#3C61DD" />
         </View>
       ) : error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
-            <Text style={styles.retryText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorView message={error} onRetry={onRetry} />
       ) : therapists.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No therapists found</Text>
@@ -66,29 +62,6 @@ const styles = StyleSheet.create({
     paddingVertical: hp(4),
     justifyContent: "center",
     alignItems: "center",
-  },
-  errorContainer: {
-    paddingVertical: hp(4),
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  errorText: {
-    fontFamily: Typography.fonts.regular,
-    fontSize: normalize(14),
-    color: "#E53935",
-    textAlign: "center",
-  },
-  retryButton: {
-    marginTop: hp(1.5),
-    backgroundColor: "#3C61DD",
-    paddingVertical: hp(1),
-    paddingHorizontal: hp(2.5),
-    borderRadius: normalize(8),
-  },
-  retryText: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(14),
-    color: "#FFF",
   },
   emptyContainer: {
     paddingVertical: hp(4),

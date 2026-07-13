@@ -5,6 +5,7 @@ import { TherapistSearchBar } from "@/components/therapist/TherapistSearchBar";
 import { TopTherapistsList } from "@/components/therapist/TopTherapistsList";
 import { UpcomingAppointments } from "@/components/therapist/UpcomingAppointments";
 import { AppHeader } from "@/components/ui/AppHeader";
+import { ErrorView } from "@/components/ui/ErrorView";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
 import { useAppConfirmation } from "@/hooks/useAppConfirmation";
@@ -64,7 +65,9 @@ export default function HumanTherapistsScreen() {
   useEffect(() => {
     const fetchTherapies = async () => {
       try {
-        const response = await apiClient.get<Array<{ name: string }>>(ENDPOINTS.master.therapies);
+        const response = await apiClient.get<{ name: string }[]>(ENDPOINTS.master.therapies, {
+          showToastOnError: false,
+        });
         if (response.success && response.data) {
           const names = response.data.map((t) => t.name);
           setTherapyOptions(["All Therapy Types", ...names]);
@@ -95,8 +98,10 @@ export default function HumanTherapistsScreen() {
     setError(null);
 
     const [therapistsRes, appointmentsRes] = await Promise.allSettled([
-      apiClient.get<Therapist[]>(ENDPOINTS.users.topRatedTherapists),
-      apiClient.get<{ upcoming: Appointment[]; past: any[] }>(ENDPOINTS.users.myAppointments),
+      apiClient.get<Therapist[]>(ENDPOINTS.users.topRatedTherapists, { showToastOnError: false }),
+      apiClient.get<{ upcoming: Appointment[]; past: any[] }>(ENDPOINTS.users.myAppointments, {
+        showToastOnError: false,
+      }),
     ]);
 
     if (
@@ -183,7 +188,7 @@ export default function HumanTherapistsScreen() {
         page_size: number;
         total_pages: number;
         therapists: Therapist[];
-      }>(ENDPOINTS.users.getAllTherapists, { params });
+      }>(ENDPOINTS.users.getAllTherapists, { params, showToastOnError: false });
 
       if (response.success && response.data) {
         setSearchedTherapists(response.data.therapists || []);
@@ -283,6 +288,7 @@ export default function HumanTherapistsScreen() {
           const response = await apiClient.post<any>(
             ENDPOINTS.users.cancelAppointment(appointment.id),
             {},
+            { showToastOnError: false },
           );
           if (response.success) {
             toast.success(
@@ -324,7 +330,7 @@ export default function HumanTherapistsScreen() {
       };
       const response = await apiClient.get<{
         therapists: Therapist[];
-      }>(ENDPOINTS.users.getAllTherapists, { params });
+      }>(ENDPOINTS.users.getAllTherapists, { params, showToastOnError: false });
 
       if (response.success && response.data?.therapists) {
         const found = response.data.therapists.find((t) => t.id === appointment.therapist_id);
@@ -475,15 +481,10 @@ export default function HumanTherapistsScreen() {
                     <ActivityIndicator size="large" color="#3C61DD" />
                   </View>
                 ) : searchError ? (
-                  <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{searchError}</Text>
-                    <TouchableOpacity
-                      style={styles.retryButton}
-                      onPress={() => performSearch(searchText, activeFilters)}
-                    >
-                      <Text style={styles.retryText}>Retry</Text>
-                    </TouchableOpacity>
-                  </View>
+                  <ErrorView
+                    message={searchError}
+                    onRetry={() => performSearch(searchText, activeFilters)}
+                  />
                 ) : searchedTherapists.length === 0 ? (
                   <>
                     <View style={styles.noResultContainer}>
@@ -602,32 +603,6 @@ const styles = StyleSheet.create({
     paddingVertical: hp(4),
     justifyContent: "center",
     alignItems: "center",
-  },
-  errorContainer: {
-    paddingVertical: hp(3),
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(255, 59, 48, 0.05)",
-    borderRadius: normalize(12),
-    paddingHorizontal: moderateScale(15),
-  },
-  errorText: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: normalize(14),
-    color: "#FF3B30",
-    textAlign: "center",
-    marginBottom: hp(1.5),
-  },
-  retryButton: {
-    backgroundColor: "#3C61DD",
-    paddingHorizontal: moderateScale(20),
-    paddingVertical: moderateScale(8),
-    borderRadius: normalize(20),
-  },
-  retryText: {
-    fontFamily: Typography.fonts.bold,
-    fontSize: normalize(13),
-    color: "#FFF",
   },
   activeFiltersRow: {
     marginTop: hp(1),

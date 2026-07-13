@@ -23,7 +23,7 @@ export default function PaymentFailedScreen() {
         {/* Failed Details */}
         <View style={styles.textContainer}>
           <Text style={styles.title}>Payment Failed!</Text>
-          <Text style={styles.subtitle}>Unfortunately, We couldn't{"\n"}process your payment.</Text>
+          <Text style={styles.subtitle}>{"Unfortunately, We couldn't\nprocess your payment."}</Text>
         </View>
 
         {/* Change Payment Method Button */}

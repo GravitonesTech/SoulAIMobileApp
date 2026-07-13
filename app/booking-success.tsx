@@ -21,7 +21,7 @@ export default function BookingSuccessScreen() {
         <View style={styles.textContainer}>
           <Text style={styles.title}>Session Confirmed!</Text>
           <Text style={styles.subtitle}>
-            Your payment is successful! We've added new consultation appointment.
+            {"Your payment is successful! We've added new consultation appointment."}
           </Text>
         </View>
 

@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "@/constants/Config";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { storage } from "@/utils/storage";
+import { toast } from "@/utils/toast";
 import axios, {
   type AxiosError,
   type AxiosRequestConfig,
@@ -11,6 +12,7 @@ import axios, {
 interface RequestOptions extends AxiosRequestConfig {
   body?: any;
   _isRetry?: boolean;
+  showToastOnError?: boolean;
 }
 
 export interface ApiResult<T = any> {
@@ -202,12 +204,28 @@ async function request<T = any>(
     const status = axiosError.response?.status ?? 0;
     const responseData: any = axiosError.response?.data;
 
-    const errorMsg =
-      responseData?.message ||
-      responseData?.detail?.message ||
-      responseData?.detail?.[0]?.msg ||
-      axiosError.message ||
-      "An unexpected network error occurred";
+    let errorMsg = "An unexpected error occurred";
+    let isNetworkError = false;
+
+    if (axiosError.code === "ECONNABORTED" || axiosError.message?.toLowerCase().includes("timeout")) {
+      errorMsg = "The server is taking too long to respond. Please try again.";
+      isNetworkError = true;
+    } else if (axiosError.message === "Network Error" || !axiosError.response) {
+      errorMsg = "Please check your internet connection and try again.";
+      isNetworkError = true;
+    } else {
+      errorMsg =
+        responseData?.message ||
+        responseData?.detail?.message ||
+        responseData?.detail?.[0]?.msg ||
+        axiosError.message ||
+        errorMsg;
+    }
+
+    if (options.showToastOnError !== false) {
+      const errorTitle = isNetworkError ? "Network Connection Error" : "Request Failed";
+      toast.error(errorTitle, errorMsg);
+    }
 
     return {
       success: false,
