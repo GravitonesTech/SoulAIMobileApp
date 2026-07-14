@@ -16,11 +16,7 @@
     "android": {
       "package": "com.anonymous.soulai",
       "googleServicesFile": "./google-services.json",
-      "permissions": [
-        "INTERNET",
-        "ACCESS_NETWORK_STATE",
-        "RECORD_AUDIO"
-      ],
+      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE", "RECORD_AUDIO"],
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#000000",
@@ -57,7 +53,7 @@
           "android": {
             "minSdkVersion": 28,
             "enableMinifyInReleaseBuilds": true,
-            "extraProguardRules": "-keep class com.zipow.** { *; }\n-keep class us.zoom.** { *; }\n-keep class com.zoom.** { *; }\n-dontwarn com.zipow.**\n-dontwarn us.zoom.**\n-keep class com.razorpay.** { *; }\n-dontwarn com.razorpay.**"
+            "extraProguardRules": "-keep class com.zipow.** { *; }\n-keep class us.zoom.** { *; }\n-keep class com.zoom.** { *; }\n-dontwarn com.zipow.**\n-dontwarn us.zoom.**\n-keep class com.razorpay.** { *; }\n-dontwarn com.razorpay.**\n-dontwarn com.google.zxing.Result\n-dontwarn java.awt.event.ActionListener\n-dontwarn javax.swing.SwingUtilities\n-dontwarn javax.swing.Timer"
           }
         }
       ],
@@ -66,6 +62,7 @@
       "./plugins/withCustomGradleProperties",
       "./plugins/withDisableLint",
       "./plugins/withZoomNetworkSecurity",
+      "./plugins/withZoomResourcePatch",
       "expo-speech-recognition"
     ],
     "experiments": {
