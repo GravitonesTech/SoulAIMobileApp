@@ -63,6 +63,7 @@
       "./plugins/withDisableLint",
       "./plugins/withZoomNetworkSecurity",
       "./plugins/withZoomResourcePatch",
+      "./plugins/withAndroidSigningConfig",
       "expo-speech-recognition"
     ],
     "experiments": {
