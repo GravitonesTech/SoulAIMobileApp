@@ -1,4 +1,5 @@
 import { SocialButtons } from "@/components/auth/SocialButtons";
+import { SplashOverlay } from "@/components/splash/SplashOverlay";
 import { AppButton } from "@/components/ui/AppButton";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
@@ -9,8 +10,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Animated,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -22,7 +21,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function AuthOptionsScreen() {
   const router = useRouter();
   const [showSplash, setShowSplash] = useState(true);
-  const [fadeAnim] = useState(new Animated.Value(1));
+  const [isSplashReady, setIsSplashReady] = useState(false);
 
   useEffect(() => {
     let checkDone = false;
@@ -47,27 +46,21 @@ export default function AuthOptionsScreen() {
 
     const maybeHideSplash = () => {
       if (checkDone && timerDone) {
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 500,
-          useNativeDriver: true,
-        }).start(() => {
-          setShowSplash(false);
-        });
+        setIsSplashReady(true);
       }
     };
 
     timerId = setTimeout(() => {
       timerDone = true;
       maybeHideSplash();
-    }, 1000);
+    }, 3500);
 
     checkUserSession();
 
     return () => {
       if (timerId) clearTimeout(timerId);
     };
-  }, [fadeAnim]);
+  }, []);
 
   return (
     <View style={{ flex: 1 }}>
@@ -138,24 +131,12 @@ export default function AuthOptionsScreen() {
         </SafeAreaView>
       </LinearGradient>
 
-      {/* Premium Custom Splash Overlay */}
+      {/* Premium Custom Splash Overlay Component */}
       {showSplash && (
-        <Animated.View style={[StyleSheet.absoluteFill, { opacity: fadeAnim }]}>
-          <LinearGradient
-            colors={["#3BC0EB", "#5858E8"]}
-            start={{ x: 0.1, y: 0.1 }}
-            end={{ x: 0.9, y: 0.9 }}
-            style={styles.splashContainer}
-          >
-            <View style={styles.splashContent}>
-              <Image
-                source={require("@/assets/images/4.png")}
-                style={styles.splashLogo}
-                resizeMode="contain"
-              />
-            </View>
-          </LinearGradient>
-        </Animated.View>
+        <SplashOverlay
+          isReady={isSplashReady}
+          onFinish={() => setShowSplash(false)}
+        />
       )}
     </View>
   );
@@ -251,19 +232,5 @@ const styles = StyleSheet.create({
 
   boldText: {
     fontFamily: Typography.fonts.bold,
-  },
-  splashContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  splashContent: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
-  },
-  splashLogo: {
-    width: normalize(260),
-    height: normalize(260),
   },
 });
