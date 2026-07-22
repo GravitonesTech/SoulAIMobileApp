@@ -400,8 +400,9 @@ export default function ChatScreen() {
           {!isKeyboardVisible && (
             <ChatQuickActions
               onSoundHealingPress={handleSoundHealing}
-              // onBreathingPress={() => router.push("/breathing")}
-              onBreathingPress={() => {}}
+              onBreathingPress={() => {
+                router.push("/(drawer)/breathing" as any);
+              }}
               onTherapistPress={() => {
                 router.push({
                   pathname: "/(drawer)/human-therapists",
