@@ -2,18 +2,20 @@
   "expo": {
     "name": "Soul AI",
     "slug": "soulai",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "soulai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "buildNumber": "2",
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.soulai",
       "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
+      "versionCode": 2,
       "package": "com.anonymous.soulai",
       "googleServicesFile": "./google-services.json",
       "permissions": ["INTERNET", "ACCESS_NETWORK_STATE", "RECORD_AUDIO"],
