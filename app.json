@@ -2,25 +2,23 @@
   "expo": {
     "name": "Soul AI",
     "slug": "soulai",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive_foreground.png",
     "scheme": "soulai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "buildNumber": "2",
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.soulai",
       "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
+      "versionCode": 2,
       "package": "com.anonymous.soulai",
       "googleServicesFile": "./google-services.json",
-      "permissions": [
-        "INTERNET",
-        "ACCESS_NETWORK_STATE",
-        "RECORD_AUDIO"
-      ],
+      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE", "RECORD_AUDIO"],
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#4698ea",
@@ -53,14 +51,19 @@
         "expo-build-properties",
         {
           "android": {
-            "minSdkVersion": 28
+            "minSdkVersion": 28,
+            "enableMinifyInReleaseBuilds": true,
+            "extraProguardRules": "-keep class com.zipow.** { *; }\n-keep class us.zoom.** { *; }\n-keep class com.zoom.** { *; }\n-dontwarn com.zipow.**\n-dontwarn us.zoom.**\n-keep class com.razorpay.** { *; }\n-dontwarn com.razorpay.**\n-dontwarn com.google.zxing.Result\n-dontwarn java.awt.event.ActionListener\n-dontwarn javax.swing.SwingUtilities\n-dontwarn javax.swing.Timer"
           }
         }
       ],
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       "./plugins/withCustomGradleProperties",
+      "./plugins/withDisableLint",
       "./plugins/withZoomNetworkSecurity",
+      "./plugins/withZoomResourcePatch",
+      "./plugins/withAndroidSigningConfig",
       "expo-speech-recognition"
     ],
     "experiments": {
