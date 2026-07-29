@@ -6,7 +6,7 @@ import { Feather } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -66,15 +66,28 @@ export default function FAQScreen() {
                     exiting={FadeOut.duration(200)}
                     style={styles.answerContainer}
                   >
-                    <Text style={styles.answerText}>{item.answer}</Text>
-                    {/* {item.isPromptList && ( */}
-                    <TouchableOpacity
-                      onPress={() => copyToClipboard(item.answer)}
-                      style={styles.copyButton}
-                    >
-                      <Text style={styles.copyButtonText}>copy</Text>
-                    </TouchableOpacity>
-                    {/* )} */}
+                    {item.isPromptList ? (
+                      <View style={styles.promptListContainer}>
+                        {item.answer.split("\n").map((prompt, pIndex) => {
+                          const cleanText = prompt.replace(/^\d+\.\s*/, "");
+                          return (
+                            <View key={pIndex} style={styles.promptRow}>
+                              <Text style={[styles.answerText, { flex: 1 }]}>{prompt}</Text>
+                              <TouchableOpacity
+                                onPress={() => copyToClipboard(cleanText)}
+                                style={styles.inlineCopyButton}
+                                activeOpacity={0.8}
+                              >
+                                <Feather name="copy" size={normalize(14)} color="#3C61DD" />
+                                <Text style={styles.inlineCopyButtonText}>Copy</Text>
+                              </TouchableOpacity>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    ) : (
+                      <Text style={styles.answerText}>{item.answer}</Text>
+                    )}
                   </Animated.View>
                 )}
               </Animated.View>
@@ -137,6 +150,35 @@ const styles = StyleSheet.create({
   copyButtonText: {
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(14),
+    color: "#3C61DD",
+  },
+  promptListContainer: {
+    gap: moderateScale(12),
+    marginTop: moderateScale(4),
+  },
+  promptRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#F2F9FF",
+    padding: moderateScale(12),
+    borderRadius: normalize(10),
+    gap: moderateScale(10),
+  },
+  inlineCopyButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: moderateScale(10),
+    paddingVertical: moderateScale(6),
+    borderRadius: normalize(8),
+    borderWidth: 1,
+    borderColor: "#E2F4FF",
+    gap: moderateScale(4),
+  },
+  inlineCopyButtonText: {
+    fontFamily: Typography.fonts.medium,
+    fontSize: normalize(12),
     color: "#3C61DD",
   },
 });
