@@ -100,7 +100,10 @@ export default function ConversationsScreen() {
         response.data.forEach((session: any) => {
           let displayTitle = session.title || "New Chat";
           if (session.therapy_type === "breathing_exercise") {
-            if (displayTitle !== "Breathing Exercise" && !displayTitle.startsWith("Breathing Exercise")) {
+            if (
+              displayTitle !== "Breathing Exercise" &&
+              !displayTitle.startsWith("Breathing Exercise")
+            ) {
               displayTitle = `Breathing Exercise ${displayTitle}`;
             }
           }
@@ -111,7 +114,10 @@ export default function ConversationsScreen() {
             timestamp: formatTimestamp(session.updated_at || session.created_at),
             subtitle: `${
               session.therapy_type
-                ? session.therapy_type.split("_").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+                ? session.therapy_type
+                    .split("_")
+                    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                    .join(" ")
                 : "Supportive"
             } Therapy`,
             therapyType: session.therapy_type,

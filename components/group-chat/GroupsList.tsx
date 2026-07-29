@@ -1,4 +1,5 @@
 import { Typography } from "@/constants/Typography";
+import { useAppSelector } from "@/store/hooks";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -20,6 +21,9 @@ export const GroupsList: React.FC<GroupsListProps> = ({
   onRespondInvite,
 }) => {
   const router = useRouter();
+  const currentUser = useAppSelector((state) => state.auth.user);
+  const myEmail = currentUser?.email || "";
+
   return (
     <View style={styles.groupsContainer}>
       {isLoading && groups.length === 0 ? (
@@ -72,7 +76,16 @@ export const GroupsList: React.FC<GroupsListProps> = ({
                 <View style={styles.groupMembersSection}>
                   <Feather name="users" size={normalize(14)} color="#8A8A8E" />
                   <Text style={styles.groupMembersText} numberOfLines={2}>
-                    {group.members.join(", ")}
+                    {[...group.members]
+                      .sort((a, b) => {
+                        if (a === myEmail) return -1;
+                        if (b === myEmail) return 1;
+                        return 0;
+                      })
+                      .map((member) =>
+                        member === myEmail ? "You" : group.members_names?.[member] || member,
+                      )
+                      .join(", ")}
                   </Text>
                 </View>
 

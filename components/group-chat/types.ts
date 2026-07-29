@@ -10,5 +10,6 @@ export interface GroupData {
   status: string;
   my_status: string;
   members: string[];
+  members_names?: Record<string, string>;
   created_at: string;
 }
