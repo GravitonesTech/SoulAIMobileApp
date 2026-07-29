@@ -4,10 +4,10 @@ import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
 import { useKeyboardVisibility } from "@/hooks/useKeyboardVisibility";
 import { useAppSelector } from "@/store/hooks";
-import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
 import { haptics } from "@/utils/haptics";
+import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
-import { useNavigation, useRouter } from "expo-router";
+import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -39,6 +39,43 @@ export default function ChatStarterScreen() {
   const displayName = user?.full_name?.split(" ")[0] || "User";
 
   const navigation = useNavigation<any>();
+  const [lastChatTime, setLastChatTime] = useState<string | null>(null);
+
+  const fetchLastChat = async () => {
+    try {
+      const response = await apiClient.get<any[]>(ENDPOINTS.chat.sessions);
+      if (response.success && response.data && response.data.length > 0) {
+        const sorted = [...response.data].sort((a, b) => {
+          const dateA = new Date(a.updated_at || a.created_at).getTime();
+          const dateB = new Date(b.updated_at || b.created_at).getTime();
+          return dateB - dateA;
+        });
+        const lastSession = sorted[0];
+        const lastDate = new Date(lastSession.updated_at || lastSession.created_at);
+        if (!isNaN(lastDate.getTime())) {
+          const day = String(lastDate.getDate()).padStart(2, "0");
+          const month = String(lastDate.getMonth() + 1).padStart(2, "0");
+          const year = String(lastDate.getFullYear()).slice(-2);
+
+          let hours = lastDate.getHours();
+          const minutes = String(lastDate.getMinutes()).padStart(2, "0");
+          const ampm = hours >= 12 ? "PM" : "AM";
+          hours = hours % 12;
+          hours = hours ? hours : 12;
+
+          setLastChatTime(`${day}.${month}.${year} at ${hours}:${minutes} ${ampm}`);
+        }
+      }
+    } catch (error) {
+      console.error("[ChatStarter] Error fetching last session for timestamp:", error);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchLastChat();
+    }, []),
+  );
 
   React.useEffect(() => {
     AuthService.checkAuth();
@@ -175,7 +212,9 @@ export default function ChatStarterScreen() {
                 <Text style={styles.greetingText}>
                   Hello {displayName}, How{"\n"}can I help you?
                 </Text>
-                <Text style={styles.updateText}>Last Update: 22.04.26</Text>
+                {lastChatTime ? (
+                  <Text style={styles.updateText}>Last chat at: {lastChatTime}</Text>
+                ) : null}
               </View>
 
               {/* Therapy Type Buttons */}
