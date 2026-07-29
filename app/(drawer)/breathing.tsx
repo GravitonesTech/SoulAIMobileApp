@@ -13,6 +13,7 @@ import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { useIsFocused } from "@react-navigation/native";
 import { useAudioPlayer } from "expo-audio";
+import { useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -62,6 +63,7 @@ const getStepFromBackend = (backendStep: string | null | undefined, config: any)
 };
 
 export default function BreathingExerciseScreen() {
+  const { sessionId: paramSessionId } = useLocalSearchParams<{ sessionId?: string }>();
   const [step, setStep] = useState(1);
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -159,30 +161,100 @@ export default function BreathingExerciseScreen() {
   const holdOutDuration = breathingConfig?.pattern_detail?.hold_out;
   const totalDuration = breathingConfig?.duration_seconds;
 
-  const startSession = async () => {
+  const startSession = async (existingSessionId?: string) => {
     try {
       setIsLoading(true);
-      const response = await apiClient.post<any>(ENDPOINTS.chat.sessions, {
-        therapy_type: "breathing_exercise",
-        title: "Breathing Exercise",
-      });
+      let response;
+      if (existingSessionId) {
+        response = await apiClient.get<any>(ENDPOINTS.chat.sessionDetails(existingSessionId));
+      } else {
+        response = await apiClient.post<any>(ENDPOINTS.chat.sessions, {
+          therapy_type: "breathing_exercise",
+          title: "Breathing Exercise",
+        });
+      }
+
       if (response.success && response.data) {
-        setSessionId(response.data.session_id);
+        const activeSessionId = response.data.session_id || existingSessionId || "";
+        setSessionId(activeSessionId);
         setIsAnimating(true);
-        setMessages([
-          {
-            id: response.data.session_id,
-            text:
-              response.data.greeting_message ||
-              "Hello and welcome! Let's get your breathing exercise ready. Would you like a quick 1–3 minute session or something longer, like 5, 10, or 20 minutes?",
-            sender: "assistant",
-          },
-        ]);
-        if (response.data.breathing_step) {
-          setStep(getStepFromBackend(response.data.breathing_step, response.data.breathing_config));
-        }
-        if (response.data.breathing_config) {
-          setBreathingConfig(response.data.breathing_config);
+
+        const history = response.data.history || [];
+        if (history.length > 0) {
+          const mapped: Message[] = [];
+          
+          const greeting = response.data.greeting_message || response.data.greeting;
+          if (greeting) {
+            mapped.push({
+              id: "greeting",
+              text: greeting,
+              sender: "assistant",
+            });
+          } else {
+            mapped.push({
+              id: "greeting",
+              text: "Hello and welcome! Let's get your breathing exercise ready. Would you like a quick 1–3 minute session or something longer, like 5, 10, or 20 minutes?",
+              sender: "assistant",
+            });
+          }
+
+          history.forEach((item: any, index: number) => {
+            if (item.user_input) {
+              mapped.push({
+                id: `u-${index}`,
+                text: item.user_input,
+                sender: "user",
+              });
+            }
+            const assistantText =
+              item.ai_response ||
+              item.responses?.groq_response ||
+              item.responses?.claude_response ||
+              item.responses?.openai_response;
+            if (assistantText) {
+              mapped.push({
+                id: `a-${index}`,
+                text: assistantText,
+                sender: "assistant",
+              });
+            }
+          });
+          setMessages(mapped);
+
+          let latestStep = response.data.breathing_step || null;
+          let latestConfig = response.data.breathing_config || null;
+
+          for (let i = history.length - 1; i >= 0; i--) {
+            const item = history[i];
+            if (item.breathing_step && !latestStep) {
+              latestStep = item.breathing_step;
+            }
+            if (item.breathing_config && !latestConfig) {
+              latestConfig = item.breathing_config;
+            }
+            if (latestStep && latestConfig) break;
+          }
+
+          setStep(getStepFromBackend(latestStep, latestConfig));
+          if (latestConfig) {
+            setBreathingConfig(latestConfig);
+          }
+        } else {
+          setMessages([
+            {
+              id: activeSessionId,
+              text:
+                response.data.greeting_message ||
+                "Hello and welcome! Let's get your breathing exercise ready. Would you like a quick 1–3 minute session or something longer, like 5, 10, or 20 minutes?",
+              sender: "assistant",
+            },
+          ]);
+          if (response.data.breathing_step) {
+            setStep(getStepFromBackend(response.data.breathing_step, response.data.breathing_config));
+          }
+          if (response.data.breathing_config) {
+            setBreathingConfig(response.data.breathing_config);
+          }
         }
       } else {
         toast.error("Error", response.message || "Failed to start session");
@@ -213,7 +285,7 @@ export default function BreathingExerciseScreen() {
       setStep(1);
       setInputText("");
       setBreathingConfig(null);
-      startSession();
+      startSession(paramSessionId);
       fetchBreathingPatterns();
       breathScale.setValue(0);
       currentScaleVal.current = 0;
@@ -224,7 +296,7 @@ export default function BreathingExerciseScreen() {
       setSecondsRemaining(0);
       setCycleSecondsRemaining(0);
     }
-  }, [isFocused]);
+  }, [isFocused, paramSessionId]);
 
   useEffect(() => {
     if (messages.length > 0) {
