@@ -13,6 +13,7 @@ export type Conversation = {
   title: string;
   timestamp: string;
   subtitle: string;
+  therapyType?: string;
 };
 
 export type QuickAction = {

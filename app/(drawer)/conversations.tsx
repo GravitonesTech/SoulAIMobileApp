@@ -98,15 +98,23 @@ export default function ConversationsScreen() {
         const olderList: Conversation[] = [];
 
         response.data.forEach((session: any) => {
+          let displayTitle = session.title || "New Chat";
+          if (session.therapy_type === "breathing_exercise") {
+            if (displayTitle !== "Breathing Exercise" && !displayTitle.startsWith("Breathing Exercise")) {
+              displayTitle = `Breathing Exercise ${displayTitle}`;
+            }
+          }
+
           const mapped: Conversation = {
             id: session.session_id,
-            title: session.title || "New Chat",
+            title: displayTitle,
             timestamp: formatTimestamp(session.updated_at || session.created_at),
             subtitle: `${
               session.therapy_type
-                ? session.therapy_type.charAt(0).toUpperCase() + session.therapy_type.slice(1)
+                ? session.therapy_type.split("_").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
                 : "Supportive"
             } Therapy`,
+            therapyType: session.therapy_type,
           };
 
           const sessionDate = new Date(session.updated_at || session.created_at);
@@ -257,14 +265,26 @@ export default function ConversationsScreen() {
   };
 
   const openConversation = (item: Conversation) => {
-    router.push({
-      pathname: "/chat",
-      params: {
-        title: item.title,
-        therapy: item.subtitle.split("•")[0]?.trim() || "Cognitive Therapy",
-        sessionId: item.id,
-      },
-    } as any);
+    const isBreathing =
+      item.therapyType === "breathing_exercise" ||
+      item.subtitle.toLowerCase().includes("breathing");
+    if (isBreathing) {
+      router.push({
+        pathname: "/(drawer)/breathing",
+        params: {
+          sessionId: item.id,
+        },
+      } as any);
+    } else {
+      router.push({
+        pathname: "/chat",
+        params: {
+          title: item.title,
+          therapy: item.subtitle.split("•")[0]?.trim() || "Cognitive Therapy",
+          sessionId: item.id,
+        },
+      } as any);
+    }
   };
 
   return (
