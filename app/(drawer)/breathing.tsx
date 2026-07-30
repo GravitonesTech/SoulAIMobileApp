@@ -206,11 +206,7 @@ export default function BreathingExerciseScreen() {
                 sender: "user",
               });
             }
-            const assistantText =
-              item.ai_response ||
-              item.responses?.groq_response ||
-              item.responses?.claude_response ||
-              item.responses?.openai_response;
+            const assistantText = item.ai_response || "";
             if (assistantText) {
               mapped.push({
                 id: `a-${index}`,
