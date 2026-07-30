@@ -98,15 +98,11 @@ export default function ConversationsScreen() {
         const olderList: Conversation[] = [];
 
         response.data.forEach((session: any) => {
-          let displayTitle = session.title || "New Chat";
           if (session.therapy_type === "breathing_exercise") {
-            if (
-              displayTitle !== "Breathing Exercise" &&
-              !displayTitle.startsWith("Breathing Exercise")
-            ) {
-              displayTitle = `Breathing Exercise ${displayTitle}`;
-            }
+            return;
           }
+
+          let displayTitle = session.title || "New Chat";
 
           const mapped: Conversation = {
             id: session.session_id,
