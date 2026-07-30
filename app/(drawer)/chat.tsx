@@ -102,10 +102,7 @@ export default function ChatScreen() {
             });
           }
 
-          const responseText =
-            item.responses?.claude_response ||
-            item.responses?.openai_response ||
-            item.responses?.groq_response;
+          const responseText = item.ai_response || "";
 
           const recommendedSound =
             item.recommended_sound || item.responses?.recommended_sound || null;
