@@ -5,6 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import { useNavigation, useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, { SlideInRight } from "react-native-reanimated";
 import { UserAvatar } from "./UserAvatar";
 
 interface AppHeaderProps {
@@ -19,6 +20,7 @@ interface AppHeaderProps {
   onNewChatPress?: () => void;
   isNewChatDisabled?: boolean;
   rightContent?: React.ReactNode;
+  animateTitle?: boolean;
 }
 
 export const AppHeader = ({
@@ -33,6 +35,7 @@ export const AppHeader = ({
   onNewChatPress,
   isNewChatDisabled = false,
   rightContent,
+  animateTitle = false,
 }: AppHeaderProps) => {
   const router = useRouter();
   const navigation = useNavigation();
@@ -72,21 +75,26 @@ export const AppHeader = ({
 
       <View style={styles.middleContainer}>
         {title ? (
-          showBadge ? (
-            <View style={[styles.badge, { flexShrink: 1, maxWidth: wp(60) }]}>
-              <Text style={styles.badgeText} numberOfLines={1} ellipsizeMode="tail">
+          <Animated.View
+            key={title}
+            entering={animateTitle ? SlideInRight.duration(600) : undefined}
+          >
+            {showBadge ? (
+              <View style={[styles.badge, { flexShrink: 1, maxWidth: wp(60) }]}>
+                <Text style={styles.badgeText} numberOfLines={1} ellipsizeMode="tail">
+                  {title}
+                </Text>
+              </View>
+            ) : (
+              <Text
+                style={[styles.headerTitle, { color: titleColor, flexShrink: 1, maxWidth: wp(60) }]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {title}
               </Text>
-            </View>
-          ) : (
-            <Text
-              style={[styles.headerTitle, { color: titleColor, flexShrink: 1, maxWidth: wp(60) }]}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {title}
-            </Text>
-          )
+            )}
+          </Animated.View>
         ) : null}
       </View>
 

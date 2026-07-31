@@ -73,6 +73,8 @@ export default function ChatScreen() {
   const isNewSessionRef = useRef(false);
   const prevSessionIdRef = useRef<string | undefined>(undefined);
 
+  const isStale = sessionId !== prevSessionIdRef.current;
+
   const fetchChatHistory = async (id: string) => {
     setIsHistoryLoading(true);
     try {
@@ -347,6 +349,7 @@ export default function ChatScreen() {
             showBadge={showNewChatButton !== "true" ? true : false}
             onNewChatPress={showNewChatButton === "true" ? handleNewChatPress : undefined}
             // isNewChatDisabled={isAnimating || isLoading}
+            animateTitle={true}
           />
 
           {/* Messages */}
@@ -361,7 +364,7 @@ export default function ChatScreen() {
             keyboardShouldPersistTaps="handled"
             onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
           >
-            {isHistoryLoading ? (
+            {isHistoryLoading || isStale ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="small" color="#3C61DD" />
               </View>
@@ -413,7 +416,7 @@ export default function ChatScreen() {
                 } as any);
               }}
               isSoundHealingLoading={isSoundHealingLoading}
-              disabled={isLoading || isAnimating || isHistoryLoading}
+              disabled={isLoading || isAnimating || isHistoryLoading || isStale}
             />
           )}
 
@@ -422,7 +425,9 @@ export default function ChatScreen() {
             value={inputText}
             onChangeText={setInputText}
             onSend={handleSend}
-            disabled={isLoading || isAnimating || isHistoryLoading || isSoundHealingLoading}
+            disabled={
+              isLoading || isAnimating || isHistoryLoading || isSoundHealingLoading || isStale
+            }
           />
         </KeyboardAvoidingView>
       </SafeAreaView>
