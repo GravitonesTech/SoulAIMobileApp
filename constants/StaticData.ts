@@ -59,13 +59,6 @@ export const MORE_OPTIONS_ITEMS = [
     color: "#333",
     route: "/sound-healing-flow",
   },
-  // {
-  //   id: "downloads",
-  //   label: "Downloads",
-  //   icon: "download",
-  //   color: "#333",
-  //   route: "/downloads",
-  // },
   {
     id: "breathing",
     label: "Breathing Exercise",
@@ -73,13 +66,6 @@ export const MORE_OPTIONS_ITEMS = [
     color: "#333",
     route: "/breathing",
   },
-  // {
-  //   id: "demo",
-  //   label: "Interactive Demo",
-  //   icon: "play-circle",
-  //   color: "#3C61DD",
-  //   route: "/demo",
-  // },
   { id: "faq", label: "FAQ", icon: "help-circle", color: "#333", route: "/faq" },
   { id: "sos", label: "SOS!", icon: "alert-circle", color: "#FF3B30", route: "/sos" },
 ];
