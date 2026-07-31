@@ -22,6 +22,7 @@ import {
   Text,
   View,
 } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type RecommendedSound = {
@@ -339,97 +340,99 @@ export default function ChatScreen() {
       style={styles.container}
     >
       <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={styles.flex1}
-          behavior={Platform.OS === "ios" ? "padding" : isKeyboardVisible ? "height" : undefined}
-        >
-          {/* Header */}
-          <AppHeader
-            title={showNewChatButton !== "true" ? (therapy ? therapy : undefined) : undefined}
-            showBadge={showNewChatButton !== "true" ? true : false}
-            onNewChatPress={showNewChatButton === "true" ? handleNewChatPress : undefined}
-            // isNewChatDisabled={isAnimating || isLoading}
-            animateTitle={true}
-          />
-
-          {/* Messages */}
-          <ScrollView
-            ref={scrollViewRef}
+        <Animated.View style={styles.flex1} entering={FadeIn.duration(200)}>
+          <KeyboardAvoidingView
             style={styles.flex1}
-            contentContainerStyle={[
-              styles.messagesContent,
-              messages.length === 0 && { flexGrow: 1 },
-            ]}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+            behavior={Platform.OS === "ios" ? "padding" : isKeyboardVisible ? "height" : undefined}
           >
-            {isHistoryLoading || isStale ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color="#3C61DD" />
-              </View>
-            ) : messages.length === 0 ? (
-              <View style={styles.emptyStateContainer}>
-                <Text style={styles.emptyStateText}>No messages yet.</Text>
-                <Text style={styles.emptyStateText}>Send a message to start!</Text>
-              </View>
-            ) : (
-              messages.map((m, index) => (
-                <ChatBubble
-                  key={m.id}
-                  role={m.role}
-                  text={m.text}
-                  shouldAnimate={m.shouldAnimate}
-                  recommendedSound={m.recommendedSound}
-                  isHuman={m.isHuman}
-                  sessionId={sessionId}
-                  therapy={therapy}
-                  selected_therapy={selected_therapy}
-                  showNewChatButton={showNewChatButton}
-                  onAnimationComplete={
-                    index === messages.length - 1 ? () => setIsAnimating(false) : undefined
-                  }
-                />
-              ))
+            {/* Header */}
+            <AppHeader
+              title={showNewChatButton !== "true" ? (therapy ? therapy : undefined) : undefined}
+              showBadge={showNewChatButton !== "true" ? true : false}
+              onNewChatPress={showNewChatButton === "true" ? handleNewChatPress : undefined}
+              // isNewChatDisabled={isAnimating || isLoading}
+              animateTitle={true}
+            />
+
+            {/* Messages */}
+            <ScrollView
+              ref={scrollViewRef}
+              style={styles.flex1}
+              contentContainerStyle={[
+                styles.messagesContent,
+                messages.length === 0 && { flexGrow: 1 },
+              ]}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+            >
+              {isHistoryLoading || isStale ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color="#3C61DD" />
+                </View>
+              ) : messages.length === 0 ? (
+                <View style={styles.emptyStateContainer}>
+                  <Text style={styles.emptyStateText}>No messages yet.</Text>
+                  <Text style={styles.emptyStateText}>Send a message to start!</Text>
+                </View>
+              ) : (
+                messages.map((m, index) => (
+                  <ChatBubble
+                    key={m.id}
+                    role={m.role}
+                    text={m.text}
+                    shouldAnimate={m.shouldAnimate}
+                    recommendedSound={m.recommendedSound}
+                    isHuman={m.isHuman}
+                    sessionId={sessionId}
+                    therapy={therapy}
+                    selected_therapy={selected_therapy}
+                    showNewChatButton={showNewChatButton}
+                    onAnimationComplete={
+                      index === messages.length - 1 ? () => setIsAnimating(false) : undefined
+                    }
+                  />
+                ))
+              )}
+
+              {isLoading && <TypingIndicator />}
+            </ScrollView>
+
+            {/* Quick Actions Bar */}
+            {!isKeyboardVisible && (
+              <ChatQuickActions
+                onSoundHealingPress={handleSoundHealing}
+                onBreathingPress={() => {
+                  router.push("/(drawer)/breathing" as any);
+                }}
+                onTherapistPress={() => {
+                  router.push({
+                    pathname: "/(drawer)/human-therapists",
+                    params: {
+                      from: "chat",
+                      sessionId: sessionId || "",
+                      therapy: therapy || "",
+                      selected_therapy: selected_therapy || "",
+                      showNewChatButton: showNewChatButton || "",
+                    },
+                  } as any);
+                }}
+                isSoundHealingLoading={isSoundHealingLoading}
+                disabled={isLoading || isAnimating || isHistoryLoading || isStale}
+              />
             )}
 
-            {isLoading && <TypingIndicator />}
-          </ScrollView>
-
-          {/* Quick Actions Bar */}
-          {!isKeyboardVisible && (
-            <ChatQuickActions
-              onSoundHealingPress={handleSoundHealing}
-              onBreathingPress={() => {
-                router.push("/(drawer)/breathing" as any);
-              }}
-              onTherapistPress={() => {
-                router.push({
-                  pathname: "/(drawer)/human-therapists",
-                  params: {
-                    from: "chat",
-                    sessionId: sessionId || "",
-                    therapy: therapy || "",
-                    selected_therapy: selected_therapy || "",
-                    showNewChatButton: showNewChatButton || "",
-                  },
-                } as any);
-              }}
-              isSoundHealingLoading={isSoundHealingLoading}
-              disabled={isLoading || isAnimating || isHistoryLoading || isStale}
+            {/* Input Bar */}
+            <ChatInput
+              value={inputText}
+              onChangeText={setInputText}
+              onSend={handleSend}
+              disabled={
+                isLoading || isAnimating || isHistoryLoading || isSoundHealingLoading || isStale
+              }
             />
-          )}
-
-          {/* Input Bar */}
-          <ChatInput
-            value={inputText}
-            onChangeText={setInputText}
-            onSend={handleSend}
-            disabled={
-              isLoading || isAnimating || isHistoryLoading || isSoundHealingLoading || isStale
-            }
-          />
-        </KeyboardAvoidingView>
+          </KeyboardAvoidingView>
+        </Animated.View>
       </SafeAreaView>
     </LinearGradient>
   );

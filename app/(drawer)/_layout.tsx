@@ -104,7 +104,6 @@ export default function DrawerLayout() {
     >
       <Drawer.Screen name="chatstarter" options={{ title: "Home" }} />
       <Drawer.Screen name="conversations" options={{ title: "Conversations" }} />
-      <Drawer.Screen name="chat" options={{ title: "Chat" }} />
       <Drawer.Screen name="faq" options={{ title: "FAQ" }} />
       <Drawer.Screen name="coming-soon" options={{ title: "Coming Soon" }} />
       <Drawer.Screen name="group-chat" options={{ title: "Group Chat" }} />

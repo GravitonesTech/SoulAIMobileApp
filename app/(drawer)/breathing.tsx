@@ -13,8 +13,8 @@ import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { useIsFocused } from "@react-navigation/native";
 import { useAudioPlayer } from "expo-audio";
-import { useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -27,7 +27,7 @@ import {
   Text,
   TouchableOpacity,
   Vibration,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -182,7 +182,7 @@ export default function BreathingExerciseScreen() {
         const history = response.data.history || [];
         if (history.length > 0) {
           const mapped: Message[] = [];
-          
+
           const greeting = response.data.greeting_message || response.data.greeting;
           if (greeting) {
             mapped.push({
@@ -246,7 +246,9 @@ export default function BreathingExerciseScreen() {
             },
           ]);
           if (response.data.breathing_step) {
-            setStep(getStepFromBackend(response.data.breathing_step, response.data.breathing_config));
+            setStep(
+              getStepFromBackend(response.data.breathing_step, response.data.breathing_config),
+            );
           }
           if (response.data.breathing_config) {
             setBreathingConfig(response.data.breathing_config);
@@ -506,7 +508,7 @@ export default function BreathingExerciseScreen() {
     stopBreathAnimation(true);
     setSecondsRemaining(0);
     setCycleSecondsRemaining(0);
-    
+
     // Reset conversation and start a new session
     setMessages([]);
     setSessionId(null);
@@ -533,7 +535,7 @@ export default function BreathingExerciseScreen() {
     >
       <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
         {/* Header */}
-        <AppHeader title="Breathing Exercise" showBadge />
+        <AppHeader title="Breathing Exercise" showBadge animateTitle={true} />
 
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : isKeyboardVisible ? "height" : undefined}
