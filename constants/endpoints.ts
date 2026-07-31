@@ -106,5 +106,7 @@ export const ENDPOINTS = {
     categorySounds: (id: number | string) => `/master/sound-categories/${id}/sounds`,
     /** GET — Fetch breathing patterns */
     breathingPatterns: "/master/breathing/patterns",
+    /** GET — Fetch all FAQs */
+    getAllFaqs: "/master/get-all-faqs",
   },
 } as const;
