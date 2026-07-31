@@ -297,7 +297,10 @@ export default function ProfileScreen() {
                 </View>
               ))}
             </View>
-            <TouchableOpacity style={styles.addPaymentButton}>
+            <TouchableOpacity
+              style={styles.addPaymentButton}
+              onPress={() => router.push("/add-payment-method")}
+            >
               <Text style={styles.linkText}>+ Add Payment Method</Text>
             </TouchableOpacity>
           </View>
