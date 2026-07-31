@@ -1,6 +1,8 @@
 import { AppHeader } from "@/components/ui/AppHeader";
 import { AppInput } from "@/components/ui/AppInput";
+import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { Feather } from "@expo/vector-icons";
@@ -76,7 +78,7 @@ export default function AddPaymentMethodScreen() {
     return parts.join(" ");
   };
 
-  const handleAddCard = () => {
+  const handleAddCard = async () => {
     if (!fullName.trim()) {
       toast.error("Validation Error", "Full Name is required.");
       return;
@@ -107,11 +109,30 @@ export default function AddPaymentMethodScreen() {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const response = await apiClient.post<any>(ENDPOINTS.users.savePaymentMethod, {
+        full_name: fullName.trim(),
+        card_number: cardNumber,
+        expiry_date: expiryDate.trim(),
+        street_address: streetAddress.trim(),
+        apartment: apartment.trim(),
+        city: city.trim(),
+        zip_code: zipCode.trim(),
+        is_default: true,
+      });
+
+      if (response.success) {
+        toast.success("Success", response.message || "Payment method saved successfully");
+        router.back();
+      } else {
+        toast.error("Error", response.message || "Failed to save payment method");
+      }
+    } catch (error) {
+      console.error("[AddPaymentMethod] Error saving payment method:", error);
+      toast.error("Error", "A network error occurred. Please try again.");
+    } finally {
       setIsSubmitting(false);
-      toast.success("Success", "Credit card added successfully!");
-      router.back();
-    }, 1200);
+    }
   };
 
   return (

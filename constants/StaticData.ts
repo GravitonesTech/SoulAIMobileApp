@@ -136,12 +136,6 @@ export const PERSONALITY_RESULTS = [
   "Life Transitions",
 ];
 
-export const SAVED_PAYMENT_METHODS = [
-  { id: "1", type: "Visa", last4: "1280" },
-  { id: "2", type: "MasterCard", last4: "4481" },
-  { id: "3", type: "UPI", last4: "1258" },
-];
-
 export const PAST_THERAPY_SESSIONS = [
   {
     id: "1",

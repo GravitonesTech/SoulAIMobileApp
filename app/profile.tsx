@@ -1,11 +1,7 @@
 import { AppHeader } from "@/components/ui/AppHeader";
 import { UserInitialsAvatar } from "@/components/ui/UserInitialsAvatar";
 import { ENDPOINTS } from "@/constants/endpoints";
-import {
-  PAST_THERAPY_SESSIONS,
-  PERSONALITY_RESULTS,
-  SAVED_PAYMENT_METHODS,
-} from "@/constants/StaticData";
+import { PAST_THERAPY_SESSIONS, PERSONALITY_RESULTS } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
 import { useAppConfirmation } from "@/hooks/useAppConfirmation";
 import { useImagePicker } from "@/hooks/useImagePicker";
@@ -39,6 +35,7 @@ export default function ProfileScreen() {
   const user = useAppSelector((state) => state.auth.user);
   const [assessmentCompleted, setAssessmentCompleted] = useState(false);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
 
   const userResponseStyle =
     Array.isArray(user?.response_styles) && user.response_styles.length > 0
@@ -110,8 +107,20 @@ export default function ProfileScreen() {
         }
       };
 
+      const fetchSavedPaymentMethods = async () => {
+        try {
+          const response = await apiClient.get<any[]>(ENDPOINTS.users.getSavedPaymentMethods);
+          if (response.success && response.data && isMounted) {
+            setPaymentMethods(response.data);
+          }
+        } catch (error) {
+          console.error("[ProfileScreen] Error fetching saved payment methods:", error);
+        }
+      };
+
       fetchStatus();
       fetchUserProfile();
+      fetchSavedPaymentMethods();
       return () => {
         isMounted = false;
       };
@@ -148,8 +157,31 @@ export default function ProfileScreen() {
     });
   };
 
+  const handleDeletePaymentMethod = (id: string | number) => {
+    showConfirmation(
+      "Delete Payment Method",
+      "Are you sure you want to delete this payment method?",
+      async () => {
+        try {
+          const response = await apiClient.delete<any>(ENDPOINTS.users.deletePaymentMethod(id));
+          if (response.success) {
+            toast.success("Success", response.message || "Payment method deleted successfully");
+            setPaymentMethods((prev) => prev.filter((item) => item.id !== id));
+          } else {
+            toast.error("Error", response.message || "Failed to delete payment method");
+          }
+        } catch (error) {
+          console.error("[ProfileScreen] Error deleting payment method:", error);
+          toast.error("Error", "A network error occurred. Please try again.");
+        }
+      },
+      {
+        confirmLabel: "Delete",
+      },
+    );
+  };
+
   const personalityResults = PERSONALITY_RESULTS;
-  const paymentMethods = SAVED_PAYMENT_METHODS;
   const pastSessions = PAST_THERAPY_SESSIONS;
 
   const handleLogout = () => {
@@ -279,23 +311,31 @@ export default function ProfileScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>SAVED PAYMENT METHODS</Text>
             <View style={styles.card}>
-              {paymentMethods.map((method, index) => (
-                <View
-                  key={method.id}
-                  style={[
-                    styles.paymentItem,
-                    index === paymentMethods.length - 1 && styles.noBorder,
-                  ]}
-                >
-                  <View>
-                    <Text style={styles.paymentType}>{method.type}</Text>
-                    <Text style={styles.paymentDetails}>Ends in ****-{method.last4}</Text>
-                  </View>
-                  <TouchableOpacity>
-                    <Feather name="trash-2" size={normalize(22)} color="#464646" />
-                  </TouchableOpacity>
+              {paymentMethods.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>No saved payment methods</Text>
                 </View>
-              ))}
+              ) : (
+                paymentMethods.map((method, index) => (
+                  <View
+                    key={method.id}
+                    style={[
+                      styles.paymentItem,
+                      index === paymentMethods.length - 1 && styles.noBorder,
+                    ]}
+                  >
+                    <View>
+                      <Text style={styles.paymentType}>
+                        {method.card_network || method.method_type || method.type || "Card"}
+                      </Text>
+                      <Text style={styles.paymentDetails}>Ends in **** {method.last4}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => handleDeletePaymentMethod(method.id)}>
+                      <Feather name="trash-2" size={normalize(22)} color="#464646" />
+                    </TouchableOpacity>
+                  </View>
+                ))
+              )}
             </View>
             <TouchableOpacity
               style={styles.addPaymentButton}
@@ -495,5 +535,15 @@ const styles = StyleSheet.create({
     fontSize: normalize(14),
     color: "#3C61DD",
     textAlign: "right",
+  },
+  emptyContainer: {
+    paddingVertical: moderateScale(24),
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    fontFamily: Typography.fonts.regular,
+    fontSize: normalize(14),
+    color: "#8E8E8E",
   },
 });
