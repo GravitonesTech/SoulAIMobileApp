@@ -9,6 +9,8 @@ import { hp, normalize, moderateScale } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
+import { EntryAnimations } from "@/constants/Animations";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -21,6 +23,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignupScreen() {
@@ -31,6 +34,8 @@ export default function SignupScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { animatedStyle, navigateWithFade } = useFadeTransition(200);
 
   const handleSendOtp = async () => {
     if (!email.trim()) {
@@ -63,10 +68,7 @@ export default function SignupScreen() {
 
     if (result.success) {
       toast.success("Success", result.message || "OTP sent to your email.");
-      router.push({
-        pathname: "/emailverify",
-        params: { email: email.trim() },
-      });
+      navigateWithFade(`/emailverify?email=${encodeURIComponent(email.trim())}`);
     } else {
       toast.error("Error", result.message);
     }
@@ -76,20 +78,21 @@ export default function SignupScreen() {
 
   return (
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
             {/* Header */}
-            <View style={styles.header}>
+            <Animated.View entering={EntryAnimations.header} style={styles.header}>
               <Text style={styles.titleText}>Get Started</Text>
               <Text style={styles.subtitleText}>Create your personalized experience</Text>
-            </View>
+            </Animated.View>
 
             {/* Form */}
-            <View style={styles.formContainer}>
+            <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
               <AppInput
                 iconName="user"
                 placeholder="Email"
@@ -143,26 +146,29 @@ export default function SignupScreen() {
                 disabled={isLoading}
                 icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
               />
-            </View>
+            </Animated.View>
 
             {/* Divider */}
-            <View style={styles.dividerContainer}>
+            <Animated.View entering={EntryAnimations.formContainer} style={styles.dividerContainer}>
               <Text style={styles.dividerText}>Or Sign Up With</Text>
-            </View>
+            </Animated.View>
 
             {/* Social Logins */}
-            <SocialButtons style={styles.socialContainer} />
+            <Animated.View entering={EntryAnimations.formContainer} style={styles.socialContainer}>
+              <SocialButtons style={{ width: "100%" }} />
+            </Animated.View>
 
             {/* Bottom Link */}
-            <View style={styles.bottomLinkContainer}>
-              <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/login")}>
+            <Animated.View entering={EntryAnimations.formContainer} style={styles.bottomLinkContainer}>
+              <TouchableOpacity activeOpacity={0.7} onPress={() => navigateWithFade("/login")}>
                 <Text style={styles.bottomLinkText}>Already have an account? Sign in</Text>
               </TouchableOpacity>
-            </View>
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </Animated.View>
+  </LinearGradient>
   );
 }
 

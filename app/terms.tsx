@@ -1,6 +1,6 @@
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
-import { moderateScale, normalize, hp, wp } from "@/utils/responsive";
+import { hp, moderateScale, normalize, wp } from "@/utils/responsive";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";

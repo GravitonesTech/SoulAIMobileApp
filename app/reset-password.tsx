@@ -8,6 +8,8 @@ import { toast } from "@/utils/toast";
 import { useResendOtpCooldown } from "@/hooks/useResendOtpCooldown";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
+import { EntryAnimations } from "@/constants/Animations";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
@@ -20,12 +22,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+
+  const { animatedStyle, navigateWithFade, goBackWithFade } = useFadeTransition(200);
 
   const email = useMemo(() => {
     const raw = (params.email ?? "") as string | string[];
@@ -76,7 +81,7 @@ export default function ResetPasswordScreen() {
 
     if (result.success) {
       toast.success("Success", result.message || "Password reset successfully.");
-      router.replace("/login");
+      navigateWithFade("/login");
       return;
     }
 
@@ -85,7 +90,8 @@ export default function ResetPasswordScreen() {
 
   return (
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
           style={{ flex: 1, width: "100%" }}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -95,16 +101,16 @@ export default function ResetPasswordScreen() {
             bounces={false}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.header}>
+            <Animated.View entering={EntryAnimations.header} style={styles.header}>
               <Text style={styles.titleText}>Reset Password</Text>
               <Text style={styles.subtitleText}>
                 Enter the OTP sent to your email and set a new password.
               </Text>
-            </View>
+            </Animated.View>
 
             <Text style={styles.emailLabel}>{email}</Text>
 
-            <View style={styles.formContainer}>
+            <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
               <OtpInput length={4} onChange={setOtp} />
 
               <TouchableOpacity
@@ -149,16 +155,17 @@ export default function ResetPasswordScreen() {
 
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => router.back()}
+                onPress={goBackWithFade}
                 style={styles.backLink}
                 disabled={isLoading}
               >
                 <Text style={styles.backText}>Back</Text>
               </TouchableOpacity>
-            </View>
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </SafeAreaView>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }

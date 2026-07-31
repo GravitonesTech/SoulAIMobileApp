@@ -7,15 +7,11 @@ import { AuthService } from "@/utils/auth";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AuthOptionsScreen() {
@@ -23,25 +19,7 @@ export default function AuthOptionsScreen() {
   const [showSplash, setShowSplash] = useState(true);
   const [isSplashReady, setIsSplashReady] = useState(false);
 
-  const headerOpacity = useSharedValue(1);
-
-  useFocusEffect(
-    useCallback(() => {
-      headerOpacity.value = 1;
-    }, []),
-  );
-
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: headerOpacity.value,
-  }));
-
-  const handleNavigate = (path: string) => {
-    headerOpacity.value = withTiming(0, { duration: 200 }, (finished) => {
-      if (finished) {
-        runOnJS(router.push)(path as any);
-      }
-    });
-  };
+  const { animatedStyle, navigateWithFade } = useFadeTransition(200);
 
   useEffect(() => {
     let checkDone = false;
@@ -90,7 +68,7 @@ export default function AuthOptionsScreen() {
         end={{ x: 0, y: 1 }}
         style={styles.container}
       >
-        <Animated.View style={[{ flex: 1 }, animatedHeaderStyle]}>
+        <Animated.View style={[{ flex: 1 }, animatedStyle]}>
           <SafeAreaView style={styles.safeArea}>
             <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
               {/* Header (same as first screen) */}
@@ -111,7 +89,7 @@ export default function AuthOptionsScreen() {
                   variant="social"
                   icon={<Feather name="message-circle" size={normalize(20)} color="#000" />}
                   style={styles.inputMargin}
-                  onPress={() => handleNavigate("/sendotp")}
+                  onPress={() => navigateWithFade("/sendotp")}
                 />
 
                 <AppButton
@@ -119,7 +97,7 @@ export default function AuthOptionsScreen() {
                   variant="social"
                   icon={<Feather name="mail" size={normalize(20)} color="#000" />}
                   style={styles.inputMargin}
-                  onPress={() => handleNavigate("/login")}
+                  onPress={() => navigateWithFade("/login")}
                 />
 
                 <SocialButtons />
@@ -142,7 +120,7 @@ export default function AuthOptionsScreen() {
 
               {/* Bottom Link (same as first screen) */}
               <View style={styles.bottomLinkContainer}>
-                <TouchableOpacity onPress={() => handleNavigate("/signup")}>
+                <TouchableOpacity onPress={() => navigateWithFade("/signup")}>
                   <Text style={styles.bottomLinkText}>
                     Don{"'"}t have an account? <Text style={styles.boldText}>Create one</Text>
                   </Text>

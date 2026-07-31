@@ -1,8 +1,10 @@
 import { AppButton } from "@/components/ui/AppButton";
 import { AppInput } from "@/components/ui/AppInput";
+import { EntryAnimations } from "@/constants/Animations";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { useAppDispatch } from "@/store/hooks";
 import { setCredentials } from "@/store/slices/authSlice";
 import { apiClient } from "@/utils/api";
@@ -24,7 +26,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Animated, { FadeIn, SlideInDown } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
@@ -34,6 +36,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { animatedStyle, navigateWithFade } = useFadeTransition(200);
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
@@ -70,82 +74,86 @@ export default function LoginScreen() {
 
   return (
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-            {/* Header */}
-            <Animated.View entering={FadeIn.duration(1200)} style={styles.header}>
-              <Text style={styles.titleText}>Soul AI</Text>
-              <Text style={styles.subtitleText}>Sign in to your Soul AI account</Text>
-            </Animated.View>
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+              {/* Header */}
+              <Animated.View entering={EntryAnimations.header} style={styles.header}>
+                <Text style={styles.titleText}>Soul AI</Text>
+                <Text style={styles.subtitleText}>Sign in to your Soul AI account</Text>
+              </Animated.View>
 
-            {/* Form */}
-            <Animated.View entering={SlideInDown.duration(1200)} style={styles.formContainer}>
-              <AppInput
-                iconName="user"
-                placeholder="Email*"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-                style={styles.inputMargin}
-              />
+              {/* Form */}
+              <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
+                <AppInput
+                  iconName="user"
+                  placeholder="Email*"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={email}
+                  onChangeText={setEmail}
+                  style={styles.inputMargin}
+                />
 
-              <AppInput
-                iconName="lock"
-                placeholder="Password*"
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
-                style={styles.inputMargin}
-                rightIcon={
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                    <Feather
-                      name={showPassword ? "eye" : "eye-off"}
-                      size={normalize(20)}
-                      color="#555555"
-                    />
+                <AppInput
+                  iconName="lock"
+                  placeholder="Password*"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                  style={styles.inputMargin}
+                  rightIcon={
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      <Feather
+                        name={showPassword ? "eye" : "eye-off"}
+                        size={normalize(20)}
+                        color="#555555"
+                      />
+                    </TouchableOpacity>
+                  }
+                />
+
+                <AppButton
+                  title={isLoading ? "" : "Sign In"}
+                  style={styles.signInBtnMargin}
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                  icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
+                />
+
+                <View style={styles.forgotPasswordContainer}>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => navigateWithFade("/forgot-password")}
+                  >
+                    <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                   </TouchableOpacity>
-                }
-              />
+                </View>
 
-              <AppButton
-                title={isLoading ? "" : "Sign In"}
-                style={styles.signInBtnMargin}
-                onPress={handleLogin}
-                disabled={isLoading}
-                icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
-              />
-
-              <View style={styles.forgotPasswordContainer}>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => router.push("/forgot-password")}
-                >
-                  <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Social Divider */}
-              {/* <View style={styles.dividerContainer}>
+                {/* Social Divider */}
+                {/* <View style={styles.dividerContainer}>
               <Text style={styles.dividerText}>Or sign in with</Text>
             </View> */}
 
-              {/* Social Buttons */}
-              {/* <SocialButtons style={styles.socialContainer} /> */}
-              {/* Bottom Link */}
-              <View style={styles.bottomLinkContainer}>
-                <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/signup")}>
-                  <Text style={styles.bottomLinkText}>Don&apos;t have an account? Create one</Text>
-                </TouchableOpacity>
-              </View>
-            </Animated.View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+                {/* Social Buttons */}
+                {/* <SocialButtons style={styles.socialContainer} /> */}
+                {/* Bottom Link */}
+                <View style={styles.bottomLinkContainer}>
+                  <TouchableOpacity activeOpacity={0.7} onPress={() => navigateWithFade("/signup")}>
+                    <Text style={styles.bottomLinkText}>
+                      Don&apos;t have an account? Create one
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </Animated.View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }

@@ -6,6 +6,8 @@ import { AuthService } from "@/utils/auth";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
+import { EntryAnimations } from "@/constants/Animations";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -18,12 +20,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const { animatedStyle, navigateWithFade, goBackWithFade } = useFadeTransition(200);
 
   const handleSendOtp = async () => {
     const trimmed = email.trim();
@@ -38,7 +43,7 @@ export default function ForgotPasswordScreen() {
 
     if (result.success) {
       toast.success("Success", result.message);
-      router.push({ pathname: "/reset-password", params: { email: trimmed } });
+      navigateWithFade(`/reset-password?email=${encodeURIComponent(trimmed)}`);
       return;
     }
 
@@ -47,20 +52,21 @@ export default function ForgotPasswordScreen() {
 
   return (
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-            <View style={styles.header}>
+            <Animated.View entering={EntryAnimations.header} style={styles.header}>
               <Text style={styles.titleText}>Forgot Password</Text>
               <Text style={styles.subtitleText}>
                 Enter your email and we’ll send you an OTP if your account is eligible.
               </Text>
-            </View>
+            </Animated.View>
 
-            <View style={styles.formContainer}>
+            <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
               <AppInput
                 iconName="mail"
                 placeholder="Email*"
@@ -81,16 +87,17 @@ export default function ForgotPasswordScreen() {
 
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => router.back()}
+                onPress={goBackWithFade}
                 style={styles.backLink}
                 disabled={isLoading}
               >
                 <Text style={styles.backText}>Back to login</Text>
               </TouchableOpacity>
-            </View>
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </SafeAreaView>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }

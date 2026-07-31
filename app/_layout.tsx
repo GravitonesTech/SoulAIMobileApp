@@ -58,15 +58,21 @@ export default function RootLayout() {
             {/* login screen full screen without the default header */}
             <Stack.Screen name="login" options={{ headerShown: false, animation: "none" }} />
             {/* signup screen full screen without the default header */}
-            <Stack.Screen name="signup" options={{ headerShown: false }} />
-            <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
-            <Stack.Screen name="reset-password" options={{ headerShown: false }} />
+            <Stack.Screen name="signup" options={{ headerShown: false, animation: "none" }} />
+            <Stack.Screen
+              name="forgot-password"
+              options={{ headerShown: false, animation: "none" }}
+            />
+            <Stack.Screen
+              name="reset-password"
+              options={{ headerShown: false, animation: "none" }}
+            />
             {/* sendotp screen full screen without the default header */}
-            <Stack.Screen name="sendotp" options={{ headerShown: false }} />
+            <Stack.Screen name="sendotp" options={{ headerShown: false, animation: "none" }} />
             {/* verification screen full screen without the default header */}
-            <Stack.Screen name="verify" options={{ headerShown: false }} />
+            <Stack.Screen name="verify" options={{ headerShown: false, animation: "none" }} />
             {/* email verification screen full screen without the default header */}
-            <Stack.Screen name="emailverify" options={{ headerShown: false }} />
+            <Stack.Screen name="emailverify" options={{ headerShown: false, animation: "none" }} />
             {/* language screen full screen without the default header */}
             <Stack.Screen name="language" options={{ headerShown: false }} />
             {/* detailinput screen full screen without the default header */}
@@ -80,8 +86,14 @@ export default function RootLayout() {
             <Stack.Screen name="onboarding_three" options={{ headerShown: false }} />
             <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
             <Stack.Screen name="profile" options={{ headerShown: false }} />
-            <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
-            <Stack.Screen name="terms" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="privacy-policy"
+              options={{ headerShown: false, animation: "slide_from_bottom" }}
+            />
+            <Stack.Screen
+              name="terms"
+              options={{ headerShown: false, animation: "slide_from_bottom" }}
+            />
             <Stack.Screen name="personality-test" options={{ headerShown: false }} />
             <Stack.Screen name="therapist-details" options={{ headerShown: false }} />
             <Stack.Screen name="book-session" options={{ headerShown: false }} />
