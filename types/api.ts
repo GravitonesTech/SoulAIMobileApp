@@ -17,3 +17,31 @@ export interface ApiResponse<T> {
   message: string;
   data: T;
 }
+
+export interface FaqAnswer {
+  id: number;
+  faq_id: number;
+  answer_text: string;
+  order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FaqItem {
+  id: number;
+  question: string;
+  order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  answers: FaqAnswer[];
+}
+
+export interface FaqResponseData {
+  total_count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  faqs: FaqItem[];
+}

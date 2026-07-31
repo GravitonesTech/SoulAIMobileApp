@@ -1,20 +1,64 @@
 import { AppHeader } from "@/components/ui/AppHeader";
-import { FAQ_DATA } from "@/constants/StaticData";
+import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { FaqItem, FaqResponseData } from "@/types/api";
+import { apiClient } from "@/utils/api";
 import { moderateScale, normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function FAQScreen() {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [faqs, setFaqs] = useState<FaqItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  const toggleExpand = (id: string) => {
+  useEffect(() => {
+    fetchFaqs();
+  }, []);
+
+  const fetchFaqs = async () => {
+    setIsLoading(true);
+    try {
+      const response = await apiClient.get<FaqResponseData>(ENDPOINTS.master.getAllFaqs);
+      if (response.success && response.data) {
+        // Sort FAQs by order
+        const sortedFaqs = (response.data.faqs || []).sort((a, b) => a.order - b.order);
+        setFaqs(sortedFaqs);
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Failed to load FAQs",
+          text2: response.message || "An error occurred",
+          position: "bottom",
+        });
+      }
+    } catch (error) {
+      console.error("[FAQ] Error fetching FAQs:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to connect to the server",
+        position: "bottom",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleExpand = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
@@ -35,46 +79,53 @@ export default function FAQScreen() {
       style={styles.container}
     >
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-        {/* Header */}
         <AppHeader leftIcon="arrow-left" title="FAQ" />
 
-        <ScrollView
-          style={styles.flex1}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {FAQ_DATA.map((item) => {
-            const isExpanded = expandedId === item.id;
-            return (
-              <Animated.View layout={LinearTransition} key={item.id} style={styles.faqItem}>
-                <TouchableOpacity
-                  style={styles.questionRow}
-                  onPress={() => toggleExpand(item.id)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.questionText}>{item.question}</Text>
-                  <Feather
-                    name={isExpanded ? "chevron-up" : "chevron-down"}
-                    size={normalize(20)}
-                    color="#8A8A8E"
-                  />
-                </TouchableOpacity>
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#3C61DD" />
+          </View>
+        ) : (
+          <ScrollView
+            style={styles.flex1}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {faqs.map((item) => {
+              const isExpanded = expandedId === item.id;
+              const sortedAnswers = (item.answers || []).sort((a, b) => a.order - b.order);
+              const isList = sortedAnswers.length > 1;
 
-                {isExpanded && (
-                  <Animated.View
-                    entering={FadeIn.duration(200)}
-                    exiting={FadeOut.duration(200)}
-                    style={styles.answerContainer}
+              return (
+                <Animated.View layout={LinearTransition} key={item.id} style={styles.faqItem}>
+                  <TouchableOpacity
+                    style={styles.questionRow}
+                    onPress={() => toggleExpand(item.id)}
+                    activeOpacity={0.7}
                   >
-                    {item.isPromptList ? (
-                      <View style={styles.promptListContainer}>
-                        {item.answer.split("\n").map((prompt, pIndex) => {
-                          const cleanText = prompt.replace(/^\d+\.\s*/, "");
-                          return (
-                            <View key={pIndex} style={styles.promptRow}>
-                              <Text style={[styles.answerText, { flex: 1 }]}>{prompt}</Text>
+                    <Text style={styles.questionText}>{item.question}</Text>
+                    <Feather
+                      name={isExpanded ? "chevron-up" : "chevron-down"}
+                      size={normalize(20)}
+                      color="#8A8A8E"
+                    />
+                  </TouchableOpacity>
+
+                  {isExpanded && (
+                    <Animated.View
+                      entering={FadeIn.duration(200)}
+                      exiting={FadeOut.duration(200)}
+                      style={styles.answerContainer}
+                    >
+                      {isList ? (
+                        <View style={styles.promptListContainer}>
+                          {sortedAnswers.map((ans, aIndex) => (
+                            <View key={ans.id} style={styles.promptRow}>
+                              <Text style={[styles.answerText, { flex: 1 }]}>
+                                {`${aIndex + 1}. ${ans.answer_text}`}
+                              </Text>
                               <TouchableOpacity
-                                onPress={() => copyToClipboard(cleanText)}
+                                onPress={() => copyToClipboard(ans.answer_text)}
                                 style={styles.inlineCopyButton}
                                 activeOpacity={0.8}
                               >
@@ -82,18 +133,22 @@ export default function FAQScreen() {
                                 <Text style={styles.inlineCopyButtonText}>Copy</Text>
                               </TouchableOpacity>
                             </View>
-                          );
-                        })}
-                      </View>
-                    ) : (
-                      <Text style={styles.answerText}>{item.answer}</Text>
-                    )}
-                  </Animated.View>
-                )}
-              </Animated.View>
-            );
-          })}
-        </ScrollView>
+                          ))}
+                        </View>
+                      ) : (
+                        <View>
+                          <Text style={styles.answerText}>
+                            {sortedAnswers[0]?.answer_text || "No answer available."}
+                          </Text>
+                        </View>
+                      )}
+                    </Animated.View>
+                  )}
+                </Animated.View>
+              );
+            })}
+          </ScrollView>
+        )}
       </SafeAreaView>
     </LinearGradient>
   );
@@ -180,5 +235,10 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(12),
     color: "#3C61DD",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
