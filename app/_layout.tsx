@@ -1,5 +1,6 @@
 import GlobalBackHandler from "@/components/GlobalBackHandler";
 import { toastConfig } from "@/components/ToastConfig";
+import { OfflineBanner } from "@/components/ui/OfflineBanner";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AppActionSheet } from "@/hooks/useAppActionSheet";
 import { AppConfirmation } from "@/hooks/useAppConfirmation";
@@ -20,7 +21,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
-import { OfflineBanner } from "@/components/ui/OfflineBanner";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -56,7 +56,7 @@ export default function RootLayout() {
             {/* splash screen we built the primary initial route */}
             <Stack.Screen name="index" options={{ headerShown: false }} />
             {/* login screen full screen without the default header */}
-            <Stack.Screen name="login" options={{ headerShown: false }} />
+            <Stack.Screen name="login" options={{ headerShown: false, animation: "none" }} />
             {/* signup screen full screen without the default header */}
             <Stack.Screen name="signup" options={{ headerShown: false }} />
             <Stack.Screen name="forgot-password" options={{ headerShown: false }} />

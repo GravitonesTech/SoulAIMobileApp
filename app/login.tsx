@@ -24,6 +24,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, { FadeIn, SlideInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
@@ -76,13 +77,13 @@ export default function LoginScreen() {
         >
           <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
             {/* Header */}
-            <View style={styles.header}>
+            <Animated.View entering={FadeIn.duration(1200)} style={styles.header}>
               <Text style={styles.titleText}>Soul AI</Text>
               <Text style={styles.subtitleText}>Sign in to your Soul AI account</Text>
-            </View>
+            </Animated.View>
 
             {/* Form */}
-            <View style={styles.formContainer}>
+            <Animated.View entering={SlideInDown.duration(1200)} style={styles.formContainer}>
               <AppInput
                 iconName="user"
                 placeholder="Email*"
@@ -135,14 +136,13 @@ export default function LoginScreen() {
 
               {/* Social Buttons */}
               {/* <SocialButtons style={styles.socialContainer} /> */}
-            </View>
-
-            {/* Bottom Link */}
-            <View style={styles.bottomLinkContainer}>
-              <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/signup")}>
-                <Text style={styles.bottomLinkText}>Don&apos;t have an account? Create one</Text>
-              </TouchableOpacity>
-            </View>
+              {/* Bottom Link */}
+              <View style={styles.bottomLinkContainer}>
+                <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/signup")}>
+                  <Text style={styles.bottomLinkText}>Don&apos;t have an account? Create one</Text>
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>

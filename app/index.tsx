@@ -7,21 +7,41 @@ import { AuthService } from "@/utils/auth";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AuthOptionsScreen() {
   const router = useRouter();
   const [showSplash, setShowSplash] = useState(true);
   const [isSplashReady, setIsSplashReady] = useState(false);
+
+  const headerOpacity = useSharedValue(1);
+
+  useFocusEffect(
+    useCallback(() => {
+      headerOpacity.value = 1;
+    }, []),
+  );
+
+  const animatedHeaderStyle = useAnimatedStyle(() => ({
+    opacity: headerOpacity.value,
+  }));
+
+  const handleNavigate = (path: string) => {
+    headerOpacity.value = withTiming(0, { duration: 200 }, (finished) => {
+      if (finished) {
+        runOnJS(router.push)(path as any);
+      }
+    });
+  };
 
   useEffect(() => {
     let checkDone = false;
@@ -70,73 +90,72 @@ export default function AuthOptionsScreen() {
         end={{ x: 0, y: 1 }}
         style={styles.container}
       >
-        <SafeAreaView style={styles.safeArea}>
-          <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-            {/* Header (same as first screen) */}
-            <View style={styles.header}>
-              <Text style={styles.titleText}>Welcome to Soul AI</Text>
-            </View>
+        <Animated.View style={[{ flex: 1 }, animatedHeaderStyle]}>
+          <SafeAreaView style={styles.safeArea}>
+            <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+              {/* Header (same as first screen) */}
+              <View style={styles.header}>
+                <Text style={styles.titleText}>Welcome to Soul AI</Text>
+              </View>
 
-            {/* Buttons (acts like formContainer) */}
-            <View style={styles.formContainer}>
-              <Text style={[styles.subtitleText, { marginBottom: hp(3.5) }]}>
-                Sign in to Personalize your{"\n"}Therapy AI Companion
-              </Text>
-
-              <Text style={styles.continueWithText}>Continue with</Text>
-
-              <AppButton
-                title="Phone Number"
-                variant="social"
-                icon={<Feather name="message-circle" size={normalize(20)} color="#000" />}
-                style={styles.inputMargin}
-                onPress={() => router.push("/sendotp")}
-              />
-
-              <AppButton
-                title="Email"
-                variant="social"
-                icon={<Feather name="mail" size={normalize(20)} color="#000" />}
-                style={styles.inputMargin}
-                onPress={() => router.push("/login")}
-              />
-
-              <SocialButtons />
-            </View>
-
-            {/* Divider (same position as first screen) */}
-            <View style={styles.dividerContainer}>
-              <Text style={styles.termsText}>
-                By tapping Continue or logging into an existing Soul account, you agree to our{" "}
-                <Text style={styles.linkText} onPress={() => router.push("/terms" as any)}>
-                  Terms
-                </Text>{" "}
-                and acknowledge that you have read our{" "}
-                <Text style={styles.linkText} onPress={() => router.push("/privacy-policy")}>
-                  Privacy Policy
+              {/* Buttons (acts like formContainer) */}
+              <View style={styles.formContainer}>
+                <Text style={[styles.subtitleText, { marginBottom: hp(3.5) }]}>
+                  Sign in to Personalize your{"\n"}Therapy AI Companion
                 </Text>
-                , which explains how to opt out of our offers and promos.
-              </Text>
-            </View>
 
-            {/* Bottom Link (same as first screen) */}
-            <View style={styles.bottomLinkContainer}>
-              <TouchableOpacity onPress={() => router.push("/signup")}>
-                <Text style={styles.bottomLinkText}>
-                  Don{"'"}t have an account? <Text style={styles.boldText}>Create one</Text>
+                <Text style={styles.continueWithText}>Continue with</Text>
+
+                <AppButton
+                  title="Phone Number"
+                  variant="social"
+                  icon={<Feather name="message-circle" size={normalize(20)} color="#000" />}
+                  style={styles.inputMargin}
+                  onPress={() => handleNavigate("/sendotp")}
+                />
+
+                <AppButton
+                  title="Email"
+                  variant="social"
+                  icon={<Feather name="mail" size={normalize(20)} color="#000" />}
+                  style={styles.inputMargin}
+                  onPress={() => handleNavigate("/login")}
+                />
+
+                <SocialButtons />
+              </View>
+
+              {/* Divider (same position as first screen) */}
+              <View style={styles.dividerContainer}>
+                <Text style={styles.termsText}>
+                  By tapping Continue or logging into an existing Soul account, you agree to our{" "}
+                  <Text style={styles.linkText} onPress={() => router.push("/terms" as any)}>
+                    Terms
+                  </Text>{" "}
+                  and acknowledge that you have read our{" "}
+                  <Text style={styles.linkText} onPress={() => router.push("/privacy-policy")}>
+                    Privacy Policy
+                  </Text>
+                  , which explains how to opt out of our offers and promos.
                 </Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </SafeAreaView>
+              </View>
+
+              {/* Bottom Link (same as first screen) */}
+              <View style={styles.bottomLinkContainer}>
+                <TouchableOpacity onPress={() => handleNavigate("/signup")}>
+                  <Text style={styles.bottomLinkText}>
+                    Don{"'"}t have an account? <Text style={styles.boldText}>Create one</Text>
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </SafeAreaView>
+        </Animated.View>
       </LinearGradient>
 
       {/* Premium Custom Splash Overlay Component */}
       {showSplash && (
-        <SplashOverlay
-          isReady={isSplashReady}
-          onFinish={() => setShowSplash(false)}
-        />
+        <SplashOverlay isReady={isSplashReady} onFinish={() => setShowSplash(false)} />
       )}
     </View>
   );
