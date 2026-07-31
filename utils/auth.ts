@@ -1,12 +1,12 @@
 import { ENDPOINTS } from "@/constants/endpoints";
-import { apiClient } from "@/utils/api";
+import { store } from "@/store";
+import { logout as logoutAction, setCredentials } from "@/store/slices/authSlice";
 import { UserProfile } from "@/types/api";
+import { apiClient } from "@/utils/api";
+import { NotificationService } from "@/utils/notificationService";
 import { storage } from "@/utils/storage";
 import { toast } from "@/utils/toast";
 import { router } from "expo-router";
-import { store } from "@/store";
-import { setCredentials, logout as logoutAction } from "@/store/slices/authSlice";
-import { NotificationService } from "@/utils/notificationService";
 
 export type SocialProvider = "google" | "apple";
 
@@ -122,6 +122,9 @@ async function logout() {
   await storage.removeAccessToken();
   await storage.removeRefreshToken();
   store.dispatch(logoutAction());
+  if (router.canDismiss()) {
+    router.dismissAll();
+  }
   router.replace("/login");
 }
 
