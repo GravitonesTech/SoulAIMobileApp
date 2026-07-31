@@ -60,7 +60,8 @@ function navigateToCorrectScreen(user: UserProfile) {
  * Generic handler to exchange a social provider token for an app token
  */
 async function loginWithSocialToken(provider: SocialProvider, token: string) {
-  const result = await apiClient.post(ENDPOINTS.auth.social(provider), { token });
+  const body = provider === "google" ? { id_token: token } : { token };
+  const result = await apiClient.post(ENDPOINTS.auth.social(provider), body);
 
   if (result.success && result.data) {
     const accessToken = result.data.access_token;

@@ -1,3 +1,4 @@
+import { SocialButtons } from "@/components/auth/SocialButtons";
 import { AppButton } from "@/components/ui/AppButton";
 import { AppInput } from "@/components/ui/AppInput";
 import { ENDPOINTS } from "@/constants/endpoints";
@@ -129,12 +130,12 @@ export default function LoginScreen() {
               </View>
 
               {/* Social Divider */}
-              {/* <View style={styles.dividerContainer}>
-              <Text style={styles.dividerText}>Or sign in with</Text>
-            </View> */}
+              <View style={styles.dividerContainer}>
+                <Text style={styles.dividerText}>Or sign in with</Text>
+              </View>
 
               {/* Social Buttons */}
-              {/* <SocialButtons style={styles.socialContainer} /> */}
+              <SocialButtons style={styles.socialContainer} />
             </View>
 
             {/* Bottom Link */}
