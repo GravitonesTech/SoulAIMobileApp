@@ -45,3 +45,21 @@ export interface FaqResponseData {
   total_pages: number;
   faqs: FaqItem[];
 }
+
+export interface SosContact {
+  id: number;
+  name: string;
+  phone_number: string;
+  is_emergency: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SosResponseData {
+  total_count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  contacts: SosContact[];
+}

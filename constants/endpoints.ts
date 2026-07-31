@@ -108,5 +108,7 @@ export const ENDPOINTS = {
     breathingPatterns: "/master/breathing/patterns",
     /** GET — Fetch all FAQs */
     getAllFaqs: "/master/get-all-faqs",
+    /** GET — Fetch all SOS contacts */
+    getAllSosContacts: "/master/get-all-sos-contacts",
   },
 } as const;
