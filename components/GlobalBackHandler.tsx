@@ -28,6 +28,22 @@ export default function GlobalBackHandler() {
 
   useEffect(() => {
     const backAction = () => {
+      // If we are on the main landing or login page, prompt to exit immediately
+      if (pathname === "/login" || pathname === "/") {
+        showConfirmation(
+          "Exit App",
+          "Are you sure you want to exit?",
+          () => {
+            BackHandler.exitApp();
+          },
+          {
+            confirmLabel: "Exit",
+            cancelLabel: "Cancel",
+          },
+        );
+        return true;
+      }
+
       // If we can go back in the Expo Router stack, pop the stack
       if (router.canGoBack()) {
         router.back();
