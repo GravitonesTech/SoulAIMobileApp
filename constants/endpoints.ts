@@ -69,6 +69,12 @@ export const ENDPOINTS = {
     metadata: "/users/metadata",
     /** PUT — Update user device FCM token */
     updateFcmToken: "/users/user-update-fcm-token",
+    /** POST — Save payment method */
+    savePaymentMethod: "/users/payments/save-payment-method",
+    /** GET — Get all saved payment methods */
+    getSavedPaymentMethods: "/users/payments/get-all-saved-methods",
+    /** DELETE — Delete a saved payment method */
+    deletePaymentMethod: (id: number | string) => `/users/payments/delete-saved-method/${id}`,
   },
 
   chat: {
