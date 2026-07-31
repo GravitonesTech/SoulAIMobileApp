@@ -30,7 +30,8 @@ export const ENDPOINTS = {
      * POST — Exchange a social provider token for an app token.
      * @param provider - "google" | "apple"
      */
-    social: (provider: string) => `/auth/${provider}`,
+    social: (provider: string) =>
+      provider === "google" ? "/auth/google-login" : `/auth/${provider}`,
   },
 
   users: {
