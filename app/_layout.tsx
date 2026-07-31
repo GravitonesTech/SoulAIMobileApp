@@ -104,10 +104,6 @@ export default function RootLayout() {
             <Stack.Screen name="customer-support" options={{ headerShown: false }} />
             <Stack.Screen name="review-session" options={{ headerShown: false }} />
             <Stack.Screen name="group-chat-room" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="chat"
-              options={{ headerShown: false, animation: "ios_from_right" }}
-            />
           </Stack>
           <StatusBar style="dark" />
           <Toast config={toastConfig} />
