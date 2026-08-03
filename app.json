@@ -20,14 +20,12 @@
         "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photo library to select photos.",
         "NSCalendarsUsageDescription": "Allow $(PRODUCT_NAME) to access your calendar to add and schedule meetings.",
         "NSContactsUsageDescription": "Allow $(PRODUCT_NAME) to access your contacts to easily invite them to meetings.",
-        "UIBackgroundModes": [
-          "remote-notification"
-        ],
+        "UIBackgroundModes": ["remote-notification"],
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "versionCode": 6,
+      "versionCode": 8,
       "package": "com.soulai.in",
       "googleServicesFile": "./google-services.json",
       "permissions": [
@@ -95,9 +93,7 @@
       [
         "react-native-permissions",
         {
-          "iosPermissions": [
-            "Notifications"
-          ]
+          "iosPermissions": ["Notifications"]
         }
       ]
     ],
