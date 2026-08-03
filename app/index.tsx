@@ -51,7 +51,7 @@ export default function AuthOptionsScreen() {
     timerId = setTimeout(() => {
       timerDone = true;
       maybeHideSplash();
-    }, 3500);
+    }, 5600);
 
     checkUserSession();
 
