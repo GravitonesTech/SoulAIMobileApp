@@ -1,14 +1,18 @@
 import { AppButton } from "@/components/ui/AppButton";
+import { EntryAnimations } from "@/constants/Animations";
 import { Typography } from "@/constants/Typography";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { BackHandler, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function OnboardingTwoScreen() {
   const router = useRouter();
+  const { animatedStyle, navigateWithFade } = useFadeTransition(200);
 
   useEffect(() => {
     const backAction = () => {
@@ -28,34 +32,39 @@ export default function OnboardingTwoScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <View style={styles.content}>
-            {/* Header Section */}
-            <View style={styles.headerContainer}>
-              <Text style={styles.title}>Every Person is Unique</Text>
-              <Text style={styles.subtitle}>Personalized your therapy{"\n"}Experience</Text>
-            </View>
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <View style={styles.content}>
+              {/* Header Section */}
+              <Animated.View entering={EntryAnimations.header} style={styles.headerContainer}>
+                <Text style={styles.title}>Every Person is Unique</Text>
+                <Text style={styles.subtitle}>Personalized your therapy{"\n"}Experience</Text>
+              </Animated.View>
 
-            {/* Bottom Section */}
-            <View style={styles.bottomContainer}>
-              <AppButton
-                title="Customize Soul AI"
-                onPress={() => router.push("/experience")}
-                style={styles.button}
-              />
+              {/* Bottom Section */}
+              <Animated.View
+                entering={EntryAnimations.formContainer}
+                style={styles.bottomContainer}
+              >
+                <AppButton
+                  title="Customize Soul AI"
+                  onPress={() => navigateWithFade("/experience")}
+                  style={styles.button}
+                />
 
-              <Text style={styles.footerText}>
-                All the data shared with Soul AI is protected and secured only within the
-                application.
-              </Text>
+                <Text style={styles.footerText}>
+                  All the data shared with Soul AI is protected and secured only within the
+                  application.
+                </Text>
+              </Animated.View>
             </View>
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }

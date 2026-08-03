@@ -1,14 +1,18 @@
 import { AppButton } from "@/components/ui/AppButton";
+import { EntryAnimations } from "@/constants/Animations";
 import { Typography } from "@/constants/Typography";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function OnboardingThreeScreen() {
   const router = useRouter();
+  const { animatedStyle, navigateWithFade } = useFadeTransition(200);
 
   return (
     <LinearGradient
@@ -17,44 +21,46 @@ export default function OnboardingThreeScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Welcome to Soul AI</Text>
-            <Text style={styles.subtitle}>
-              Take a personality test to further{"\n"}improve your experience.
-            </Text>
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.content}>
+            {/* Header */}
+            <Animated.View entering={EntryAnimations.header} style={styles.header}>
+              <Text style={styles.title}>Welcome to Soul AI</Text>
+              <Text style={styles.subtitle}>
+                Take a personality test to further{"\n"}improve your experience.
+              </Text>
+            </Animated.View>
+
+            {/* Buttons at bottom */}
+            <Animated.View entering={EntryAnimations.formContainer} style={styles.footer}>
+              <AppButton
+                title="Let's Talk"
+                onPress={() => {
+                  if (router.canDismiss()) {
+                    router.dismissAll();
+                  }
+                  navigateWithFade("/chatstarter", { replace: true });
+                }}
+                style={styles.primaryButton}
+              />
+
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                activeOpacity={0.7}
+                onPress={() => navigateWithFade("/personality-test")}
+              >
+                <Text style={styles.secondaryButtonText}>Take a Personality Test</Text>
+              </TouchableOpacity>
+
+              <Text style={styles.footerText}>
+                Take the WORLD HEALTH ORGANIZATION recommended assessment to improve the application
+                experience.
+              </Text>
+            </Animated.View>
           </View>
-
-          {/* Buttons at bottom */}
-          <View style={styles.footer}>
-            <AppButton
-              title="Let's Talk"
-              onPress={() => {
-                if (router.canDismiss()) {
-                  router.dismissAll();
-                }
-                router.replace("/chatstarter");
-              }}
-              style={styles.primaryButton}
-            />
-
-            <TouchableOpacity
-              style={styles.secondaryButton}
-              activeOpacity={0.7}
-              onPress={() => router.push("/personality-test")}
-            >
-              <Text style={styles.secondaryButtonText}>Take a Personality Test</Text>
-            </TouchableOpacity>
-
-            <Text style={styles.footerText}>
-              Take the WORLD HEALTH ORGANIZATION recommended assessment to improve the application
-              experience.
-            </Text>
-          </View>
-        </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }

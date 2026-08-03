@@ -5,6 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import { useNavigation, useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, { SlideInRight } from "react-native-reanimated";
 import { UserAvatar } from "./UserAvatar";
 
 interface AppHeaderProps {
@@ -19,6 +20,7 @@ interface AppHeaderProps {
   onNewChatPress?: () => void;
   isNewChatDisabled?: boolean;
   rightContent?: React.ReactNode;
+  animateTitle?: boolean;
 }
 
 export const AppHeader = ({
@@ -33,6 +35,7 @@ export const AppHeader = ({
   onNewChatPress,
   isNewChatDisabled = false,
   rightContent,
+  animateTitle = false,
 }: AppHeaderProps) => {
   const router = useRouter();
   const navigation = useNavigation();
@@ -72,37 +75,45 @@ export const AppHeader = ({
 
       <View style={styles.middleContainer}>
         {title ? (
-          showBadge ? (
-            <View style={[styles.badge, { flexShrink: 1, maxWidth: wp(60) }]}>
-              <Text style={styles.badgeText} numberOfLines={1} ellipsizeMode="tail">
+          <Animated.View
+            key={title}
+            entering={animateTitle ? SlideInRight.duration(600) : undefined}
+            style={styles.animatedTitleContainer}
+          >
+            {showBadge ? (
+              <View style={[styles.badge, { flexShrink: 1, maxWidth: wp(60) }]}>
+                <Text style={styles.badgeText} numberOfLines={1} ellipsizeMode="tail">
+                  {title}
+                </Text>
+              </View>
+            ) : (
+              <Text
+                style={[styles.headerTitle, { color: titleColor, flexShrink: 1, maxWidth: wp(60) }]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
                 {title}
               </Text>
-            </View>
-          ) : (
-            <Text
-              style={[styles.headerTitle, { color: titleColor, flexShrink: 1, maxWidth: wp(60) }]}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {title}
-            </Text>
-          )
+            )}
+          </Animated.View>
         ) : null}
       </View>
 
       <View style={styles.rightSide}>
         {onNewChatPress && (
-          <TouchableOpacity
-            onPress={onNewChatPress}
-            style={[styles.newChatButton, isNewChatDisabled && { opacity: 0.6 }]}
-            activeOpacity={0.8}
-            disabled={isNewChatDisabled}
-          >
-            <View style={styles.plusIconCircle}>
-              <Feather name="plus" size={normalize(18)} color="#333" />
-            </View>
-            <Text style={styles.newChatText}>New chat</Text>
-          </TouchableOpacity>
+          <Animated.View entering={animateTitle ? SlideInRight.duration(600) : undefined}>
+            <TouchableOpacity
+              onPress={onNewChatPress}
+              style={[styles.newChatButton, isNewChatDisabled && { opacity: 0.6 }]}
+              activeOpacity={0.8}
+              disabled={isNewChatDisabled}
+            >
+              <View style={styles.plusIconCircle}>
+                <Feather name="plus" size={normalize(18)} color="#333" />
+              </View>
+              <Text style={styles.newChatText}>New chat</Text>
+            </TouchableOpacity>
+          </Animated.View>
         )}
 
         {rightContent ? (
@@ -138,6 +149,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  animatedTitleContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+  },
   headerTitle: {
     fontFamily: Typography.fonts.bold,
     fontSize: normalize(20),
@@ -152,11 +168,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#3C61DD",
     backgroundColor: "transparent",
+    justifyContent: "center",
+    alignItems: "center",
   },
   badgeText: {
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(14),
     color: "#333",
+    includeFontPadding: false,
+    textAlignVertical: "center",
   },
   rightSide: {
     flexDirection: "row",

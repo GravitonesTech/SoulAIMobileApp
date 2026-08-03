@@ -1,5 +1,6 @@
 import GlobalBackHandler from "@/components/GlobalBackHandler";
 import { toastConfig } from "@/components/ToastConfig";
+import { OfflineBanner } from "@/components/ui/OfflineBanner";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AppActionSheet } from "@/hooks/useAppActionSheet";
 import { AppConfirmation } from "@/hooks/useAppConfirmation";
@@ -20,7 +21,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
-import { OfflineBanner } from "@/components/ui/OfflineBanner";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -56,32 +56,56 @@ export default function RootLayout() {
             {/* splash screen we built the primary initial route */}
             <Stack.Screen name="index" options={{ headerShown: false }} />
             {/* login screen full screen without the default header */}
-            <Stack.Screen name="login" options={{ headerShown: false }} />
+            <Stack.Screen name="login" options={{ headerShown: false, animation: "none" }} />
             {/* signup screen full screen without the default header */}
-            <Stack.Screen name="signup" options={{ headerShown: false }} />
-            <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
-            <Stack.Screen name="reset-password" options={{ headerShown: false }} />
+            <Stack.Screen name="signup" options={{ headerShown: false, animation: "none" }} />
+            <Stack.Screen
+              name="forgot-password"
+              options={{ headerShown: false, animation: "none" }}
+            />
+            <Stack.Screen
+              name="reset-password"
+              options={{ headerShown: false, animation: "none" }}
+            />
             {/* sendotp screen full screen without the default header */}
-            <Stack.Screen name="sendotp" options={{ headerShown: false }} />
+            <Stack.Screen name="sendotp" options={{ headerShown: false, animation: "none" }} />
             {/* verification screen full screen without the default header */}
-            <Stack.Screen name="verify" options={{ headerShown: false }} />
+            <Stack.Screen name="verify" options={{ headerShown: false, animation: "none" }} />
             {/* email verification screen full screen without the default header */}
-            <Stack.Screen name="emailverify" options={{ headerShown: false }} />
+            <Stack.Screen name="emailverify" options={{ headerShown: false, animation: "none" }} />
             {/* language screen full screen without the default header */}
-            <Stack.Screen name="language" options={{ headerShown: false }} />
+            <Stack.Screen name="language" options={{ headerShown: false, animation: "none" }} />
             {/* detailinput screen full screen without the default header */}
-            <Stack.Screen name="userdetailinput" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="userdetailinput"
+              options={{ headerShown: false, animation: "none" }}
+            />
             {/* experience screen full screen without the default header */}
-            <Stack.Screen name="experience" options={{ headerShown: false }} />
-            <Stack.Screen name="response" options={{ headerShown: false }} />
-            <Stack.Screen name="support" options={{ headerShown: false }} />
-            <Stack.Screen name="onboarding_one" options={{ headerShown: false }} />
-            <Stack.Screen name="onboarding_two" options={{ headerShown: false }} />
-            <Stack.Screen name="onboarding_three" options={{ headerShown: false }} />
+            <Stack.Screen name="experience" options={{ headerShown: false, animation: "none" }} />
+            <Stack.Screen name="response" options={{ headerShown: false, animation: "none" }} />
+            <Stack.Screen name="support" options={{ headerShown: false, animation: "none" }} />
+            <Stack.Screen
+              name="onboarding_one"
+              options={{ headerShown: false, animation: "none" }}
+            />
+            <Stack.Screen
+              name="onboarding_two"
+              options={{ headerShown: false, animation: "none" }}
+            />
+            <Stack.Screen
+              name="onboarding_three"
+              options={{ headerShown: false, animation: "none" }}
+            />
             <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
             <Stack.Screen name="profile" options={{ headerShown: false }} />
-            <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
-            <Stack.Screen name="terms" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="privacy-policy"
+              options={{ headerShown: false, animation: "slide_from_bottom" }}
+            />
+            <Stack.Screen
+              name="terms"
+              options={{ headerShown: false, animation: "slide_from_bottom" }}
+            />
             <Stack.Screen name="personality-test" options={{ headerShown: false }} />
             <Stack.Screen name="therapist-details" options={{ headerShown: false }} />
             <Stack.Screen name="book-session" options={{ headerShown: false }} />

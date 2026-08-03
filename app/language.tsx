@@ -1,29 +1,22 @@
+import { EntryAnimations } from "@/constants/Animations";
 import { AppButton } from "@/components/ui/AppButton";
 import { ProgressHeader } from "@/components/ui/ProgressHeader";
 import { LANGUAGES } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BackHandler, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LanguageScreen() {
   const router = useRouter();
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
-
-  useEffect(() => {
-    const backAction = () => {
-      BackHandler.exitApp();
-      return true;
-    };
-
-    const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
-
-    return () => backHandler.remove();
-  }, []);
+  const { animatedStyle, navigateWithFade } = useFadeTransition(200);
 
   return (
     <LinearGradient
@@ -32,57 +25,61 @@ export default function LanguageScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safeArea}>
-        <ProgressHeader progress="13%" onBack={() => BackHandler.exitApp()} />
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
+          <ProgressHeader progress="13%" onBack={() => BackHandler.exitApp()} />
 
-        <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.titleText}>Choose your{"\n"}preferred language</Text>
-            <Text style={styles.subtitleText}>Customize the app experience</Text>
-          </View>
+          <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+            {/* Header */}
+            <Animated.View entering={EntryAnimations.header} style={styles.header}>
+              <Text style={styles.titleText}>Choose your{"\n"}preferred language</Text>
+              <Text style={styles.subtitleText}>Customize the app experience</Text>
+            </Animated.View>
 
-          {/* Language Options */}
-          <View style={styles.optionsContainer}>
-            {LANGUAGES.map((lang) => {
-              const isSelected = selectedLanguage === lang;
-              return (
-                <TouchableOpacity
-                  key={lang}
-                  activeOpacity={0.7}
-                  onPress={() => setSelectedLanguage(lang)}
-                  style={[styles.languageOption, isSelected && styles.languageOptionSelected]}
-                >
-                  <Text
-                    style={[
-                      styles.languageText,
-                      { color: "#8A8A8E" }, // In mockup all options look gray, selected has blue border
-                    ]}
-                  >
-                    {lang}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+            {/* Language Options & Next Button */}
+            <Animated.View entering={EntryAnimations.formContainer} style={{ width: "100%" }}>
+              <View style={styles.optionsContainer}>
+                {LANGUAGES.map((lang) => {
+                  const isSelected = selectedLanguage === lang;
+                  return (
+                    <TouchableOpacity
+                      key={lang}
+                      activeOpacity={0.7}
+                      onPress={() => setSelectedLanguage(lang)}
+                      style={[styles.languageOption, isSelected && styles.languageOptionSelected]}
+                    >
+                      <Text
+                        style={[
+                          styles.languageText,
+                          { color: "#8A8A8E" }, // In mockup all options look gray, selected has blue border
+                        ]}
+                      >
+                        {lang}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
 
-          {/* Next Button */}
-          <AppButton
-            title="Next"
-            style={styles.nextButton}
-            onPress={() => {
-              if (!selectedLanguage) {
-                toast.error("Error", "Please select your preferred language");
-                return;
-              }
-              router.push({
-                pathname: "/userdetailinput",
-                params: { language: selectedLanguage },
-              });
-            }}
-          />
-        </ScrollView>
-      </SafeAreaView>
+              {/* Next Button */}
+              <AppButton
+                title="Next"
+                style={styles.nextButton}
+                onPress={() => {
+                  if (!selectedLanguage) {
+                    toast.error("Error", "Please select your preferred language");
+                    return;
+                  }
+                  navigateWithFade({
+                    pathname: "/userdetailinput",
+                    params: { language: selectedLanguage },
+                  } as any);
+                }}
+              />
+            </Animated.View>
+          </ScrollView>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }

@@ -1,8 +1,10 @@
 import { AppButton } from "@/components/ui/AppButton";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { ProgressHeader } from "@/components/ui/ProgressHeader";
+import { EntryAnimations } from "@/constants/Animations";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateUser } from "@/store/slices/authSlice";
 import { apiClient } from "@/utils/api";
@@ -21,6 +23,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ResponseScreen() {
@@ -28,6 +31,7 @@ export default function ResponseScreen() {
   const dispatch = useAppDispatch();
   const { experience_id, from } = useLocalSearchParams<{ experience_id: string; from: string }>();
   const user = useAppSelector((state) => state.auth.user);
+  const { animatedStyle, navigateWithFade, goBackWithFade } = useFadeTransition(200);
 
   const [selectedTone, setSelectedTone] = useState<{ id: number; name: string } | null>(() => {
     if (
@@ -71,7 +75,7 @@ export default function ResponseScreen() {
         if (result.success && result.data) {
           dispatch(updateUser(result.data));
           toast.success("Success", "Therapy style updated successfully!");
-          router.back();
+          goBackWithFade();
         } else {
           toast.error("Update Failed", result.message || "Failed to update response style");
         }
@@ -82,7 +86,7 @@ export default function ResponseScreen() {
         setIsLoading(false);
       }
     } else {
-      router.push({
+      navigateWithFade({
         pathname: "/support",
         params: { experience_id, tone_id: selectedTone.id },
       } as any);
@@ -97,63 +101,75 @@ export default function ResponseScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          {from === "profile" ? (
-            <AppHeader
-              leftIcon="arrow-left"
-              // showAvatar={false}
-              title="Therapy Style"
-              onLeftPress={() => router.back()}
-            />
-          ) : (
-            <ProgressHeader progress="78%" onBack={() => router.back()} />
-          )}
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            {from === "profile" ? (
+              <AppHeader
+                leftIcon="arrow-left"
+                // showAvatar={false}
+                title="Therapy Style"
+                onLeftPress={() => router.back()}
+              />
+            ) : (
+              <ProgressHeader progress="78%" onBack={() => router.back()} />
+            )}
 
-          <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-            {/* Header */}
-            <View style={styles.header}>
-              <Text style={styles.titleText}>How should I respond{"\n"}to you?</Text>
-              <Text style={styles.subtitleText}>Choose your preferred tone</Text>
-            </View>
+            <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+              {/* Header */}
+              <Animated.View entering={EntryAnimations.header} style={styles.header}>
+                <Text style={styles.titleText}>How should I respond{"\n"}to you?</Text>
+                <Text style={styles.subtitleText}>Choose your preferred tone</Text>
+              </Animated.View>
 
-            {/* Tone Options */}
-            <View style={styles.optionsContainer}>
-              {toneOptions.map((tone) => {
-                const isSelected = selectedTone?.id === tone.id;
-                return (
-                  <TouchableOpacity
-                    key={tone.id}
-                    activeOpacity={0.7}
-                    onPress={() => setSelectedTone(tone)}
-                    style={[styles.languageOption, isSelected && styles.languageOptionSelected]}
-                  >
-                    <Text
-                      style={[
-                        styles.languageText,
-                        isSelected ? { color: "#8A8A8E" } : { color: "#8A8A8E" },
-                      ]}
-                    >
-                      {tone.name}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+              {/* Tone Options & Button */}
+              {toneOptions.length > 0 ? (
+                <Animated.View entering={EntryAnimations.formContainer} style={{ width: "100%" }}>
+                  <View style={styles.optionsContainer}>
+                    {toneOptions.map((tone) => {
+                      const isSelected =
+                        selectedTone && String(selectedTone.id) === String(tone.id);
+                      return (
+                        <TouchableOpacity
+                          key={tone.id}
+                          activeOpacity={0.7}
+                          onPress={() => setSelectedTone(tone)}
+                          style={[
+                            styles.languageOption,
+                            isSelected && styles.languageOptionSelected,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.languageText,
+                              isSelected ? { color: "#8A8A8E" } : { color: "#8A8A8E" },
+                            ]}
+                          >
+                            {tone.name}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
 
-            <AppButton
-              title={isLoading ? "" : from === "profile" ? "Save" : "Next"}
-              style={styles.nextButton}
-              onPress={handleNext}
-              disabled={isLoading}
-              icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
-            />
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+                  <AppButton
+                    title={isLoading ? "" : from === "profile" ? "Save" : "Next"}
+                    style={styles.nextButton}
+                    onPress={handleNext}
+                    disabled={isLoading}
+                    icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
+                  />
+                </Animated.View>
+              ) : (
+                <ActivityIndicator size="large" color="#3C61DD" style={{ marginTop: hp(10) }} />
+              )}
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }

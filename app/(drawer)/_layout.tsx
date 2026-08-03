@@ -106,14 +106,11 @@ export default function DrawerLayout() {
       <Drawer.Screen name="conversations" options={{ title: "Conversations" }} />
       <Drawer.Screen name="chat" options={{ title: "Chat" }} />
       <Drawer.Screen name="faq" options={{ title: "FAQ" }} />
-      <Drawer.Screen name="coming-soon" options={{ title: "Coming Soon" }} />
       <Drawer.Screen name="group-chat" options={{ title: "Group Chat" }} />
       <Drawer.Screen name="sos" options={{ title: "SOS" }} />
       <Drawer.Screen name="human-therapists" options={{ title: "Human Therapists" }} />
       <Drawer.Screen name="breathing" options={{ title: "Breathing Exercise" }} />
-      {/* <Drawer.Screen name="demo" options={{ title: "Interactive Demo" }} /> */}
       <Drawer.Screen name="sound-healing-flow" options={{ title: "Sound Healing" }} />
-      {/* <Drawer.Screen name="downloads" options={{ title: "Downloads" }} /> */}
     </Drawer>
   );
 }

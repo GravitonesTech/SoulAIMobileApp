@@ -21,6 +21,9 @@ import {
   View,
 } from "react-native";
 import { ScrollView as GestureScrollView } from "react-native-gesture-handler";
+import { EntryAnimations } from "@/constants/Animations";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function GenderScreen() {
@@ -36,6 +39,8 @@ export default function GenderScreen() {
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [countriesList, setCountriesList] = useState<{ id: number; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { animatedStyle, navigateWithFade } = useFadeTransition(200);
 
   useEffect(() => {
     const fetchMetadata = async () => {
@@ -219,11 +224,11 @@ export default function GenderScreen() {
     });
 
     if (result.success) {
-      router.replace("/onboarding_two");
+      navigateWithFade("/onboarding_two", { replace: true });
     } else {
       if (result.status === 401) {
         toast.error("Session Expired", "Please login again.");
-        router.replace("/");
+        navigateWithFade("/", { replace: true });
       } else {
         toast.error("Update Failed", result.message);
       }
@@ -301,133 +306,135 @@ export default function GenderScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 40}
-        >
-          <ProgressHeader progress="45%" onBack={() => router.back()} />
-
-          <GestureScrollView
-            ref={scrollRef}
-            contentContainerStyle={styles.scrollContainer}
-            bounces={false}
-            keyboardShouldPersistTaps="handled"
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 40}
           >
-            {/* Header */}
-            <View style={styles.header}>
-              <Text style={styles.titleText}>What’s your name?</Text>
-              <Text style={styles.subtitleText}>Let us know more about you</Text>
-            </View>
+            <ProgressHeader progress="45%" onBack={() => router.back()} />
 
-            {/* Input Field Form */}
-            <View style={styles.formContainer}>
-              <View style={styles.inputWrapper}>
-                <AppInput
-                  placeholder="Full Name"
-                  value={name}
-                  onChangeText={handleNameChange}
-                  style={styles.inputStyle}
-                />
-              </View>
+            <GestureScrollView
+              ref={scrollRef}
+              contentContainerStyle={styles.scrollContainer}
+              bounces={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Header */}
+              <Animated.View entering={EntryAnimations.header} style={styles.header}>
+                <Text style={styles.titleText}>What’s your name?</Text>
+                <Text style={styles.subtitleText}>Let us know more about you</Text>
+              </Animated.View>
 
-              <View style={[styles.inputWrapper, { zIndex: 10 }]}>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  style={styles.fullWidth}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setShowGenderDropdown(!showGenderDropdown);
-                    setShowCountryDropdown(false);
-                  }}
-                >
+              {/* Input Field Form */}
+              <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
+                <View style={styles.inputWrapper}>
                   <AppInput
-                    placeholder="Gender"
-                    value={selectedGender}
+                    placeholder="Full Name"
+                    value={name}
+                    onChangeText={handleNameChange}
                     style={styles.inputStyle}
-                    editable={false}
-                    pointerEvents="none"
+                  />
+                </View>
+
+                <View style={[styles.inputWrapper, { zIndex: 10 }]}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.fullWidth}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setShowGenderDropdown(!showGenderDropdown);
+                      setShowCountryDropdown(false);
+                    }}
+                  >
+                    <AppInput
+                      placeholder="Gender"
+                      value={selectedGender}
+                      style={styles.inputStyle}
+                      editable={false}
+                      pointerEvents="none"
+                      rightIcon={
+                        <Feather
+                          name={showGenderDropdown ? "chevron-up" : "chevron-down"}
+                          size={normalize(20)}
+                          color="#8A8A8E"
+                        />
+                      }
+                    />
+                  </TouchableOpacity>
+                  {renderDropdown(GENDERS, setSelectedGender, showGenderDropdown, () =>
+                    setShowGenderDropdown(false),
+                  )}
+                </View>
+
+                <View style={styles.inputWrapper}>
+                  <AppInput
+                    placeholder="Date of Birth (DD/MM/YYYY)"
+                    value={dob}
+                    onChangeText={handleDobChange}
+                    keyboardType="numeric"
+                    style={styles.inputStyle}
+                    maxLength={10}
+                    // rightIcon={<Feather name="calendar" size={normalize(20)} color="#8A8A8E" />}
+                  />
+                  {dob.length === 10 && !is18Plus(dob) && (
+                    <Text style={styles.warningText}>You must be 18 years or older.</Text>
+                  )}
+                </View>
+
+                <View style={[styles.inputWrapper, { zIndex: 5 }]}>
+                  <AppInput
+                    placeholder="Country"
+                    value={countrySearch}
+                    onChangeText={handleCountryTextChange}
+                    onFocus={() => {
+                      setShowCountryDropdown(true);
+                      setTimeout(() => {
+                        scrollRef.current?.scrollToEnd({ animated: true });
+                      }, 100);
+                    }}
+                    style={styles.inputStyle}
                     rightIcon={
-                      <Feather
-                        name={showGenderDropdown ? "chevron-up" : "chevron-down"}
-                        size={normalize(20)}
-                        color="#8A8A8E"
-                      />
+                      <TouchableOpacity
+                        onPress={() => {
+                          const nextVisible = !showCountryDropdown;
+                          setShowCountryDropdown(nextVisible);
+                          if (nextVisible) {
+                            setTimeout(() => {
+                              scrollRef.current?.scrollToEnd({ animated: true });
+                            }, 100);
+                          }
+                        }}
+                      >
+                        <Feather
+                          name={showCountryDropdown ? "chevron-up" : "chevron-down"}
+                          size={normalize(20)}
+                          color="#8A8A8E"
+                        />
+                      </TouchableOpacity>
                     }
                   />
-                </TouchableOpacity>
-                {renderDropdown(GENDERS, setSelectedGender, showGenderDropdown, () =>
-                  setShowGenderDropdown(false),
-                )}
-              </View>
+                  {renderCountryDropdown(
+                    filteredCountries,
+                    handleCountrySelect,
+                    showCountryDropdown,
+                    () => setShowCountryDropdown(false),
+                  )}
+                </View>
 
-              <View style={styles.inputWrapper}>
-                <AppInput
-                  placeholder="Date of Birth (DD/MM/YYYY)"
-                  value={dob}
-                  onChangeText={handleDobChange}
-                  keyboardType="numeric"
-                  style={styles.inputStyle}
-                  maxLength={10}
-                  // rightIcon={<Feather name="calendar" size={normalize(20)} color="#8A8A8E" />}
+                <AppButton
+                  title="Next"
+                  isLoading={isLoading}
+                  onPress={handleNext}
+                  style={{ marginTop: hp(3) }}
                 />
-                {dob.length === 10 && !is18Plus(dob) && (
-                  <Text style={styles.warningText}>You must be 18 years or older.</Text>
-                )}
-              </View>
-
-              <View style={[styles.inputWrapper, { zIndex: 5 }]}>
-                <AppInput
-                  placeholder="Country"
-                  value={countrySearch}
-                  onChangeText={handleCountryTextChange}
-                  onFocus={() => {
-                    setShowCountryDropdown(true);
-                    setTimeout(() => {
-                      scrollRef.current?.scrollToEnd({ animated: true });
-                    }, 100);
-                  }}
-                  style={styles.inputStyle}
-                  rightIcon={
-                    <TouchableOpacity
-                      onPress={() => {
-                        const nextVisible = !showCountryDropdown;
-                        setShowCountryDropdown(nextVisible);
-                        if (nextVisible) {
-                          setTimeout(() => {
-                            scrollRef.current?.scrollToEnd({ animated: true });
-                          }, 100);
-                        }
-                      }}
-                    >
-                      <Feather
-                        name={showCountryDropdown ? "chevron-up" : "chevron-down"}
-                        size={normalize(20)}
-                        color="#8A8A8E"
-                      />
-                    </TouchableOpacity>
-                  }
-                />
-                {renderCountryDropdown(
-                  filteredCountries,
-                  handleCountrySelect,
-                  showCountryDropdown,
-                  () => setShowCountryDropdown(false),
-                )}
-              </View>
-
-              <AppButton
-                title="Next"
-                isLoading={isLoading}
-                onPress={handleNext}
-                style={{ marginTop: hp(3) }}
-              />
-              {showCountryDropdown && <View style={{ height: moderateScale(10) }} />}
-            </View>
-          </GestureScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+                {showCountryDropdown && <View style={{ height: moderateScale(10) }} />}
+              </Animated.View>
+            </GestureScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }
