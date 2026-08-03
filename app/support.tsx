@@ -1,8 +1,10 @@
 import { AppButton } from "@/components/ui/AppButton";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { ProgressHeader } from "@/components/ui/ProgressHeader";
+import { EntryAnimations } from "@/constants/Animations";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateUser } from "@/store/slices/authSlice";
 import { apiClient } from "@/utils/api";
@@ -21,6 +23,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SupportScreen() {
@@ -32,6 +35,7 @@ export default function SupportScreen() {
     from: string;
   }>();
   const user = useAppSelector((state) => state.auth.user);
+  const { animatedStyle, navigateWithFade, goBackWithFade } = useFadeTransition(200);
 
   const userSupportTypeIds =
     Array.isArray(user?.support_types) && user.support_types.length > 0
@@ -62,10 +66,11 @@ export default function SupportScreen() {
   }, []);
 
   const toggleSupport = (id: number) => {
-    if (selectedSupportIds.includes(id)) {
-      setSelectedSupportIds(selectedSupportIds.filter((s) => s !== id));
+    const numId = Number(id);
+    if (selectedSupportIds.includes(numId)) {
+      setSelectedSupportIds(selectedSupportIds.filter((s) => s !== numId));
     } else {
-      setSelectedSupportIds([...selectedSupportIds, id]);
+      setSelectedSupportIds([...selectedSupportIds, numId]);
     }
   };
 
@@ -85,7 +90,7 @@ export default function SupportScreen() {
         if (result.success && result.data) {
           dispatch(updateUser(result.data));
           toast.success("Success", "Support areas updated successfully!");
-          router.back();
+          goBackWithFade();
         } else {
           toast.error("Update Failed", result.message || "Failed to update support areas");
         }
@@ -106,11 +111,11 @@ export default function SupportScreen() {
     });
 
     if (result.success) {
-      router.replace("/onboarding_three");
+      navigateWithFade("/onboarding_three", { replace: true });
     } else {
       if (result.status === 401) {
         toast.error("Session Expired", "Please login again.");
-        router.replace("/");
+        navigateWithFade("/", { replace: true });
       } else {
         toast.error("Update Failed", result.message);
       }
@@ -126,56 +131,66 @@ export default function SupportScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          {from === "profile" ? (
-            <AppHeader
-              leftIcon="arrow-left"
-              // showAvatar={false}
-              title="Support Needed"
-              onLeftPress={() => router.back()}
-            />
-          ) : (
-            <ProgressHeader progress="91%" onBack={() => router.back()} />
-          )}
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            {from === "profile" ? (
+              <AppHeader
+                leftIcon="arrow-left"
+                // showAvatar={false}
+                title="Support Needed"
+                onLeftPress={() => router.back()}
+              />
+            ) : (
+              <ProgressHeader progress="91%" onBack={() => router.back()} />
+            )}
 
-          <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-            {/* Header */}
-            <View style={styles.header}>
-              <Text style={styles.titleText}>Where do you need {"\n"}support?</Text>
-              <Text style={styles.subtitleText}>Same challenges you’re facing now</Text>
-            </View>
+            <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+              {/* Header */}
+              <Animated.View entering={EntryAnimations.header} style={styles.header}>
+                <Text style={styles.titleText}>Where do you need {"\n"}support?</Text>
+                <Text style={styles.subtitleText}>Same challenges you’re facing now</Text>
+              </Animated.View>
 
-            {/* Support Options */}
-            <View style={styles.optionsContainer}>
-              {supportOptions.map((option) => {
-                const isSelected = selectedSupportIds.includes(option.id);
-                return (
-                  <TouchableOpacity
-                    key={option.id}
-                    activeOpacity={0.7}
-                    onPress={() => toggleSupport(option.id)}
-                    style={[styles.supportOption, isSelected && styles.supportOptionSelected]}
-                  >
-                    <Text style={[styles.supportText, { color: "#8A8A8E" }]}>{option.name}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+              {/* Support Options & Next Button */}
+              {supportOptions.length > 0 ? (
+                <Animated.View entering={EntryAnimations.formContainer} style={{ width: "100%" }}>
+                  <View style={styles.optionsContainer}>
+                    {supportOptions.map((option) => {
+                      const isSelected = selectedSupportIds.includes(Number(option.id));
+                      return (
+                        <TouchableOpacity
+                          key={option.id}
+                          activeOpacity={0.7}
+                          onPress={() => toggleSupport(option.id)}
+                          style={[styles.supportOption, isSelected && styles.supportOptionSelected]}
+                        >
+                          <Text style={[styles.supportText, { color: "#8A8A8E" }]}>
+                            {option.name}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
 
-            <AppButton
-              title={isLoading ? "" : from === "profile" ? "Save" : "Next"}
-              style={styles.nextButton}
-              onPress={handleNext}
-              disabled={isLoading}
-              icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
-            />
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+                  <AppButton
+                    title={isLoading ? "" : from === "profile" ? "Save" : "Next"}
+                    style={styles.nextButton}
+                    onPress={handleNext}
+                    disabled={isLoading}
+                    icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
+                  />
+                </Animated.View>
+              ) : (
+                <ActivityIndicator size="large" color="#3C61DD" style={{ marginTop: hp(10) }} />
+              )}
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }

@@ -16,10 +16,14 @@ export function useFadeTransition(duration = 200) {
     opacity: screenOpacity.value,
   }));
 
-  const navigateWithFade = (path: string) => {
+  const navigateWithFade = (path: string, options?: { replace?: boolean }) => {
     screenOpacity.value = withTiming(0, { duration }, (finished) => {
       if (finished) {
-        runOnJS(router.push)(path as any);
+        if (options?.replace) {
+          runOnJS(router.replace)(path as any);
+        } else {
+          runOnJS(router.push)(path as any);
+        }
       }
     });
   };

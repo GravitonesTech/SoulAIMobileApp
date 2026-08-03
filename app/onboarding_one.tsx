@@ -1,14 +1,18 @@
 import { AppButton } from "@/components/ui/AppButton";
+import { EntryAnimations } from "@/constants/Animations";
 import { Typography } from "@/constants/Typography";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { BackHandler, StyleSheet, Text, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function OnboardingOneScreen() {
   const router = useRouter();
+  const { animatedStyle, navigateWithFade } = useFadeTransition(200);
 
   useEffect(() => {
     const backAction = () => {
@@ -28,37 +32,39 @@ export default function OnboardingOneScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
-          {/* Header Section */}
-          <View style={styles.headerContainer}>
-            <Text style={styles.title}>Hey, I&apos;m Soul AI</Text>
-            <Text style={styles.subtitle}>A personalized therapy{"\n"}AI Companion</Text>
-          </View>
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.content}>
+            {/* Header Section */}
+            <Animated.View entering={EntryAnimations.header} style={styles.headerContainer}>
+              <Text style={styles.title}>Hey, I&apos;m Soul AI</Text>
+              <Text style={styles.subtitle}>A personalized therapy{"\n"}AI Companion</Text>
+            </Animated.View>
 
-          {/* Bottom Section */}
-          <View style={styles.bottomContainer}>
-            <AppButton
-              title="Continue"
-              onPress={() => router.push("/language")}
-              style={styles.button}
-              textStyle={styles.buttonText}
-            />
+            {/* Bottom Section */}
+            <Animated.View entering={EntryAnimations.formContainer} style={styles.bottomContainer}>
+              <AppButton
+                title="Continue"
+                onPress={() => navigateWithFade("/language")}
+                style={styles.button}
+                textStyle={styles.buttonText}
+              />
 
-            <Text style={styles.termsText}>
-              By tapping Continue or logging into an existing Soul account, you agree to our{" "}
-              <Text style={styles.linkText} onPress={() => router.push("/terms" as any)}>
-                Terms
-              </Text>{" "}
-              and acknowledge that you have read our{" "}
-              <Text style={styles.linkText} onPress={() => router.push("/privacy-policy")}>
-                Privacy Policy
+              <Text style={styles.termsText}>
+                By tapping Continue or logging into an existing Soul account, you agree to our{" "}
+                <Text style={styles.linkText} onPress={() => navigateWithFade("/terms")}>
+                  Terms
+                </Text>{" "}
+                and acknowledge that you have read our{" "}
+                <Text style={styles.linkText} onPress={() => navigateWithFade("/privacy-policy")}>
+                  Privacy Policy
+                </Text>
+                , which explains how to opt out of offers and promos.
               </Text>
-              , which explains how to opt out of offers and promos.
-            </Text>
+            </Animated.View>
           </View>
-        </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }

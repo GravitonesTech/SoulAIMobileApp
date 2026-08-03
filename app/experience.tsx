@@ -9,6 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,6 +18,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { EntryAnimations } from "@/constants/Animations";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ExperienceScreen() {
@@ -25,6 +29,7 @@ export default function ExperienceScreen() {
     null,
   );
   const [experienceLevels, setExperienceLevels] = useState<{ id: number; name: string }[]>([]);
+  const { animatedStyle, navigateWithFade } = useFadeTransition(200);
 
   useEffect(() => {
     const fetchMetadata = async () => {
@@ -47,54 +52,63 @@ export default function ExperienceScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <ProgressHeader progress="65%" onBack={() => router.back()} />
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <ProgressHeader progress="65%" onBack={() => router.back()} />
 
-          <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-            {/* Header */}
-            <View style={styles.header}>
-              <Text style={styles.titleText}>Your Experience with {"\n"}Therapy?</Text>
-              <Text style={styles.subtitleText}>Let us know more about you</Text>
-            </View>
+            <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+              {/* Header */}
+              <Animated.View entering={EntryAnimations.header} style={styles.header}>
+                <Text style={styles.titleText}>Your Experience with {"\n"}Therapy?</Text>
+                <Text style={styles.subtitleText}>Let us know more about you</Text>
+              </Animated.View>
 
-            {/* Experience Options */}
-            <View style={styles.optionsContainer}>
-              {experienceLevels.map((level) => {
-                const isSelected = selectedExperience?.id === level.id;
-                return (
-                  <TouchableOpacity
-                    key={level.id}
-                    activeOpacity={0.7}
-                    onPress={() => setSelectedExperience(level)}
-                    style={[styles.languageOption, isSelected && styles.languageOptionSelected]}
-                  >
-                    <Text style={[styles.languageText, { color: "#8A8A8E" }]}>{level.name}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+              {/* Experience Options & Next Button */}
+              {experienceLevels.length > 0 ? (
+                <Animated.View entering={EntryAnimations.formContainer} style={{ width: "100%" }}>
+                  <View style={styles.optionsContainer}>
+                    {experienceLevels.map((level) => {
+                      const isSelected =
+                        selectedExperience && String(selectedExperience.id) === String(level.id);
+                      return (
+                        <TouchableOpacity
+                          key={level.id}
+                          activeOpacity={0.7}
+                          onPress={() => setSelectedExperience(level)}
+                          style={[styles.languageOption, isSelected && styles.languageOptionSelected]}
+                        >
+                          <Text style={[styles.languageText, { color: "#8A8A8E" }]}>{level.name}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
 
-            <AppButton
-              title="Next"
-              style={styles.nextButton}
-              onPress={() => {
-                if (!selectedExperience) {
-                  toast.error("Error", "Please select your experience level");
-                  return;
-                }
-                router.push({
-                  pathname: "/response",
-                  params: { experience_id: selectedExperience.id },
-                } as any);
-              }}
-            />
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+                  <AppButton
+                    title="Next"
+                    style={styles.nextButton}
+                    onPress={() => {
+                      if (!selectedExperience) {
+                        toast.error("Error", "Please select your experience level");
+                        return;
+                      }
+                      navigateWithFade({
+                        pathname: "/response",
+                        params: { experience_id: selectedExperience.id },
+                      } as any);
+                    }}
+                  />
+                </Animated.View>
+              ) : (
+                <ActivityIndicator size="large" color="#3C61DD" style={{ marginTop: hp(10) }} />
+              )}
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }

@@ -4,9 +4,11 @@ import { AssessmentLoading } from "@/components/personality-test/AssessmentLoadi
 import { OptionCard } from "@/components/personality-test/OptionCard";
 import { AppButton } from "@/components/ui/AppButton";
 import { ProgressHeader } from "@/components/ui/ProgressHeader";
+import { EntryAnimations } from "@/constants/Animations";
 import { Typography } from "@/constants/Typography";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { useAppConfirmation } from "@/hooks/useAppConfirmation";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { Question } from "@/types/assessment";
 import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
@@ -15,6 +17,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { BackHandler, ScrollView, StyleSheet, Text, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function PersonalityTestScreen() {
@@ -23,6 +26,7 @@ export default function PersonalityTestScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [questions, setQuestions] = useState<Question[]>([]);
+  const { animatedStyle, navigateWithFade, goBackWithFade } = useFadeTransition(200);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,17 +38,17 @@ export default function PersonalityTestScreen() {
     showConfirmation(
       "Discard Progress?",
       "Your assessment answers are not saved. Are you sure you want to quit?",
-      () => router.back(),
+      () => goBackWithFade(),
       {
         cancelLabel: "Cancel",
         confirmLabel: "Quit",
       },
     );
-  }, [router, showConfirmation]);
+  }, [goBackWithFade, showConfirmation]);
   useEffect(() => {
     const backAction = () => {
       if (isLoading || questions.length === 0) {
-        router.back();
+        goBackWithFade();
         return true;
       }
       showExitAlert();
@@ -54,7 +58,7 @@ export default function PersonalityTestScreen() {
     const backHandler = BackHandler.addEventListener("hardwareBackPress", backAction);
 
     return () => backHandler.remove();
-  }, [isLoading, questions.length, router, showExitAlert]);
+  }, [isLoading, questions.length, goBackWithFade, showExitAlert]);
 
   const fetchQuestions = async () => {
     try {
@@ -123,7 +127,7 @@ export default function PersonalityTestScreen() {
 
       if (response.success) {
         toast.success("Success", "Assessments submitted successfully");
-        router.replace("/chatstarter");
+        navigateWithFade("/chatstarter", { replace: true });
       } else {
         toast.error("Submission Failed", response.message || "Failed to submit assessments");
       }
@@ -186,47 +190,50 @@ export default function PersonalityTestScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safeArea}>
-        <ProgressHeader progress={progress} onBack={handleBack} />
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
+          <ProgressHeader progress={progress} onBack={handleBack} />
 
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Section Indicator */}
-          <View style={styles.sectionBadge}>
-            <Text style={styles.sectionBadgeText}>{currentQuestion?.section}</Text>
-          </View>
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Header & Section Indicator */}
+            <Animated.View entering={EntryAnimations.header} style={{ alignItems: "center" }}>
+              <View style={styles.sectionBadge}>
+                <Text style={styles.sectionBadgeText}>{currentQuestion?.section}</Text>
+              </View>
 
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.titleText}>{currentQuestion?.question_text}</Text>
-            <Text style={styles.subtitleText}>{currentQuestion?.subtitle}</Text>
-          </View>
+              <View style={styles.header}>
+                <Text style={styles.titleText}>{currentQuestion?.question_text}</Text>
+                <Text style={styles.subtitleText}>{currentQuestion?.subtitle}</Text>
+              </View>
+            </Animated.View>
 
-          {/* Options */}
-          <View style={styles.optionsContainer}>
-            {options.map((option) => (
-              <OptionCard
-                key={option.id}
-                option={option}
-                isSelected={answers[currentQuestion.id] === option.id}
-                onSelect={handleSelect}
-              />
-            ))}
-          </View>
+            {/* Options */}
+            <Animated.View entering={EntryAnimations.formContainer} style={styles.optionsContainer}>
+              {options.map((option) => (
+                <OptionCard
+                  key={option.id}
+                  option={option}
+                  isSelected={answers[currentQuestion.id] === option.id}
+                  onSelect={handleSelect}
+                />
+              ))}
+            </Animated.View>
 
-          <AssessmentFooter />
-        </ScrollView>
+            <AssessmentFooter />
+          </ScrollView>
 
-        <View style={styles.bottomContainer}>
-          <AppButton
-            title={currentIndex === questions.length - 1 ? "Finish" : "Next"}
-            onPress={handleNext}
-          />
-        </View>
-      </SafeAreaView>
+          <Animated.View entering={EntryAnimations.formContainer} style={styles.bottomContainer}>
+            <AppButton
+              title={currentIndex === questions.length - 1 ? "Finish" : "Next"}
+              onPress={handleNext}
+            />
+          </Animated.View>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }

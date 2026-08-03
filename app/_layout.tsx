@@ -74,16 +74,28 @@ export default function RootLayout() {
             {/* email verification screen full screen without the default header */}
             <Stack.Screen name="emailverify" options={{ headerShown: false, animation: "none" }} />
             {/* language screen full screen without the default header */}
-            <Stack.Screen name="language" options={{ headerShown: false }} />
+            <Stack.Screen name="language" options={{ headerShown: false, animation: "none" }} />
             {/* detailinput screen full screen without the default header */}
-            <Stack.Screen name="userdetailinput" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="userdetailinput"
+              options={{ headerShown: false, animation: "none" }}
+            />
             {/* experience screen full screen without the default header */}
-            <Stack.Screen name="experience" options={{ headerShown: false }} />
-            <Stack.Screen name="response" options={{ headerShown: false }} />
-            <Stack.Screen name="support" options={{ headerShown: false }} />
-            <Stack.Screen name="onboarding_one" options={{ headerShown: false }} />
-            <Stack.Screen name="onboarding_two" options={{ headerShown: false }} />
-            <Stack.Screen name="onboarding_three" options={{ headerShown: false }} />
+            <Stack.Screen name="experience" options={{ headerShown: false, animation: "none" }} />
+            <Stack.Screen name="response" options={{ headerShown: false, animation: "none" }} />
+            <Stack.Screen name="support" options={{ headerShown: false, animation: "none" }} />
+            <Stack.Screen
+              name="onboarding_one"
+              options={{ headerShown: false, animation: "none" }}
+            />
+            <Stack.Screen
+              name="onboarding_two"
+              options={{ headerShown: false, animation: "none" }}
+            />
+            <Stack.Screen
+              name="onboarding_three"
+              options={{ headerShown: false, animation: "none" }}
+            />
             <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
             <Stack.Screen name="profile" options={{ headerShown: false }} />
             <Stack.Screen
