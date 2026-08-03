@@ -134,65 +134,37 @@ export default function LoginScreen() {
                     <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                   </TouchableOpacity>
                 </View>
+              </Animated.View>
 
-                {/* Social Divider */}
-                {/* <View style={styles.dividerContainer}>
-              <Text style={styles.dividerText}>Or sign in with</Text>
-            </View> */}
+              {/* Social Divider */}
+              <Animated.View
+                entering={EntryAnimations.formContainer}
+                style={styles.dividerContainer}
+              >
+                <Text style={styles.dividerText}>Or sign in with</Text>
+              </Animated.View>
 
-                {/* Social Buttons */}
-                {/* <SocialButtons style={styles.socialContainer} /> */}
-                {/* Bottom Link */}
-                <View style={styles.bottomLinkContainer}>
-                  <TouchableOpacity activeOpacity={0.7} onPress={() => navigateWithFade("/signup")}>
-                    <Text style={styles.bottomLinkText}>
-                      Don&apos;t have an account? Create one
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+              {/* Social Buttons */}
+              <Animated.View
+                entering={EntryAnimations.formContainer}
+                style={styles.socialContainer}
+              >
+                <SocialButtons style={{ width: "100%" }} />
+              </Animated.View>
+
+              {/* Bottom Link */}
+              <Animated.View
+                entering={EntryAnimations.formContainer}
+                style={styles.bottomLinkContainer}
+              >
+                <TouchableOpacity activeOpacity={0.7} onPress={() => navigateWithFade("/signup")}>
+                  <Text style={styles.bottomLinkText}>Don&apos;t have an account? Create one</Text>
+                </TouchableOpacity>
               </Animated.View>
             </ScrollView>
           </KeyboardAvoidingView>
         </SafeAreaView>
       </Animated.View>
-                }
-              />
-
-              <AppButton
-                title={isLoading ? "" : "Sign In"}
-                style={styles.signInBtnMargin}
-                onPress={handleLogin}
-                disabled={isLoading}
-                icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
-              />
-
-              <View style={styles.forgotPasswordContainer}>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => router.push("/forgot-password")}
-                >
-                  <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Social Divider */}
-              <View style={styles.dividerContainer}>
-                <Text style={styles.dividerText}>Or sign in with</Text>
-              </View>
-
-              {/* Social Buttons */}
-              <SocialButtons style={styles.socialContainer} />
-            </View>
-
-            {/* Bottom Link */}
-            <View style={styles.bottomLinkContainer}>
-              <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/signup")}>
-                <Text style={styles.bottomLinkText}>Don&apos;t have an account? Create one</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
     </LinearGradient>
   );
 }
