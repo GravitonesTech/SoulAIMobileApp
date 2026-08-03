@@ -1,9 +1,9 @@
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
-import { hp, normalize } from "@/utils/responsive";
+import { normalize } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef } from "react";
-import { Animated, Easing, Image, StyleSheet, View } from "react-native";
+import { Animated, Easing, Image, StyleSheet, Text, View } from "react-native";
 
 interface SplashOverlayProps {
   /** Triggered when auth checks / minimum display timer complete */
@@ -14,67 +14,67 @@ interface SplashOverlayProps {
 
 export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish }) => {
   // Animation Values
-  const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoTranslateY = useRef(new Animated.Value(0)).current;
-
-  // Two-Stage Tagline Animations
-  const part1Opacity = useRef(new Animated.Value(0)).current;
-  const part1TranslateX = useRef(new Animated.Value(-35)).current;
-
-  const part2Opacity = useRef(new Animated.Value(0)).current;
-  const part2TranslateX = useRef(new Animated.Value(35)).current;
+  const ringsOpacity = useRef(new Animated.Value(0)).current;
+  const iconOpacity = useRef(new Animated.Value(0)).current;
+  const breathScale = useRef(new Animated.Value(0)).current;
 
   const exitOpacity = useRef(new Animated.Value(1)).current;
   const exitScale = useRef(new Animated.Value(1)).current;
 
+  // Scale interpolations copied exactly from app/(drawer)/breathing.tsx
+  const scale = breathScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 2.8],
+  });
+
+  const outerScale1 = breathScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1.1, 3.6],
+  });
+
+  const outerScale2 = breathScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1.2, 4.8],
+  });
+
+  const outerScale3 = breathScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1.3, 6.0],
+  });
+
   useEffect(() => {
-    // Step 1: Smooth fade-in of logo in exact center (550ms)
-    Animated.timing(logoOpacity, {
+    // 1. Fade in rings/text quickly (750ms)
+    Animated.timing(ringsOpacity, {
       toValue: 1,
-      duration: 550,
+      duration: 750,
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
-    }).start(() => {
-      // Step 2: Hold logo in center (750ms), then lift logo & reveal Part 1 ("A Calm Mind.") sliding from left
-      Animated.sequence([
-        Animated.delay(750),
+    }).start();
+
+    // 2. Start the 3-second rings expansion animation
+    Animated.timing(breathScale, {
+      toValue: 1,
+      duration: 3000,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) {
+        // 3. After rings animation, fade out rings and fade in the center icon
         Animated.parallel([
-          Animated.timing(logoTranslateY, {
-            toValue: -hp(5.5),
-            duration: 850,
-            easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
-          }),
-          Animated.timing(part1Opacity, {
-            toValue: 1,
-            duration: 850,
-            easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
-          }),
-          Animated.timing(part1TranslateX, {
+          Animated.timing(ringsOpacity, {
             toValue: 0,
-            duration: 850,
-            easing: Easing.out(Easing.cubic),
+            duration: 600,
+            easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
-        ]),
-        // Step 3: Brief delay (250ms), then reveal Part 2 ("A Stronger Soul.") sliding from right
-        Animated.delay(250),
-        Animated.parallel([
-          Animated.timing(part2Opacity, {
+          Animated.timing(iconOpacity, {
             toValue: 1,
-            duration: 700,
-            easing: Easing.out(Easing.cubic),
+            duration: 600,
+            easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
-          Animated.timing(part2TranslateX, {
-            toValue: 0,
-            duration: 700,
-            easing: Easing.out(Easing.cubic),
-            useNativeDriver: true,
-          }),
-        ]),
-      ]).start();
+        ]).start();
+      }
     });
   }, []);
 
@@ -118,50 +118,97 @@ export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish 
         style={styles.container}
       >
         <View style={styles.contentContainer}>
-          {/* Centered Logo Image with Lift-Up Animation */}
+          {/* Fading container wrapping all scaling rings */}
+          <Animated.View style={[styles.ringsWrapper, { opacity: ringsOpacity }]}>
+            {/* Concentric rings scaling up */}
+            <Animated.View
+              style={[
+                styles.ring,
+                styles.outerRing3,
+                {
+                  transform: [{ scale: outerScale3 }],
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={["#3C61DD", "#3BC0EB"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientFill}
+              />
+            </Animated.View>
+
+            <Animated.View
+              style={[
+                styles.ring,
+                styles.outerRing2,
+                {
+                  transform: [{ scale: outerScale2 }],
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={["#3C61DD", "#3BC0EB"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientFill}
+              />
+            </Animated.View>
+
+            <Animated.View
+              style={[
+                styles.ring,
+                styles.outerRing1,
+                {
+                  transform: [{ scale: outerScale1 }],
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={["#3C61DD", "#3BC0EB"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientFill}
+              />
+            </Animated.View>
+
+            {/* Center circle */}
+            <Animated.View
+              style={[
+                styles.centerCircle,
+                {
+                  transform: [{ scale: scale }],
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={["#3C61DD", "#3BC0EB"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientFill}
+              />
+            </Animated.View>
+          </Animated.View>
+
+          {/* Centered text overlay, not scaled */}
           <Animated.View
-            style={[
-              styles.logoWrapper,
-              {
-                opacity: logoOpacity,
-                transform: [{ translateY: logoTranslateY }],
-              },
-            ]}
+            style={[styles.textOverlay, { opacity: ringsOpacity }]}
+            pointerEvents="none"
+          >
+            <Text style={styles.centerText}>Take a deep breath</Text>
+          </Animated.View>
+
+          {/* Centered Logo Icon fading in after the ring animation */}
+          <Animated.View
+            style={[styles.iconWrapper, { opacity: iconOpacity }]}
+            pointerEvents="none"
           >
             <Image
-              source={require("@/assets/images/splash_screen.png")}
+              source={require("@/assets/images/icon.png")}
               style={styles.logoImage}
               resizeMode="contain"
             />
           </Animated.View>
-
-          {/* Two-stage Tagline reveal anchored below logo */}
-          <View style={styles.taglineWrapper}>
-            <Animated.Text
-              style={[
-                styles.taglineText,
-                {
-                  opacity: part1Opacity,
-                  transform: [{ translateX: part1TranslateX }],
-                },
-              ]}
-            >
-              A Calm Mind.
-            </Animated.Text>
-
-            <Animated.Text
-              style={[
-                styles.taglineText,
-                styles.taglinePart2,
-                {
-                  opacity: part2Opacity,
-                  transform: [{ translateX: part2TranslateX }],
-                },
-              ]}
-            >
-              A Stronger Soul.
-            </Animated.Text>
-          </View>
         </View>
       </LinearGradient>
     </Animated.View>
@@ -178,36 +225,81 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
+    height: "100%",
     position: "relative",
   },
-  logoWrapper: {
+  ringsWrapper: {
     justifyContent: "center",
     alignItems: "center",
-  },
-  logoImage: {
-    width: normalize(220),
-    height: normalize(220),
-  },
-  taglineWrapper: {
     position: "absolute",
-    top: normalize(165),
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: normalize(16),
+    width: "100%",
+    height: "100%",
+    opacity: 0,
   },
-  taglineText: {
+  ring: {
+    position: "absolute",
+    overflow: "hidden",
+  },
+  outerRing3: {
+    width: normalize(180),
+    height: normalize(180),
+    borderRadius: normalize(90),
+    opacity: 0.16,
+  },
+  outerRing2: {
+    width: normalize(150),
+    height: normalize(150),
+    borderRadius: normalize(75),
+    opacity: 0.24,
+  },
+  outerRing1: {
+    width: normalize(120),
+    height: normalize(120),
+    borderRadius: normalize(60),
+    opacity: 0.32,
+  },
+  centerCircle: {
+    width: normalize(80),
+    height: normalize(80),
+    borderRadius: normalize(40),
+    overflow: "hidden",
+    opacity: 0.64,
+    shadowColor: "#3C61DD",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  gradientFill: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  textOverlay: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+  },
+  centerText: {
     fontFamily: Typography.fonts.medium,
     fontSize: normalize(16),
     color: "#FFFFFF",
     textAlign: "center",
-    letterSpacing: 0.5,
-    textShadowColor: "rgba(0, 0, 0, 0.2)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    paddingHorizontal: normalize(20),
+    lineHeight: normalize(22),
   },
-  taglinePart2: {
-    fontFamily: Typography.fonts.bold,
-    marginLeft: normalize(6),
+  iconWrapper: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: "100%",
+    opacity: 0,
+  },
+  logoImage: {
+    width: normalize(240),
+    height: normalize(240),
   },
 });
