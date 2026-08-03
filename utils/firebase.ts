@@ -1,11 +1,11 @@
 import {
+  deleteToken,
+  getInitialNotification,
   getMessaging,
   getToken,
-  deleteToken,
-  onTokenRefresh as onFirebaseTokenRefresh,
   onMessage as onFirebaseMessage,
+  onTokenRefresh as onFirebaseTokenRefresh,
   onNotificationOpenedApp,
-  getInitialNotification,
   setBackgroundMessageHandler,
 } from "@react-native-firebase/messaging";
 import { requestNotifications } from "react-native-permissions";
