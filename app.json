@@ -16,8 +16,13 @@
       "infoPlist": {
         "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use the microphone.",
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera to take photos.",
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photo library to select photos.",
         "NSCalendarsUsageDescription": "Allow $(PRODUCT_NAME) to access your calendar to add and schedule meetings.",
         "NSContactsUsageDescription": "Allow $(PRODUCT_NAME) to access your contacts to easily invite them to meetings.",
+        "UIBackgroundModes": [
+          "remote-notification"
+        ],
         "ITSAppUsesNonExemptEncryption": false
       }
     },
