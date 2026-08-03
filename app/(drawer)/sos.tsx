@@ -10,6 +10,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Linking,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -23,6 +24,7 @@ export default function SOSScreen() {
   const [emergencyContacts, setEmergencyContacts] = useState<SosContact[]>([]);
   const [generalServices, setGeneralServices] = useState<SosContact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     fetchSosContacts();
@@ -73,13 +75,13 @@ export default function SOSScreen() {
   };
 
   const handleSosButtonClick = () => {
-    if (emergencyContacts.length > 0) {
-      makeCall(emergencyContacts[0].phone_number);
+    if (generalServices.length > 0) {
+      setIsModalVisible(true);
     } else {
       Toast.show({
         type: "info",
-        text1: "No Emergency Contacts",
-        text2: "No emergency phone number available.",
+        text1: "No Services Available",
+        text2: "No general services numbers available.",
         position: "bottom",
       });
     }
@@ -172,6 +174,53 @@ export default function SOSScreen() {
           </ScrollView>
         )}
       </SafeAreaView>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setIsModalVisible(false)}
+        >
+          <TouchableOpacity style={styles.modalContent} activeOpacity={1}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>General Services</Text>
+              <TouchableOpacity onPress={() => setIsModalVisible(false)}>
+                <Feather name="x" size={normalize(22)} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalList} showsVerticalScrollIndicator={false}>
+              {generalServices.map((service) => (
+                <TouchableOpacity
+                  key={service.id}
+                  style={styles.modalItem}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setIsModalVisible(false);
+                    makeCall(service.phone_number);
+                  }}
+                >
+                  <View style={styles.modalItemLeft}>
+                    <View
+                      style={[styles.modalDot, { backgroundColor: getDotColor(service.name) }]}
+                    />
+                    <Text style={styles.modalItemName}>{service.name}</Text>
+                  </View>
+                  <View style={styles.modalItemRight}>
+                    <Text style={styles.modalItemPhone}>{service.phone_number}</Text>
+                    <Feather name="phone" size={normalize(18)} color="#4CAF50" />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -290,5 +339,70 @@ const styles = StyleSheet.create({
     color: "#3C61DD",
     textAlign: "center",
     lineHeight: normalize(20),
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: moderateScale(24),
+  },
+  modalContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: normalize(24),
+    width: "100%",
+    maxHeight: hp(60),
+    paddingHorizontal: moderateScale(24),
+    paddingTop: moderateScale(24),
+    paddingBottom: moderateScale(24),
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: hp(2),
+  },
+  modalTitle: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(20),
+    color: "#111111",
+  },
+  modalList: {
+    marginBottom: hp(1),
+  },
+  modalItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: moderateScale(16),
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0, 0, 0, 0.05)",
+  },
+  modalItemLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: moderateScale(12),
+    flex: 1,
+  },
+  modalDot: {
+    width: normalize(8),
+    height: normalize(8),
+    borderRadius: normalize(4),
+  },
+  modalItemName: {
+    fontFamily: Typography.fonts.medium,
+    fontSize: normalize(16),
+    color: "#333",
+    flex: 1,
+  },
+  modalItemRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: moderateScale(10),
+  },
+  modalItemPhone: {
+    fontFamily: Typography.fonts.medium,
+    fontSize: normalize(15),
+    color: "#666",
   },
 });
