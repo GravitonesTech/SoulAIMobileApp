@@ -1,19 +1,9 @@
 import { AuthService } from "@/utils/auth";
 import { toast } from "@/utils/toast";
-import * as AuthSession from "expo-auth-session";
-import * as Google from "expo-auth-session/providers/google";
-import Constants, { ExecutionEnvironment } from "expo-constants";
-import * as WebBrowser from "expo-web-browser";
+import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
+import Constants from "expo-constants";
 import { Platform } from "react-native";
-import { useEffect, useState } from "react";
-
-WebBrowser.maybeCompleteAuthSession();
-
-// Detect if we're running inside Expo Go (storeClient)
-// In Expo Go, exp:// URIs are blocked by Google — we must use the auth.expo.io proxy
-const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
-
-const EXPO_PROXY_REDIRECT_URI = "https://auth.expo.io/@soulbuster/soulai";
+import { useState, useEffect } from "react";
 
 type GoogleOAuthClientIds = {
   androidClientId?: string;
@@ -22,7 +12,6 @@ type GoogleOAuthClientIds = {
 };
 
 export function getGoogleOAuthClientIds(): GoogleOAuthClientIds {
-  // Read from app.json `expo.extra.googleOAuth`.
   const extra = Constants.expoConfig?.extra as any;
   const fromExtra: GoogleOAuthClientIds | undefined = extra?.googleOAuth;
 
@@ -40,88 +29,66 @@ export function hasGoogleOAuthClientId(): boolean {
   return !!ids.webClientId;
 }
 
+// Configure Google Sign-in
+const clientIds = getGoogleOAuthClientIds();
+GoogleSignin.configure({
+  webClientId: clientIds.webClientId,
+  iosClientId: clientIds.iosClientId !== "REPLACE_ME" ? clientIds.iosClientId : undefined,
+  offlineAccess: true,
+});
+
 export const useGoogleAuth = () => {
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ Expo Go → use auth.expo.io proxy (HTTPS, accepted by Google)
-  // ✅ Dev/production build → use soulai:// deep link scheme
-  const redirectUri = isExpoGo
-    ? EXPO_PROXY_REDIRECT_URI
-    : AuthSession.makeRedirectUri({ scheme: "soulai" });
+  const signIn = async () => {
+    console.log("[GoogleAuth] Native Sign-In pressed");
+    setIsLoading(true);
 
-  // console.log("[GoogleAuth] Environment:", isExpoGo ? "Expo Go" : "Native Build");
-  // console.log("[GoogleAuth] Redirect URI:", redirectUri);
-
-  // Google.useAuthRequest (from expo-auth-session/providers/google) already
-  // knows Google's discovery endpoints internally — no need to pass them.
-  const { androidClientId, iosClientId, webClientId } = getGoogleOAuthClientIds();
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId,
-    iosClientId,
-    webClientId,
-    redirectUri,
-    scopes: ["openid", "profile", "email"],
-  });
-
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { authentication } = response;
-      console.log("[GoogleAuth] Auth success, token type:", authentication?.tokenType);
-
-      if (authentication?.idToken) {
-        console.log("[GoogleAuth] idToken received ✅");
-        verify(authentication.idToken);
-      } else if (authentication?.accessToken) {
-        console.log("[GoogleAuth] No idToken — using accessToken as fallback");
-        verify(authentication.accessToken);
-      } else {
-        console.warn("[GoogleAuth] No token in response", authentication);
-        toast.error("Auth Error", "No token received from Google.");
-        setIsVerifying(false);
-      }
-    } else if (response?.type === "error") {
-      console.error("[GoogleAuth] Error:", response.error);
-      toast.error("Auth Error", response.error?.message ?? "Google Sign-In failed.");
-      setIsVerifying(false);
-    } else if (response?.type === "cancel") {
-      console.log("[GoogleAuth] User cancelled");
-      setIsVerifying(false);
-    }
-  }, [response]);
-
-  const verify = async (token: string) => {
-    setIsVerifying(true);
     try {
-      await AuthService.loginWithSocialToken("google", token);
-    } catch (error) {
-      console.error("[GoogleAuth] Verification error:", error);
-      toast.error("Error", "Sign-in verification failed.");
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      
+      if (response.type !== "success") {
+        throw new Error("Google Sign-In was not successful or was cancelled.");
+      }
+
+      const idToken = response.data.idToken;
+
+      if (!idToken) {
+        throw new Error("No ID token returned from Google Sign-In.");
+      }
+
+      console.log("[GoogleAuth] Native sign-in success, verifying token with backend...");
+      await AuthService.loginWithSocialToken("google", idToken);
+
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log("[GoogleAuth] User cancelled flow");
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        console.log("[GoogleAuth] Sign-in already in progress");
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        toast.error("Play Services Error", "Google Play Services not available or outdated.");
+      } else {
+        console.error("[GoogleAuth] Native Sign-in Error:", error);
+        toast.error("Auth Error", error.message || "Google Sign-In failed.");
+      }
     } finally {
-      setIsVerifying(false);
+      setIsLoading(false);
     }
   };
 
-  const signIn = async () => {
-    console.log("[GoogleAuth] Sign-In button pressed");
-
-    if (!request) {
-      console.warn("[GoogleAuth] Auth request not ready");
-      toast.error("Error", "Google auth not ready. Please try again.");
-      return;
-    }
-
+  const signOut = async () => {
     try {
-      const result = await promptAsync();
-      console.log("[GoogleAuth] promptAsync result:", result.type);
+      await GoogleSignin.signOut();
     } catch (error) {
-      console.error("[GoogleAuth] promptAsync error:", error);
-      toast.error("Error", "Could not open Google Sign-In.");
+      console.error("[GoogleAuth] Sign-out Error:", error);
     }
   };
 
   return {
     signIn,
-    isLoading: isVerifying,
-    isReady: !!request,
+    signOut,
+    isLoading,
+    isReady: true,
   };
 };

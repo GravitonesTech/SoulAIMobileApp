@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "buildNumber": "5",
+      "buildNumber": "7",
       "supportsTablet": true,
       "bundleIdentifier": "com.soulai.in",
       "googleServicesFile": "./GoogleService-Info.plist",
@@ -70,6 +70,12 @@
       ],
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.95811060419-vb1vj5n7smvv8pvg01ae7vcp4jh18atr"
+        }
+      ],
       "./plugins/withCustomGradleProperties",
       "./plugins/withDisableLint",
       "./plugins/withZoomNetworkSecurity",
@@ -84,9 +90,9 @@
     "extra": {
       "router": {},
       "googleOAuth": {
-        "androidClientId": "629973031661-nekkjnr4ahbt31f6i1ps860n50ork0v0.apps.googleusercontent.com",
-        "iosClientId": "REPLACE_ME",
-        "webClientId": "629973031661-fqoa9j1g6c8p1suie5op8r7la823jsg9.apps.googleusercontent.com"
+        "androidClientId": "95811060419-e64q0ih6giveo457hkki7na1fmjci178.apps.googleusercontent.com",
+        "iosClientId": "95811060419-vb1vj5n7smvv8pvg01ae7vcp4jh18atr.apps.googleusercontent.com",
+        "webClientId": "95811060419-6nhke0t0ahjrso6sm66oameeifqbomhr.apps.googleusercontent.com"
       },
       "eas": {
         "projectId": "05553e96-80d6-450b-bf91-12257346fc94"
