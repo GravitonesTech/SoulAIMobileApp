@@ -86,7 +86,15 @@
       "./plugins/withZoomNetworkSecurity",
       "./plugins/withZoomResourcePatch",
       "./plugins/withAndroidSigningConfig",
-      "expo-speech-recognition"
+      "expo-speech-recognition",
+      [
+        "react-native-permissions",
+        {
+          "iosPermissions": [
+            "Notifications"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
