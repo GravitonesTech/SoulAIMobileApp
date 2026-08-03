@@ -34,7 +34,7 @@ export const PaymentVerificationOverlay: React.FC<PaymentVerificationOverlayProp
           duration: 1800,
           easing: Easing.linear,
           useNativeDriver: true,
-        })
+        }),
       ).start();
 
       // Pulse animation for inner circle
@@ -52,7 +52,7 @@ export const PaymentVerificationOverlay: React.FC<PaymentVerificationOverlayProp
             easing: Easing.in(Easing.ease),
             useNativeDriver: true,
           }),
-        ])
+        ]),
       ).start();
     } else {
       // Reset animations
@@ -78,10 +78,7 @@ export const PaymentVerificationOverlay: React.FC<PaymentVerificationOverlayProp
     <Modal transparent animationType="none" visible={visible}>
       <View style={styles.modalContainer}>
         <Animated.View style={[styles.backdrop, { opacity: opacityValue }]} />
-        <LinearGradient
-          colors={["#FFFFFF", "#E2F4FF"]}
-          style={styles.gradientContainer}
-        >
+        <LinearGradient colors={["#FFFFFF", "#E2F4FF"]} style={styles.gradientContainer}>
           <View style={styles.cardContainer}>
             {/* Pulsing & Rotating Animation Rings */}
             <View style={styles.animationWrapper}>
@@ -131,7 +128,12 @@ export const PaymentVerificationOverlay: React.FC<PaymentVerificationOverlayProp
 
             {/* Footer lock and brand logo */}
             <View style={styles.footerRow}>
-              <Feather name="lock" size={normalize(14)} color="#3C61DD" style={{ marginRight: 6 }} />
+              <Feather
+                name="lock"
+                size={normalize(14)}
+                color="#3C61DD"
+                style={{ marginRight: 6 }}
+              />
               <Text style={styles.footerText}>Secure Payment via Razorpay</Text>
             </View>
           </View>

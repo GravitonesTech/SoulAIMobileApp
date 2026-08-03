@@ -92,78 +92,78 @@ export default function ResetPasswordScreen() {
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
       <Animated.View style={[{ flex: 1 }, animatedStyle]}>
         <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={{ flex: 1, width: "100%" }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <ScrollView
-            contentContainerStyle={styles.scrollContainer}
-            bounces={false}
-            keyboardShouldPersistTaps="handled"
+          <KeyboardAvoidingView
+            style={{ flex: 1, width: "100%" }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
           >
-            <Animated.View entering={EntryAnimations.header} style={styles.header}>
-              <Text style={styles.titleText}>Reset Password</Text>
-              <Text style={styles.subtitleText}>
-                Enter the OTP sent to your email and set a new password.
-              </Text>
-            </Animated.View>
+            <ScrollView
+              contentContainerStyle={styles.scrollContainer}
+              bounces={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              <Animated.View entering={EntryAnimations.header} style={styles.header}>
+                <Text style={styles.titleText}>Reset Password</Text>
+                <Text style={styles.subtitleText}>
+                  Enter the OTP sent to your email and set a new password.
+                </Text>
+              </Animated.View>
 
-            <Text style={styles.emailLabel}>{email}</Text>
+              <Text style={styles.emailLabel}>{email}</Text>
 
-            <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
-              <OtpInput length={4} onChange={setOtp} />
+              <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
+                <OtpInput length={4} onChange={setOtp} />
 
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={resend}
-                disabled={isResendDisabled}
-                style={styles.resendContainer}
-              >
-                <Text style={styles.resendText}>{resendLabel}</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={resend}
+                  disabled={isResendDisabled}
+                  style={styles.resendContainer}
+                >
+                  <Text style={styles.resendText}>{resendLabel}</Text>
+                </TouchableOpacity>
 
-              <AppInput
-                iconName="lock"
-                placeholder="New Password*"
-                secureTextEntry={!showPassword}
-                value={newPassword}
-                onChangeText={setNewPassword}
-                style={styles.inputMargin}
-                rightIcon={
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                    <Feather name={showPassword ? "eye" : "eye-off"} size={20} color="#555555" />
-                  </TouchableOpacity>
-                }
-              />
+                <AppInput
+                  iconName="lock"
+                  placeholder="New Password*"
+                  secureTextEntry={!showPassword}
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  style={styles.inputMargin}
+                  rightIcon={
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      <Feather name={showPassword ? "eye" : "eye-off"} size={20} color="#555555" />
+                    </TouchableOpacity>
+                  }
+                />
 
-              <AppInput
-                iconName="lock"
-                placeholder="Confirm Password*"
-                secureTextEntry={!showPassword}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                style={styles.inputMargin}
-              />
+                <AppInput
+                  iconName="lock"
+                  placeholder="Confirm Password*"
+                  secureTextEntry={!showPassword}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  style={styles.inputMargin}
+                />
 
-              <AppButton
-                title={isLoading ? "" : "Reset Password"}
-                style={styles.primaryBtn}
-                onPress={handleReset}
-                disabled={isLoading}
-                icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
-              />
+                <AppButton
+                  title={isLoading ? "" : "Reset Password"}
+                  style={styles.primaryBtn}
+                  onPress={handleReset}
+                  disabled={isLoading}
+                  icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
+                />
 
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={goBackWithFade}
-                style={styles.backLink}
-                disabled={isLoading}
-              >
-                <Text style={styles.backText}>Back</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          </ScrollView>
-        </KeyboardAvoidingView>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={goBackWithFade}
+                  style={styles.backLink}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.backText}>Back</Text>
+                </TouchableOpacity>
+              </Animated.View>
+            </ScrollView>
+          </KeyboardAvoidingView>
         </SafeAreaView>
       </Animated.View>
     </LinearGradient>

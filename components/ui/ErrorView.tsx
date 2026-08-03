@@ -25,13 +25,7 @@ export function ErrorView({
       </View>
       <Text style={styles.title}>Something went wrong</Text>
       <Text style={styles.message}>{message}</Text>
-      {onRetry && (
-        <AppButton
-          title="Try Again"
-          onPress={onRetry}
-          style={styles.button}
-        />
-      )}
+      {onRetry && <AppButton title="Try Again" onPress={onRetry} style={styles.button} />}
     </View>
   );
 }

@@ -22,10 +22,7 @@ interface CreateGroupProps {
   onGroupCreated: () => void;
 }
 
-export const CreateGroup: React.FC<CreateGroupProps> = ({
-  currentUser,
-  onGroupCreated,
-}) => {
+export const CreateGroup: React.FC<CreateGroupProps> = ({ currentUser, onGroupCreated }) => {
   const [groupName, setGroupName] = useState("");
   const [email, setEmail] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<UserData[]>([]);
@@ -130,12 +127,7 @@ export const CreateGroup: React.FC<CreateGroupProps> = ({
     <View style={styles.formContainer}>
       <Text style={styles.sectionTitle}>Group Name</Text>
       <View style={styles.inputContainer}>
-        <Feather
-          name="edit-2"
-          size={normalize(18)}
-          color="#A0A0A0"
-          style={styles.inputIcon}
-        />
+        <Feather name="edit-2" size={normalize(18)} color="#A0A0A0" style={styles.inputIcon} />
         <TextInput
           placeholder="Enter group name"
           placeholderTextColor="#A0A0A0"
@@ -192,10 +184,7 @@ export const CreateGroup: React.FC<CreateGroupProps> = ({
               <View style={styles.userCard}>
                 <View style={styles.avatarWrapper}>
                   {searchedUser.profile_photo ? (
-                    <Image
-                      source={{ uri: searchedUser.profile_photo }}
-                      style={styles.userAvatar}
-                    />
+                    <Image source={{ uri: searchedUser.profile_photo }} style={styles.userAvatar} />
                   ) : (
                     <View style={[styles.userAvatar, styles.initialsAvatar]}>
                       <Text style={styles.initialsText}>
@@ -227,19 +216,14 @@ export const CreateGroup: React.FC<CreateGroupProps> = ({
       {/* Selected Members Section */}
       {selectedMembers.length > 0 && (
         <View style={styles.membersContainer}>
-          <Text style={styles.sectionTitle}>
-            Selected Member ({selectedMembers.length})
-          </Text>
+          <Text style={styles.sectionTitle}>Selected Member ({selectedMembers.length})</Text>
           <View style={styles.membersList}>
             {selectedMembers.map((member) => (
               <View key={member.email} style={styles.memberRow}>
                 <View style={styles.memberLeft}>
                   <View style={styles.memberAvatarWrapper}>
                     {member.profile_photo ? (
-                      <Image
-                        source={{ uri: member.profile_photo }}
-                        style={styles.memberAvatar}
-                      />
+                      <Image source={{ uri: member.profile_photo }} style={styles.memberAvatar} />
                     ) : (
                       <View style={[styles.memberAvatar, styles.initialsAvatar]}>
                         <Text style={styles.memberInitials}>

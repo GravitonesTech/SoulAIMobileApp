@@ -47,7 +47,7 @@ export const useGoogleAuth = () => {
     try {
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
-      
+
       if (response.type !== "success") {
         throw new Error("Google Sign-In was not successful or was cancelled.");
       }
@@ -60,7 +60,6 @@ export const useGoogleAuth = () => {
 
       console.log("[GoogleAuth] Native sign-in success, verifying token with backend...");
       await AuthService.loginWithSocialToken("google", idToken);
-
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log("[GoogleAuth] User cancelled flow");

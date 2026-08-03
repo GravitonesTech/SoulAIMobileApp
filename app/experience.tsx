@@ -79,9 +79,14 @@ export default function ExperienceScreen() {
                           key={level.id}
                           activeOpacity={0.7}
                           onPress={() => setSelectedExperience(level)}
-                          style={[styles.languageOption, isSelected && styles.languageOptionSelected]}
+                          style={[
+                            styles.languageOption,
+                            isSelected && styles.languageOptionSelected,
+                          ]}
                         >
-                          <Text style={[styles.languageText, { color: "#8A8A8E" }]}>{level.name}</Text>
+                          <Text style={[styles.languageText, { color: "#8A8A8E" }]}>
+                            {level.name}
+                          </Text>
                         </TouchableOpacity>
                       );
                     })}

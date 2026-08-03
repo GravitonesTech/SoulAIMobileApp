@@ -3,13 +3,7 @@ import { Typography } from "@/constants/Typography";
 import { hp, normalize } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef } from "react";
-import {
-  Animated,
-  Easing,
-  Image,
-  StyleSheet,
-  View
-} from "react-native";
+import { Animated, Easing, Image, StyleSheet, View } from "react-native";
 
 interface SplashOverlayProps {
   /** Triggered when auth checks / minimum display timer complete */

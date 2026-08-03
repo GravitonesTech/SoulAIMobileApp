@@ -207,7 +207,10 @@ async function request<T = any>(
     let errorMsg = "An unexpected error occurred";
     let isNetworkError = false;
 
-    if (axiosError.code === "ECONNABORTED" || axiosError.message?.toLowerCase().includes("timeout")) {
+    if (
+      axiosError.code === "ECONNABORTED" ||
+      axiosError.message?.toLowerCase().includes("timeout")
+    ) {
       errorMsg = "The server is taking too long to respond. Please try again.";
       isNetworkError = true;
     } else if (axiosError.message === "Network Error" || !axiosError.response) {

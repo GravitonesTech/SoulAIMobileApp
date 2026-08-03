@@ -1,8 +1,8 @@
-const { withAppBuildGradle } = require('@expo/config-plugins');
+const { withAppBuildGradle } = require("@expo/config-plugins");
 
 const withAndroidSigningConfig = (config) => {
   return withAppBuildGradle(config, (config) => {
-    if (config.modResults.language === 'groovy') {
+    if (config.modResults.language === "groovy") {
       config.modResults.contents = addSigningConfig(config.modResults.contents);
     }
     return config;
@@ -21,18 +21,22 @@ function addSigningConfig(contents) {
             }
         }\n`;
 
-  if (debugBlockRegex.test(contents) && !contents.includes('signingConfigs.release')) {
+  if (debugBlockRegex.test(contents) && !contents.includes("signingConfigs.release")) {
     contents = contents.replace(debugBlockRegex, (match) => {
       return match + releaseConfigToAdd;
     });
-  } else if (contents.includes('signingConfigs {') && !contents.includes('signingConfigs.release')) {
+  } else if (
+    contents.includes("signingConfigs {") &&
+    !contents.includes("signingConfigs.release")
+  ) {
     contents = contents.replace(/(signingConfigs\s*\{)/, `$1${releaseConfigToAdd}`);
   }
 
   // 2. Change release build type signingConfig inside buildTypes to signingConfigs.release
-  const releaseBuildTypeRegex = /(buildTypes\s*\{[\s\S]*?release\s*\{[\s\S]*?signingConfig\s*)signingConfigs\.debug/;
+  const releaseBuildTypeRegex =
+    /(buildTypes\s*\{[\s\S]*?release\s*\{[\s\S]*?signingConfig\s*)signingConfigs\.debug/;
   if (releaseBuildTypeRegex.test(contents)) {
-    contents = contents.replace(releaseBuildTypeRegex, '$1signingConfigs.release');
+    contents = contents.replace(releaseBuildTypeRegex, "$1signingConfigs.release");
   }
 
   return contents;

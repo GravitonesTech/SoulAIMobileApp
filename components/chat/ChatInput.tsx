@@ -39,32 +39,24 @@ export const ChatInput = ({
   const backdropOpacity = useRef(new Animated.Value(0)).current;
 
   // Wave visualizer bars (9 bars)
-  const waveAnims = useRef(
-    Array.from({ length: 9 }, () => new Animated.Value(1))
-  ).current;
+  const waveAnims = useRef(Array.from({ length: 9 }, () => new Animated.Value(1))).current;
 
   // ─── Speech Recognition ───────────────────────────────────────────────────
-  const {
-    isListening,
-    isProcessing,
-    volume,
-    startListening,
-    stopListening,
-    cancelListening,
-  } = useSpeechRecognition({
-    locale: "auto",
-    onTranscript: (text) => {
-      onChangeText(text);
-    },
-    onFinalTranscript: (text) => {
-      onChangeText(text);
-      haptics.success();
-    },
-    onError: (msg) => {
-      console.warn("[ChatInput STT Error]", msg);
-      haptics.error();
-    },
-  });
+  const { isListening, isProcessing, volume, startListening, stopListening, cancelListening } =
+    useSpeechRecognition({
+      locale: "auto",
+      onTranscript: (text) => {
+        onChangeText(text);
+      },
+      onFinalTranscript: (text) => {
+        onChangeText(text);
+        haptics.success();
+      },
+      onError: (msg) => {
+        console.warn("[ChatInput STT Error]", msg);
+        haptics.error();
+      },
+    });
 
   // ─── Slide Sheet In / Out ─────────────────────────────────────────────────
   useEffect(() => {
@@ -257,10 +249,7 @@ export const ChatInput = ({
             {/* Transcript display area */}
             <View style={styles.transcriptBox}>
               <Text
-                style={[
-                  styles.transcriptText,
-                  !value.trim() && styles.placeholderText,
-                ]}
+                style={[styles.transcriptText, !value.trim() && styles.placeholderText]}
                 numberOfLines={5}
               >
                 {value.trim() ? value : "Speak now..."}

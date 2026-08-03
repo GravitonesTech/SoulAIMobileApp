@@ -1,7 +1,4 @@
-import {
-  ExpoSpeechRecognitionModule,
-  useSpeechRecognitionEvent,
-} from "expo-speech-recognition";
+import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from "expo-speech-recognition";
 import { useCallback, useRef, useState } from "react";
 
 export interface UseSpeechRecognitionOptions {
@@ -26,7 +23,7 @@ export interface UseSpeechRecognitionReturn {
 }
 
 export function useSpeechRecognition(
-  options: UseSpeechRecognitionOptions = {}
+  options: UseSpeechRecognitionOptions = {},
 ): UseSpeechRecognitionReturn {
   const { locale = "en-US", onTranscript, onFinalTranscript, onError } = options;
 
@@ -93,21 +90,17 @@ export function useSpeechRecognition(
 
     // Map error codes to friendly messages
     const friendlyMessages: Partial<Record<string, string>> = {
-      "not-allowed":
-        "Microphone permission denied. Please enable it in Settings.",
+      "not-allowed": "Microphone permission denied. Please enable it in Settings.",
       "no-speech": "No speech detected. Please try again.",
       "audio-capture": "Could not access the microphone.",
-      "network": "Network error. Check your connection and try again.",
-      "busy": "Speech recognizer is busy. Please wait.",
+      network: "Network error. Check your connection and try again.",
+      busy: "Speech recognizer is busy. Please wait.",
       "service-not-allowed": "Speech recognition is not available.",
-      "language-not-supported":
-        "Language not supported on this device.",
-      "aborted": null as unknown as string, // user-initiated, don't show error
+      "language-not-supported": "Language not supported on this device.",
+      aborted: null as unknown as string, // user-initiated, don't show error
     };
 
-    const msg =
-      friendlyMessages[event.error] ??
-      `Speech error: ${event.message || event.error}`;
+    const msg = friendlyMessages[event.error] ?? `Speech error: ${event.message || event.error}`;
 
     if (msg) {
       setError(msg);
@@ -124,12 +117,10 @@ export function useSpeechRecognition(
     isInitiatorRef.current = true;
 
     // Check / request permissions first
-    const permResult =
-      await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    const permResult = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
 
     if (!permResult.granted) {
-      const msg =
-        "Microphone permission denied. Please enable it in Settings.";
+      const msg = "Microphone permission denied. Please enable it in Settings.";
       setError(msg);
       onError?.(msg);
       isInitiatorRef.current = false;
@@ -141,10 +132,10 @@ export function useSpeechRecognition(
     ExpoSpeechRecognitionModule.start({
       lang: locale,
       interimResults: true, // partial results for real-time display
-      continuous: false,    // single utterance mode
+      continuous: false, // single utterance mode
       volumeChangeEventOptions: {
         enabled: true,
-        intervalMillis: 40,  // frequent updates for fluid animation
+        intervalMillis: 40, // frequent updates for fluid animation
       },
     });
   }, [locale, onError]);

@@ -80,95 +80,104 @@ export default function SignupScreen() {
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
       <Animated.View style={[{ flex: 1 }, animatedStyle]}>
         <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
-            {/* Header */}
-            <Animated.View entering={EntryAnimations.header} style={styles.header}>
-              <Text style={styles.titleText}>Get Started</Text>
-              <Text style={styles.subtitleText}>Create your personalized experience</Text>
-            </Animated.View>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
+              {/* Header */}
+              <Animated.View entering={EntryAnimations.header} style={styles.header}>
+                <Text style={styles.titleText}>Get Started</Text>
+                <Text style={styles.subtitleText}>Create your personalized experience</Text>
+              </Animated.View>
 
-            {/* Form */}
-            <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
-              <AppInput
-                iconName="user"
-                placeholder="Email"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-                style={styles.inputMargin}
-              />
+              {/* Form */}
+              <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
+                <AppInput
+                  iconName="user"
+                  placeholder="Email"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={email}
+                  onChangeText={setEmail}
+                  style={styles.inputMargin}
+                />
 
-              <AppInput
-                iconName="lock"
-                placeholder="Password"
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
-                style={styles.inputMargin}
-                rightIcon={
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                    <Feather
-                      name={showPassword ? "eye" : "eye-off"}
-                      size={normalize(20)}
-                      color="#555555"
-                    />
-                  </TouchableOpacity>
-                }
-              />
+                <AppInput
+                  iconName="lock"
+                  placeholder="Password"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                  style={styles.inputMargin}
+                  rightIcon={
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      <Feather
+                        name={showPassword ? "eye" : "eye-off"}
+                        size={normalize(20)}
+                        color="#555555"
+                      />
+                    </TouchableOpacity>
+                  }
+                />
 
-              <AppInput
-                iconName="lock"
-                placeholder="Confirm Password"
-                secureTextEntry={!showConfirmPassword}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                style={styles.inputMargin}
-                rightIcon={
-                  <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                    <Feather
-                      name={showConfirmPassword ? "eye" : "eye-off"}
-                      size={normalize(20)}
-                      color="#555555"
-                    />
-                  </TouchableOpacity>
-                }
-              />
+                <AppInput
+                  iconName="lock"
+                  placeholder="Confirm Password"
+                  secureTextEntry={!showConfirmPassword}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  style={styles.inputMargin}
+                  rightIcon={
+                    <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                      <Feather
+                        name={showConfirmPassword ? "eye" : "eye-off"}
+                        size={normalize(20)}
+                        color="#555555"
+                      />
+                    </TouchableOpacity>
+                  }
+                />
 
-              <AppButton
-                title={isLoading ? "" : "Send OTP"}
-                style={styles.signInBtnMargin}
-                onPress={handleSendOtp}
-                disabled={isLoading}
-                icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
-              />
-            </Animated.View>
+                <AppButton
+                  title={isLoading ? "" : "Send OTP"}
+                  style={styles.signInBtnMargin}
+                  onPress={handleSendOtp}
+                  disabled={isLoading}
+                  icon={isLoading ? <ActivityIndicator color="#FFF" /> : undefined}
+                />
+              </Animated.View>
 
-            {/* Divider */}
-            <Animated.View entering={EntryAnimations.formContainer} style={styles.dividerContainer}>
-              <Text style={styles.dividerText}>Or Sign Up With</Text>
-            </Animated.View>
+              {/* Divider */}
+              <Animated.View
+                entering={EntryAnimations.formContainer}
+                style={styles.dividerContainer}
+              >
+                <Text style={styles.dividerText}>Or Sign Up With</Text>
+              </Animated.View>
 
-            {/* Social Logins */}
-            <Animated.View entering={EntryAnimations.formContainer} style={styles.socialContainer}>
-              <SocialButtons style={{ width: "100%" }} />
-            </Animated.View>
+              {/* Social Logins */}
+              <Animated.View
+                entering={EntryAnimations.formContainer}
+                style={styles.socialContainer}
+              >
+                <SocialButtons style={{ width: "100%" }} />
+              </Animated.View>
 
-            {/* Bottom Link */}
-            <Animated.View entering={EntryAnimations.formContainer} style={styles.bottomLinkContainer}>
-              <TouchableOpacity activeOpacity={0.7} onPress={() => navigateWithFade("/login")}>
-                <Text style={styles.bottomLinkText}>Already have an account? Sign in</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </Animated.View>
-  </LinearGradient>
+              {/* Bottom Link */}
+              <Animated.View
+                entering={EntryAnimations.formContainer}
+                style={styles.bottomLinkContainer}
+              >
+                <TouchableOpacity activeOpacity={0.7} onPress={() => navigateWithFade("/login")}>
+                  <Text style={styles.bottomLinkText}>Already have an account? Sign in</Text>
+                </TouchableOpacity>
+              </Animated.View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Animated.View>
+    </LinearGradient>
   );
 }
 

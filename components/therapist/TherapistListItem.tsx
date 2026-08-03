@@ -17,15 +17,33 @@ export const TherapistListItem = ({ therapist, onPress }: TherapistListItemProps
     for (let i = 1; i <= 5; i++) {
       if (rating >= i) {
         stars.push(
-          <FontAwesome key={i} name="star" size={normalize(14)} color="#FFC107" style={styles.starIcon} />
+          <FontAwesome
+            key={i}
+            name="star"
+            size={normalize(14)}
+            color="#FFC107"
+            style={styles.starIcon}
+          />,
         );
       } else if (rating >= i - 0.5) {
         stars.push(
-          <FontAwesome key={i} name="star-half-o" size={normalize(14)} color="#FFC107" style={styles.starIcon} />
+          <FontAwesome
+            key={i}
+            name="star-half-o"
+            size={normalize(14)}
+            color="#FFC107"
+            style={styles.starIcon}
+          />,
         );
       } else {
         stars.push(
-          <FontAwesome key={i} name="star-o" size={normalize(14)} color="#E0E0E0" style={styles.starIcon} />
+          <FontAwesome
+            key={i}
+            name="star-o"
+            size={normalize(14)}
+            color="#E0E0E0"
+            style={styles.starIcon}
+          />,
         );
       }
     }
@@ -47,9 +65,7 @@ export const TherapistListItem = ({ therapist, onPress }: TherapistListItemProps
           <View style={styles.ratingRow}>
             {therapist.total_reviews > 0 ? (
               <>
-                <View style={styles.starsContainer}>
-                  {renderStars(therapist.average_rating)}
-                </View>
+                <View style={styles.starsContainer}>{renderStars(therapist.average_rating)}</View>
                 <Text style={styles.reviewsCountText}>
                   {`(${therapist.total_reviews} reviews)`}
                 </Text>
@@ -65,9 +81,7 @@ export const TherapistListItem = ({ therapist, onPress }: TherapistListItemProps
           </Text>
           <View style={styles.costBadge}>
             <Feather name="tag" size={normalize(12)} color="#3C61DD" style={styles.costIcon} />
-            <Text style={styles.costText}>
-              {`Rs. ${therapist.session_cost ?? 100} / session`}
-            </Text>
+            <Text style={styles.costText}>{`Rs. ${therapist.session_cost ?? 100} / session`}</Text>
           </View>
         </View>
       </View>

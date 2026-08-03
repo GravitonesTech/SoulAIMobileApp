@@ -37,7 +37,9 @@ export const setAppReady = (status: boolean) => {
   if (status && pendingRoute) {
     const routeToNavigate = pendingRoute;
     pendingRoute = null;
-    console.log(`[FCM Service] App is ready and pendingRoute exists: ${routeToNavigate}. Navigating in 500ms...`);
+    console.log(
+      `[FCM Service] App is ready and pendingRoute exists: ${routeToNavigate}. Navigating in 500ms...`,
+    );
     setTimeout(() => {
       router.push(routeToNavigate as any);
     }, 500);
@@ -84,7 +86,7 @@ export const NotificationService = {
             {
               confirmLabel: "Review",
               cancelLabel: "Not Now",
-            }
+            },
           );
         } else {
           // Show in-app notification toast
@@ -363,7 +365,7 @@ export const NotificationService = {
           case "BOOKING_CONFIRMED": {
             const bookingId = data.booking_id;
             let message = "Your session booking has been successfully confirmed.";
-            
+
             if (bookingId) {
               try {
                 const response = await apiClient.get<any>(ENDPOINTS.users.myAppointments);
@@ -372,9 +374,9 @@ export const NotificationService = {
                     ...(response.data.upcoming || []),
                     ...(response.data.past || []),
                   ];
-                  const appointment = allAppointments.find((a: any) =>
-                    a.id.toString() === bookingId ||
-                    bookingId.includes(a.id.toString())
+                  const appointment = allAppointments.find(
+                    (a: any) =>
+                      a.id.toString() === bookingId || bookingId.includes(a.id.toString()),
                   );
                   if (appointment) {
                     message = `Your session with ${appointment.therapist_name} on ${appointment.appointment_date} at ${appointment.time_slot} has been confirmed.`;
@@ -384,7 +386,7 @@ export const NotificationService = {
                 console.warn("Failed to retrieve booking details for confirmation toast:", err);
               }
             }
-            
+
             toast.success("Session Confirmed", message);
             router.push("/(drawer)/human-therapists");
             break;
@@ -393,7 +395,7 @@ export const NotificationService = {
           case "CANCELLATION": {
             const bookingId = data.booking_id;
             let message = "An upcoming session has been cancelled.";
-            
+
             if (bookingId) {
               try {
                 const response = await apiClient.get<any>(ENDPOINTS.users.myAppointments);
@@ -402,9 +404,9 @@ export const NotificationService = {
                     ...(response.data.upcoming || []),
                     ...(response.data.past || []),
                   ];
-                  const appointment = allAppointments.find((a: any) =>
-                    a.id.toString() === bookingId ||
-                    bookingId.includes(a.id.toString())
+                  const appointment = allAppointments.find(
+                    (a: any) =>
+                      a.id.toString() === bookingId || bookingId.includes(a.id.toString()),
                   );
                   if (appointment) {
                     message = `Your session with ${appointment.therapist_name} on ${appointment.appointment_date} at ${appointment.time_slot} has been cancelled.`;
@@ -414,7 +416,7 @@ export const NotificationService = {
                 console.warn("Failed to retrieve booking details for cancellation toast:", err);
               }
             }
-            
+
             toast.info("Session Cancelled", message);
             router.push("/(drawer)/human-therapists");
             break;
@@ -423,14 +425,14 @@ export const NotificationService = {
           case "SESSION_REMINDER_24HR": {
             const bookingId = data.booking_id;
             let message = "Reminder: You have a therapy session scheduled for tomorrow.";
-            
+
             if (bookingId) {
               try {
                 const response = await apiClient.get<any>(ENDPOINTS.users.myAppointments);
                 if (response.success && response.data?.upcoming) {
-                  const appointment = response.data.upcoming.find((a: any) =>
-                    a.id.toString() === bookingId ||
-                    bookingId.includes(a.id.toString())
+                  const appointment = response.data.upcoming.find(
+                    (a: any) =>
+                      a.id.toString() === bookingId || bookingId.includes(a.id.toString()),
                   );
                   if (appointment) {
                     message = `Reminder: Your session with ${appointment.therapist_name} is scheduled for tomorrow (${appointment.appointment_date}) at ${appointment.time_slot}.`;
@@ -440,14 +442,17 @@ export const NotificationService = {
                 console.warn("Failed to retrieve booking details for 24hr reminder toast:", err);
               }
             }
-            
+
             toast.info("Upcoming Session Reminder", message);
             router.push("/(drawer)/human-therapists");
             break;
           }
 
           case "SESSION_REMINDER_15MIN": {
-            toast.info("Session Starting Soon", "Your session is starting in 15 minutes. Please join from the appointments list.");
+            toast.info(
+              "Session Starting Soon",
+              "Your session is starting in 15 minutes. Please join from the appointments list.",
+            );
             router.push("/(drawer)/human-therapists");
             break;
           }
