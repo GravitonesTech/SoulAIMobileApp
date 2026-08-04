@@ -25,7 +25,7 @@
       }
     },
     "android": {
-      "versionCode": 10,
+      "versionCode": 11,
       "package": "com.soulai.in",
       "googleServicesFile": "./google-services.json",
       "permissions": [
@@ -104,7 +104,7 @@
     "extra": {
       "router": {},
       "googleOAuth": {
-        "androidClientId": "95811060419-e64q0ih6giveo457hkki7na1fmjci178.apps.googleusercontent.com",
+        "androidClientId": "95811060419-h1uufrtveqqi0k9huhs80v1tfh8ib54n.apps.googleusercontent.com",
         "iosClientId": "95811060419-vb1vj5n7smvv8pvg01ae7vcp4jh18atr.apps.googleusercontent.com",
         "webClientId": "95811060419-6nhke0t0ahjrso6sm66oameeifqbomhr.apps.googleusercontent.com"
       },
