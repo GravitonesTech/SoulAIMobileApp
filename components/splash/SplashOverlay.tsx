@@ -21,25 +21,25 @@ export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish 
   const exitOpacity = useRef(new Animated.Value(1)).current;
   const exitScale = useRef(new Animated.Value(1)).current;
 
-  // Scale interpolations copied exactly from app/(drawer)/breathing.tsx
+  // Scale interpolations copied exactly from app/(drawer)/breathing.tsx but reversed (shrinking)
   const scale = breathScale.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 2.8],
+    outputRange: [2.8, 1.3],
   });
 
   const outerScale1 = breathScale.interpolate({
     inputRange: [0, 1],
-    outputRange: [1.1, 3.6],
+    outputRange: [3.6, 1.4],
   });
 
   const outerScale2 = breathScale.interpolate({
     inputRange: [0, 1],
-    outputRange: [1.2, 4.8],
+    outputRange: [4.8, 1.5],
   });
 
   const outerScale3 = breathScale.interpolate({
     inputRange: [0, 1],
-    outputRange: [1.3, 6.0],
+    outputRange: [6.0, 1.6],
   });
 
   useEffect(() => {
@@ -284,11 +284,11 @@ const styles = StyleSheet.create({
   },
   centerText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: normalize(16),
+    fontSize: normalize(20),
     color: "#FFFFFF",
     textAlign: "center",
     paddingHorizontal: normalize(20),
-    lineHeight: normalize(22),
+    lineHeight: normalize(24),
   },
   iconWrapper: {
     position: "absolute",
