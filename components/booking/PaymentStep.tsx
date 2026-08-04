@@ -22,6 +22,7 @@ interface PricingDetails {
 }
 
 interface PaymentStepProps {
+  savedMethods: any[];
   paymentMethod: "upi" | "card" | "netbanking";
   setPaymentMethod: (val: "upi" | "card" | "netbanking") => void;
   upiId: string;
@@ -40,13 +41,8 @@ interface PaymentStepProps {
   onApplyCoupon: (code: string) => void;
 }
 
-const savedMethods = [
-  { id: "1", type: "Visa", last4: "1280", time: "11:52 PM", method: "card" as const },
-  { id: "2", type: "MasterCard", last4: "4481", time: "06:12 PM", method: "card" as const },
-  { id: "3", type: "UPI", last4: "1258", time: "04:23 PM", method: "upi" as const },
-];
-
 export const PaymentStep: React.FC<PaymentStepProps> = ({
+  savedMethods,
   paymentMethod,
   setPaymentMethod,
   upiId,
@@ -65,27 +61,44 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
   onApplyCoupon,
 }) => {
   const router = useRouter();
-  const [selectedMethodId, setSelectedMethodId] = useState<string>("1");
+  const [selectedMethodId, setSelectedMethodId] = useState<string>("");
   const [couponText, setCouponText] = useState(couponCode);
 
   useEffect(() => {
     setCouponText(couponCode);
   }, [couponCode]);
 
+  useEffect(() => {
+    if (savedMethods && savedMethods.length > 0 && !selectedMethodId) {
+      const first = savedMethods[0];
+      setSelectedMethodId(first.id);
+      const methodType = first.method || first.method_type || "card";
+      handleSelectSavedMethod(first.id, methodType);
+    } else if (!selectedMethodId) {
+      setSelectedMethodId("upi-default");
+      handleSelectSavedMethod("upi-default", "upi");
+    }
+  }, [savedMethods]);
+
+  const displayMethods = [
+    ...savedMethods,
+    { id: "upi-default", card_network: "UPI", last4: "1258", time: "Always", method_type: "upi", upi_id: upiId || "endsin1258@okaxis" }
+  ];
+
   const handleSelectSavedMethod = (id: string, method: "card" | "upi") => {
     setSelectedMethodId(id);
     setPaymentMethod(method);
 
+    const selected = displayMethods.find((m) => m.id === id);
     // Set parent states with mock values so validation checks pass
     if (method === "card") {
-      const selected = savedMethods.find((m) => m.id === id);
-      setCardNumber(selected ? `008711570587${selected.last4}` : "0087115705876187");
-      setCardExpiry("08/11");
+      const cardNumberVal = selected?.card_number || (selected?.last4 ? `008711570587${selected.last4}` : "0087115705876187");
+      setCardNumber(cardNumberVal);
+      setCardExpiry(selected?.expiry_date || "08/11");
       setCardCvv("123");
       setUpiId("");
     } else {
-      const selected = savedMethods.find((m) => m.id === id);
-      setUpiId(selected ? `endsin${selected.last4}@okaxis` : "endsin1258@okaxis");
+      setUpiId(selected?.upi_id || `endsin${selected?.last4 || "1258"}@okaxis`);
       setCardNumber("");
       setCardExpiry("");
       setCardCvv("");
@@ -110,14 +123,15 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
 
       {/* Saved Payment Methods List Card */}
       <View style={styles.savedMethodsCard}>
-        {savedMethods.map((item, index) => {
+        {displayMethods.map((item, index) => {
           const isSelected = selectedMethodId === item.id;
+          const methodType = item.method || item.method_type || "card";
           return (
             <React.Fragment key={item.id}>
               {index > 0 && <View style={styles.divider} />}
               <TouchableOpacity
                 style={styles.methodRow}
-                onPress={() => handleSelectSavedMethod(item.id, item.method)}
+                onPress={() => handleSelectSavedMethod(item.id, methodType as "card" | "upi")}
                 activeOpacity={0.7}
               >
                 <View style={styles.methodRowLeft}>
@@ -125,11 +139,15 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
                     {isSelected && <View style={styles.radioDot} />}
                   </View>
                   <View style={styles.methodInfo}>
-                    <Text style={styles.methodType}>{item.type}</Text>
-                    <Text style={styles.methodDetails}>Ends in ****-{item.last4}</Text>
+                    <Text style={styles.methodType}>{item.card_network || item.type || "Card"}</Text>
+                    {methodType !== "upi" && (
+                      <Text style={styles.methodDetails}>Ends in ****-{item.last4}</Text>
+                    )}
                   </View>
                 </View>
-                <Text style={styles.methodTime}>{item.time}</Text>
+                {methodType !== "upi" && (
+                  <Text style={styles.methodTime}>{item.time || "Saved"}</Text>
+                )}
               </TouchableOpacity>
             </React.Fragment>
           );
@@ -483,5 +501,30 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.bold,
     fontSize: normalize(15),
     color: "#FFF",
+  },
+  upiInputContainer: {
+    backgroundColor: "#FFF",
+    borderRadius: normalize(16),
+    paddingHorizontal: moderateScale(16),
+    paddingVertical: moderateScale(12),
+    marginTop: hp(1.5),
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  upiInputLabel: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(12),
+    color: "#666",
+    marginBottom: hp(0.8),
+    letterSpacing: 0.5,
+  },
+  upiTextInput: {
+    fontFamily: Typography.fonts.medium,
+    fontSize: normalize(15),
+    color: "#333",
+    padding: 0,
   },
 });
