@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "buildNumber": "10",
+      "buildNumber": "11",
       "supportsTablet": true,
       "bundleIdentifier": "com.soulai.in",
       "googleServicesFile": "./GoogleService-Info.plist",
@@ -25,7 +25,7 @@
       }
     },
     "android": {
-      "versionCode": 8,
+      "versionCode": 9,
       "package": "com.soulai.in",
       "googleServicesFile": "./google-services.json",
       "permissions": [
