@@ -13,8 +13,8 @@ import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import RazorpayCheckout from "react-native-razorpay";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -92,12 +92,30 @@ export default function BookSessionScreen() {
     return 257.98; // Fallback total
   }, [pricing]);
 
-  // Payment States
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "netbanking">("upi");
   const [upiId, setUpiId] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
+  const [savedMethods, setSavedMethods] = useState<any[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (currentStep === 2) {
+        const fetchSavedMethods = async () => {
+          try {
+            const response = await apiClient.get<any[]>(ENDPOINTS.users.getSavedPaymentMethods);
+            if (response.success && response.data) {
+              setSavedMethods(response.data);
+            }
+          } catch (error) {
+            console.error("Error fetching saved payment methods:", error);
+          }
+        };
+        fetchSavedMethods();
+      }
+    }, [currentStep]),
+  );
 
   const getApiFormattedDate = (dayName: string) => {
     const daysOfWeek = [
@@ -326,6 +344,16 @@ export default function BookSessionScreen() {
           name: bookingData.patient_name || fullName.trim(),
           method:
             paymentMethod === "upi" ? "upi" : paymentMethod === "card" ? "card" : "netbanking",
+          ...(paymentMethod === "card" && cardNumber.trim()
+            ? {
+                card: {
+                  number: cardNumber.replace(/\s+/g, ""),
+                  expiry: cardExpiry.trim(),
+                  cvv: cardCvv.trim(),
+                  name: fullName.trim(),
+                },
+              }
+            : {}),
         },
         theme: { color: "#3C61DD" },
       };
@@ -445,6 +473,7 @@ export default function BookSessionScreen() {
             ) : (
               /* ================== STEP 2: PAYMENT ================== */
               <PaymentStep
+                savedMethods={savedMethods}
                 paymentMethod={paymentMethod}
                 setPaymentMethod={setPaymentMethod}
                 upiId={upiId}
