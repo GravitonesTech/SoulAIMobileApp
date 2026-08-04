@@ -535,7 +535,7 @@ export default function BreathingExerciseScreen() {
     >
       <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
         {/* Header */}
-        <AppHeader title="Breathing Exercise" showBadge animateTitle={true} />
+        <AppHeader title="Breathing Exercise" showBadge />
 
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : isKeyboardVisible ? "height" : undefined}
