@@ -340,11 +340,11 @@ export default function ChatScreen() {
       style={styles.container}
     >
       <SafeAreaView style={styles.safeArea}>
-        <Animated.View style={styles.flex1} entering={FadeIn.duration(200)}>
-          <KeyboardAvoidingView
-            style={styles.flex1}
-            behavior={Platform.OS === "ios" ? "padding" : isKeyboardVisible ? "height" : undefined}
-          >
+        <KeyboardAvoidingView
+          style={styles.flex1}
+          behavior={Platform.OS === "ios" ? "padding" : isKeyboardVisible ? "height" : undefined}
+        >
+          <Animated.View style={styles.flex1} entering={FadeIn.duration(200)}>
             {/* Header */}
             <AppHeader
               title={showNewChatButton !== "true" ? (therapy ? therapy : undefined) : undefined}
@@ -431,8 +431,8 @@ export default function ChatScreen() {
                 isLoading || isAnimating || isHistoryLoading || isSoundHealingLoading || isStale
               }
             />
-          </KeyboardAvoidingView>
-        </Animated.View>
+          </Animated.View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
   );
