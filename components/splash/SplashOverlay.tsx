@@ -204,7 +204,7 @@ export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish 
             pointerEvents="none"
           >
             <Image
-              source={require("@/assets/images/icon.png")}
+              source={require("@/assets/images/logo.png")}
               style={styles.logoImage}
               resizeMode="contain"
             />
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     opacity: 0,
   },
   logoImage: {
-    width: normalize(240),
-    height: normalize(240),
+    width: normalize(220),
+    height: normalize(220),
   },
 });

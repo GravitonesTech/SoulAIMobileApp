@@ -4,7 +4,7 @@
     "slug": "soulai",
     "version": "1.0.2",
     "orientation": "portrait",
-    "icon": "./assets/images/adaptive_foreground.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "soulai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -38,7 +38,7 @@
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#4698ea",
-        "foregroundImage": "./assets/images/adaptive_foreground.png"
+        "foregroundImage": "./assets/images/logo.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -53,7 +53,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash_screen.png",
+          "image": "./assets/images/logo.png",
           "imageWidth": 220,
           "resizeMode": "contain",
           "backgroundColor": "#4698ea"
