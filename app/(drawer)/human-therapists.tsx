@@ -234,13 +234,17 @@ export default function HumanTherapistsScreen() {
 
   const showSearchResults = searchText.length > 0 || hasActiveFilters;
 
-  const navigateToTherapistDetails = (therapist: Therapist) => {
+  const navigateToTherapistDetails = (
+    therapist: Therapist,
+    extraParams?: Record<string, string>,
+  ) => {
     setSearchText("");
     router.push({
       pathname: "/therapist-details",
       params: {
         id: therapist.id.toString(),
         therapistJson: JSON.stringify(therapist),
+        ...extraParams,
       },
     } as any);
   };
@@ -314,10 +318,14 @@ export default function HumanTherapistsScreen() {
   };
 
   const handleRecentTherapistPress = async (appointment: Appointment) => {
+    const extra = {
+      showReview: appointment.has_reviewed_therapist ? "false" : "true",
+      bookingId: appointment.id.toString(),
+    };
     // 1. Check if the therapist is already in our loaded `therapists` list (top-rated)
     const existing = therapists.find((t) => t.id === appointment.therapist_id);
     if (existing) {
-      navigateToTherapistDetails(existing);
+      navigateToTherapistDetails(existing, extra);
       return;
     }
 
@@ -335,7 +343,7 @@ export default function HumanTherapistsScreen() {
       if (response.success && response.data?.therapists) {
         const found = response.data.therapists.find((t) => t.id === appointment.therapist_id);
         if (found) {
-          navigateToTherapistDetails(found);
+          navigateToTherapistDetails(found, extra);
           return;
         }
       }
@@ -360,7 +368,7 @@ export default function HumanTherapistsScreen() {
       total_reviews: 0,
       schedules: [],
     };
-    navigateToTherapistDetails(fallbackTherapist);
+    navigateToTherapistDetails(fallbackTherapist, extra);
   };
 
   return (

@@ -58,11 +58,15 @@ export default function ReviewSessionScreen() {
 
     setIsSubmitting(true);
     try {
-      const payload = {
+      const payload: any = {
         therapist_id: Number(therapistId),
         rating: rating,
         review_text: reviewText.trim(),
       };
+
+      if (bookingId) {
+        payload.appointment_id = Number(bookingId);
+      }
 
       const response = await apiClient.post(ENDPOINTS.users.addReview, payload);
 
