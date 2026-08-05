@@ -82,7 +82,14 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
 
   const displayMethods = [
     ...savedMethods,
-    { id: "upi-default", card_network: "UPI", last4: "1258", time: "Always", method_type: "upi", upi_id: upiId || "endsin1258@okaxis" }
+    {
+      id: "upi-default",
+      card_network: "UPI",
+      last4: "1258",
+      time: "Always",
+      method_type: "upi",
+      upi_id: upiId || "endsin1258@okaxis",
+    },
   ];
 
   const handleSelectSavedMethod = (id: string, method: "card" | "upi") => {
@@ -92,7 +99,9 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
     const selected = displayMethods.find((m) => m.id === id);
     // Set parent states with mock values so validation checks pass
     if (method === "card") {
-      const cardNumberVal = selected?.card_number || (selected?.last4 ? `008711570587${selected.last4}` : "0087115705876187");
+      const cardNumberVal =
+        selected?.card_number ||
+        (selected?.last4 ? `008711570587${selected.last4}` : "0087115705876187");
       setCardNumber(cardNumberVal);
       setCardExpiry(selected?.expiry_date || "08/11");
       setCardCvv("123");
@@ -139,7 +148,9 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
                     {isSelected && <View style={styles.radioDot} />}
                   </View>
                   <View style={styles.methodInfo}>
-                    <Text style={styles.methodType}>{item.card_network || item.type || "Card"}</Text>
+                    <Text style={styles.methodType}>
+                      {item.card_network || item.type || "Card"}
+                    </Text>
                     {methodType !== "upi" && (
                       <Text style={styles.methodDetails}>Ends in ****-{item.last4}</Text>
                     )}
@@ -160,7 +171,7 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
         onPress={() => router.push("/add-payment-method")}
         activeOpacity={0.7}
       >
-        <Text style={styles.addMethodText}>+ Add Payment Method</Text>
+        <Text style={styles.addMethodText}>+ Add New Card</Text>
       </TouchableOpacity>
 
       {/* Coupon Code Row */}
