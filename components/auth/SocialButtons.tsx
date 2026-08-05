@@ -1,4 +1,5 @@
 import { AppButton } from "@/components/ui/AppButton";
+import { GoogleIcon } from "@/components/ui/Icons";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { normalize } from "@/utils/responsive";
 import { AntDesign } from "@expo/vector-icons";
@@ -33,7 +34,7 @@ export const SocialButtons = ({ style, buttonStyle }: SocialButtonsProps) => {
       <AppButton
         title="Google"
         variant="social"
-        icon={<AntDesign name="google" size={normalize(20)} color="#DB4437" />}
+        icon={<GoogleIcon size={normalize(20)} />}
         style={[styles.button, buttonStyle]}
         onPress={googleSignIn}
         disabled={isGoogleLoading}

@@ -1,13 +1,14 @@
 import { SocialButtons } from "@/components/auth/SocialButtons";
 import { SplashOverlay } from "@/components/splash/SplashOverlay";
 import { AppButton } from "@/components/ui/AppButton";
+import { CallIcon } from "@/components/ui/Icons";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { AuthService } from "@/utils/auth";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -87,7 +88,7 @@ export default function AuthOptionsScreen() {
                 <AppButton
                   title="Phone Number"
                   variant="social"
-                  icon={<Feather name="message-circle" size={normalize(20)} color="#000" />}
+                  icon={<CallIcon size={normalize(20)} color="#000" />}
                   style={styles.inputMargin}
                   onPress={() => navigateWithFade("/sendotp")}
                 />
