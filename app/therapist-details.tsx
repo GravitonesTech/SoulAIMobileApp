@@ -43,10 +43,11 @@ const formatReviewTime = (dateStr: string) => {
 
 export default function TherapistDetailsScreen() {
   const router = useRouter();
-  const { therapistJson, showReview, bookingId } = useLocalSearchParams<{
+  const { therapistJson, showReview, bookingId, hasReviewed } = useLocalSearchParams<{
     therapistJson?: string;
     showReview?: string;
     bookingId?: string;
+    hasReviewed?: string;
   }>();
 
   const therapist = useMemo<Therapist | null>(() => {
@@ -256,8 +257,25 @@ export default function TherapistDetailsScreen() {
             </View>
           )}
 
+          {hasReviewed === "true" && (
+            <View
+              style={[
+                styles.reviewPromptCard,
+                { borderColor: "#CCE5FF", backgroundColor: "#F2F9FF" },
+              ]}
+            >
+              <View style={styles.reviewPromptHeader}>
+                <Feather name="check-circle" size={normalize(20)} color="#3C61DD" />
+                <Text style={styles.reviewPromptTitle}>Review Submitted</Text>
+              </View>
+              <Text style={[styles.reviewPromptText, { marginBottom: 0 }]}>
+                You have already reviewed this therapist. Thank you for your feedback!
+              </Text>
+            </View>
+          )}
+
           {/* Date Range Selector */}
-          {showReview !== "true" && (
+          {showReview !== "true" && hasReviewed !== "true" && (
             <>
               <View style={styles.dateSelectorContainer}>
                 <Text style={styles.dateSelectorLabel}>CHOOSE DATE RANGE</Text>
@@ -325,7 +343,7 @@ export default function TherapistDetailsScreen() {
           )}
 
           {/* Availability Slots Section */}
-          {showReview !== "true" && (
+          {showReview !== "true" && hasReviewed !== "true" && (
             <AvailabilitySlots
               availability={displayTherapist.availability}
               selectedSlot={selectedSlot}
@@ -343,7 +361,7 @@ export default function TherapistDetailsScreen() {
         </ScrollView>
 
         {/* Floating/Sticky Action Button at Bottom Right */}
-        {showReview !== "true" && (
+        {showReview !== "true" && hasReviewed !== "true" && (
           <BookingButton
             text="Book Session"
             onPress={() => {

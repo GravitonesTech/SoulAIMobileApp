@@ -1,8 +1,8 @@
-import React, { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
 import { Typography } from "@/constants/Typography";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
+import React, { useMemo } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { ReviewsList } from "./ReviewsList";
 
 interface Review {
@@ -21,20 +21,41 @@ interface RatingsSummaryProps {
 export const RatingsSummary = ({ averageRating, totalReviews, reviews }: RatingsSummaryProps) => {
   // Calculate rating stats dynamically to match UI premium presentation
   const ratingsStats = useMemo(() => {
-    const finalTotalReviews = totalReviews > 0 ? totalReviews : 1215;
-    const finalAvgRating = averageRating > 0 ? averageRating : 4.2;
+    const finalTotalReviews = reviews.length > 0 ? reviews.length : totalReviews;
+    const finalAvgRating =
+      reviews.length > 0
+        ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
+        : averageRating;
 
-    // Distribute rating stars proportionally
-    const star5 = Math.round(finalTotalReviews * 0.72);
-    const star4 = Math.round(finalTotalReviews * 0.18);
-    const star3 = Math.round(finalTotalReviews * 0.06);
-    const star2 = Math.round(finalTotalReviews * 0.03);
-    const star1 = Math.round(finalTotalReviews * 0.01);
+    let star5 = 0;
+    let star4 = 0;
+    let star3 = 0;
+    let star2 = 0;
+    let star1 = 0;
 
-    const maxVal = Math.max(star5, star4, star3, star2, star1);
+    if (reviews.length > 0) {
+      reviews.forEach((r) => {
+        const rating = Math.round(r.rating);
+        if (rating === 5) star5++;
+        else if (rating === 4) star4++;
+        else if (rating === 3) star3++;
+        else if (rating === 2) star2++;
+        else if (rating === 1) star1++;
+      });
+    } else {
+      // Fallback proportional distribution based on props if reviews are not loaded
+      star5 = Math.round(finalTotalReviews * 0.72);
+      star4 = Math.round(finalTotalReviews * 0.18);
+      star3 = Math.round(finalTotalReviews * 0.06);
+      star2 = Math.round(finalTotalReviews * 0.03);
+      star1 = Math.round(finalTotalReviews * 0.01);
+    }
 
-    // Highly recommended percentage
-    const recommendPercent = Math.round(((star5 + star4) / finalTotalReviews) * 100);
+    const maxVal = Math.max(star5, star4, star3, star2, star1) || 1;
+
+    // Highly recommended percentage (5-star reviews)
+    const recommendPercent =
+      finalTotalReviews > 0 ? Math.round((star5 / finalTotalReviews) * 100) : 0;
 
     return {
       totalReviews: finalTotalReviews,
@@ -48,9 +69,9 @@ export const RatingsSummary = ({ averageRating, totalReviews, reviews }: Ratings
       ],
       recommendPercent,
     };
-  }, [averageRating, totalReviews]);
+  }, [averageRating, totalReviews, reviews]);
 
-  if (totalReviews === 0) {
+  if (totalReviews === 0 && reviews.length === 0) {
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>RATINGS</Text>
@@ -93,7 +114,7 @@ export const RatingsSummary = ({ averageRating, totalReviews, reviews }: Ratings
           <View style={styles.recommendationTextCol}>
             <Text style={styles.recommendTitle}>Highly Recommended</Text>
             <Text style={styles.recommendSubtitle}>
-              {ratingsStats.recommendPercent}% of patients give this doctor 5 stars
+              {ratingsStats.recommendPercent}% of patients give this therapist 5 stars
             </Text>
           </View>
         </View>

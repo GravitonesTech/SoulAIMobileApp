@@ -321,6 +321,7 @@ export default function HumanTherapistsScreen() {
     const extra = {
       showReview: appointment.has_reviewed_therapist ? "false" : "true",
       bookingId: appointment.id.toString(),
+      hasReviewed: appointment.has_reviewed_therapist ? "true" : "false",
     };
     // 1. Check if the therapist is already in our loaded `therapists` list (top-rated)
     const existing = therapists.find((t) => t.id === appointment.therapist_id);
@@ -370,6 +371,11 @@ export default function HumanTherapistsScreen() {
     };
     navigateToTherapistDetails(fallbackTherapist, extra);
   };
+
+  const completedPastAppointment = pastAppointments.find(
+    (app) => app.appointment_status === "COMPLETED",
+  );
+  console.log("Completed Past Appointment:", completedPastAppointment);
 
   return (
     <View style={{ flex: 1 }}>
@@ -532,16 +538,16 @@ export default function HumanTherapistsScreen() {
                 />
 
                 {/* Recent */}
-                {pastAppointments.length > 0 ? (
+                {completedPastAppointment ? (
                   <RecentTherapistCard
-                    therapistName={pastAppointments[0].therapist_name}
-                    therapistPhoto={pastAppointments[0].therapist_photo}
-                    specialization={pastAppointments[0].therapist_specialization}
+                    therapistName={completedPastAppointment.therapist_name}
+                    therapistPhoto={completedPastAppointment.therapist_photo}
+                    specialization={completedPastAppointment.therapist_specialization}
                     rating={
-                      therapists.find((t) => t.id === pastAppointments[0].therapist_id)
+                      therapists.find((t) => t.id === completedPastAppointment.therapist_id)
                         ?.average_rating
                     }
-                    onPress={() => handleRecentTherapistPress(pastAppointments[0])}
+                    onPress={() => handleRecentTherapistPress(completedPastAppointment)}
                   />
                 ) : (
                   <RecentTherapistCard isEmpty={true} />
