@@ -2,12 +2,14 @@ import React from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { Typography } from "@/constants/Typography";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
+import { UserInitialsAvatar } from "@/components/ui/UserInitialsAvatar";
 
 interface Review {
   author: string;
   time: string;
   rating: number;
   content: string;
+  photo: string | null;
 }
 
 interface ReviewsListProps {
@@ -21,7 +23,11 @@ export const ReviewsList = ({ reviews }: ReviewsListProps) => {
         <View key={index} style={styles.reviewItem}>
           <View style={styles.reviewHeader}>
             <View style={styles.reviewAvatarContainer}>
-              <Image source={require("@/assets/images/avatar.png")} style={styles.reviewAvatar} />
+              {rev.photo ? (
+                <Image source={{ uri: rev.photo }} style={styles.reviewAvatar} />
+              ) : (
+                <UserInitialsAvatar name={rev.author} textSize={normalize(16)} />
+              )}
             </View>
             <View style={styles.reviewMeta}>
               <Text style={styles.reviewAuthor}>{rev.author}</Text>

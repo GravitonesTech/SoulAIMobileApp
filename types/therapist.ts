@@ -36,12 +36,14 @@ export interface Therapist {
 export interface ReviewFromApi {
   id: number;
   therapist_id: number;
+  appointment_id?: number | null;
   patient_email: string;
   patient_name: string;
+  patient_photo: string | null;
   rating: number;
   review_text: string;
   created_at: string;
-  updated_at: string;
+  updated_at: string | null;
 }
 
 export interface Appointment {

@@ -159,6 +159,7 @@ export default function TherapistDetailsScreen() {
       time: string;
       rating: number;
       content: string;
+      photo: string | null;
     }[]
   >([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
@@ -176,6 +177,7 @@ export default function TherapistDetailsScreen() {
             time: formatReviewTime(r.created_at),
             rating: r.rating,
             content: r.review_text,
+            photo: r.patient_photo,
           }));
           setReviews(mappedReviews);
         }

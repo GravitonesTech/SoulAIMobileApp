@@ -10,6 +10,7 @@ interface Review {
   time: string;
   rating: number;
   content: string;
+  photo: string | null;
 }
 
 interface RatingsSummaryProps {
