@@ -1,7 +1,6 @@
 import { AppHeader } from "@/components/ui/AppHeader";
 import { UserInitialsAvatar } from "@/components/ui/UserInitialsAvatar";
 import { ENDPOINTS } from "@/constants/endpoints";
-import { PAST_THERAPY_SESSIONS, PERSONALITY_RESULTS } from "@/constants/StaticData";
 import { Typography } from "@/constants/Typography";
 import { useAppConfirmation } from "@/hooks/useAppConfirmation";
 import { useImagePicker } from "@/hooks/useImagePicker";
@@ -181,8 +180,12 @@ export default function ProfileScreen() {
     );
   };
 
-  const personalityResults = PERSONALITY_RESULTS;
-  const pastSessions = PAST_THERAPY_SESSIONS;
+  const personalityResults =
+    Array.isArray(user?.personality_results) && user.personality_results.length > 0
+      ? user.personality_results.map((r: any) =>
+          r && typeof r === "object" ? r.name || r.title || String(r) : String(r)
+        )
+      : [];
 
   const handleLogout = () => {
     showConfirmation(
@@ -246,17 +249,23 @@ export default function ProfileScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>PERSONALITY RESULTS</Text>
             <View style={styles.card}>
-              {personalityResults.map((result, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.cardItem,
-                    index === personalityResults.length - 1 && styles.noBorder,
-                  ]}
-                >
-                  <Text style={styles.cardItemText}>{result}</Text>
+              {personalityResults.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>No personality results available</Text>
                 </View>
-              ))}
+              ) : (
+                personalityResults.map((result: string, index: number) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.cardItem,
+                      index === personalityResults.length - 1 && styles.noBorder,
+                    ]}
+                  >
+                    <Text style={styles.cardItemText}>{result}</Text>
+                  </View>
+                ))
+              )}
             </View>
             <TouchableOpacity
               style={[styles.linkButton, isLoadingStatus && { opacity: 0.5 }]}

@@ -116,27 +116,4 @@ export const EMERGENCY_SERVICES = [
   { id: "3", name: "Fire Department", number: "101", color: "#F44336" },
 ];
 
-export const PERSONALITY_RESULTS = [
-  "Anxiety & Stress Management",
-  "Mindfulness & Well-being",
-  "Life Transitions",
-];
-
-export const PAST_THERAPY_SESSIONS = [
-  {
-    id: "1",
-    doctor: "Dr. ABC",
-    amount: "10000",
-    date: "11 Nov, 2027",
-    duration: "30 minutes session",
-  },
-  {
-    id: "2",
-    doctor: "Dr. XYZ",
-    amount: "10000",
-    date: "11 Nov, 2027",
-    duration: "90 minutes session",
-  },
-];
-
 export const AVAILABLE_TIMES = ["10:00 AM", "12:00 PM", "02:00 PM", "04:00 PM", "06:00 PM"];
