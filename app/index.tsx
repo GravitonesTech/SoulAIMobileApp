@@ -76,7 +76,7 @@ export default function AuthOptionsScreen() {
                   <AppButton
                     title="Phone Number"
                     variant="social"
-                    icon={<CallIcon size={normalize(20)} color="#000" />}
+                    icon={<CallIcon size={normalize(22)} color="#000" />}
                     style={styles.inputMargin}
                     onPress={() => navigateWithFade("/sendotp")}
                   />
