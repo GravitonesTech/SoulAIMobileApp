@@ -52,51 +52,53 @@ export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish 
       duration: 750,
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
-    }).start();
-
-    // 2. Start the 3-second rings expansion animation (Breathe In)
-    Animated.timing(breathScale, {
-      toValue: 1,
-      duration: 3000,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
     }).start(({ finished }) => {
       if (finished) {
-        // Fade out text, change to Breathe Out, then fade in text while shrinking
-        Animated.timing(textOpacity, {
-          toValue: 0,
-          duration: 300,
+        // 2. Start the 3-second rings expansion animation (Breathe In)
+        Animated.timing(breathScale, {
+          toValue: 1,
+          duration: 3000,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
-        }).start(() => {
-          setBreathText("Breathe Out");
-          Animated.parallel([
+        }).start(({ finished: finishedIn }) => {
+          if (finishedIn) {
+            // Fade out text, change to Breathe Out, then fade in text while shrinking
             Animated.timing(textOpacity, {
-              toValue: 1,
+              toValue: 0,
               duration: 300,
               useNativeDriver: true,
-            }),
-            // Animate breathScale from 1 to 0 (Breathe Out / shrinking)
-            Animated.timing(breathScale, {
-              toValue: 0,
-              duration: 3000,
-              easing: Easing.out(Easing.cubic),
-              useNativeDriver: true,
-            }),
-          ]).start(({ finished: finishedOut }) => {
-            if (finishedOut) {
-              // 3. After rings animation, fade out rings/text
-              Animated.timing(ringsOpacity, {
-                toValue: 0,
-                duration: 600,
-                easing: Easing.out(Easing.quad),
-                useNativeDriver: true,
-              }).start(({ finished: finishedFade }) => {
-                if (finishedFade) {
-                  setAnimationFinished(true);
+            }).start(() => {
+              setBreathText("Breathe Out");
+              Animated.parallel([
+                Animated.timing(textOpacity, {
+                  toValue: 1,
+                  duration: 300,
+                  useNativeDriver: true,
+                }),
+                // Animate breathScale from 1 to 0 (Breathe Out / shrinking)
+                Animated.timing(breathScale, {
+                  toValue: 0,
+                  duration: 3000,
+                  easing: Easing.out(Easing.cubic),
+                  useNativeDriver: true,
+                }),
+              ]).start(({ finished: finishedOut }) => {
+                if (finishedOut) {
+                  // 3. After rings animation, fade out rings/text
+                  Animated.timing(ringsOpacity, {
+                    toValue: 0,
+                    duration: 600,
+                    easing: Easing.out(Easing.quad),
+                    useNativeDriver: true,
+                  }).start(({ finished: finishedFade }) => {
+                    if (finishedFade) {
+                      setAnimationFinished(true);
+                    }
+                  });
                 }
               });
-            }
-          });
+            });
+          }
         });
       }
     });
