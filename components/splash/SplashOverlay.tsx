@@ -2,8 +2,8 @@ import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
 import { normalize } from "@/utils/responsive";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useRef } from "react";
-import { Animated, Easing, Image, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, Easing, StyleSheet, View } from "react-native";
 
 interface SplashOverlayProps {
   /** Triggered when auth checks / minimum display timer complete */
@@ -15,31 +15,33 @@ interface SplashOverlayProps {
 export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish }) => {
   // Animation Values
   const ringsOpacity = useRef(new Animated.Value(0)).current;
-  const iconOpacity = useRef(new Animated.Value(0)).current;
   const breathScale = useRef(new Animated.Value(0)).current;
+  const textOpacity = useRef(new Animated.Value(1)).current;
 
   const exitOpacity = useRef(new Animated.Value(1)).current;
   const exitScale = useRef(new Animated.Value(1)).current;
 
-  // Scale interpolations copied exactly from app/(drawer)/breathing.tsx but reversed (shrinking)
+  const [breathText, setBreathText] = useState("Breathe In");
+
+  // Scale interpolations (0: collapsed/normal, 1: fully expanded)
   const scale = breathScale.interpolate({
     inputRange: [0, 1],
-    outputRange: [2.8, 1.3],
+    outputRange: [1.0, 2.8],
   });
 
   const outerScale1 = breathScale.interpolate({
     inputRange: [0, 1],
-    outputRange: [3.6, 1.4],
+    outputRange: [1.1, 3.6],
   });
 
   const outerScale2 = breathScale.interpolate({
     inputRange: [0, 1],
-    outputRange: [4.8, 1.5],
+    outputRange: [1.2, 4.8],
   });
 
   const outerScale3 = breathScale.interpolate({
     inputRange: [0, 1],
-    outputRange: [6.0, 1.6],
+    outputRange: [1.3, 6.0],
   });
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish 
       useNativeDriver: true,
     }).start();
 
-    // 2. Start the 3-second rings expansion animation
+    // 2. Start the 3-second rings expansion animation (Breathe In)
     Animated.timing(breathScale, {
       toValue: 1,
       duration: 3000,
@@ -59,21 +61,38 @@ export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish 
       useNativeDriver: true,
     }).start(({ finished }) => {
       if (finished) {
-        // 3. After rings animation, fade out rings and fade in the center icon
-        Animated.parallel([
-          Animated.timing(ringsOpacity, {
-            toValue: 0,
-            duration: 600,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-          Animated.timing(iconOpacity, {
-            toValue: 1,
-            duration: 600,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-        ]).start();
+        // Fade out text, change to Breathe Out, then fade in text while shrinking
+        Animated.timing(textOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => {
+          setBreathText("Breathe Out");
+          Animated.parallel([
+            Animated.timing(textOpacity, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            // Animate breathScale from 1 to 0 (Breathe Out / shrinking)
+            Animated.timing(breathScale, {
+              toValue: 0,
+              duration: 3000,
+              easing: Easing.out(Easing.cubic),
+              useNativeDriver: true,
+            }),
+          ]).start(({ finished: finishedOut }) => {
+            if (finishedOut) {
+              // 3. After rings animation, fade out rings/text
+              Animated.timing(ringsOpacity, {
+                toValue: 0,
+                duration: 600,
+                easing: Easing.out(Easing.quad),
+                useNativeDriver: true,
+              }).start();
+            }
+          });
+        });
       }
     });
   }, []);
@@ -195,19 +214,9 @@ export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish 
             style={[styles.textOverlay, { opacity: ringsOpacity }]}
             pointerEvents="none"
           >
-            <Text style={styles.centerText}>Take a deep breath</Text>
-          </Animated.View>
-
-          {/* Centered Logo Icon fading in after the ring animation */}
-          <Animated.View
-            style={[styles.iconWrapper, { opacity: iconOpacity }]}
-            pointerEvents="none"
-          >
-            <Image
-              source={require("@/assets/images/logo.png")}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
+            <Animated.Text style={[styles.centerText, { opacity: textOpacity }]}>
+              {breathText}
+            </Animated.Text>
           </Animated.View>
         </View>
       </LinearGradient>
@@ -289,17 +298,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: normalize(20),
     lineHeight: normalize(24),
-  },
-  iconWrapper: {
-    position: "absolute",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
-    height: "100%",
-    opacity: 0,
-  },
-  logoImage: {
-    width: normalize(220),
-    height: normalize(220),
   },
 });
