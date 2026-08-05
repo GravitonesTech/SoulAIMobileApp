@@ -25,7 +25,7 @@
       }
     },
     "android": {
-      "versionCode": 10,
+      "versionCode": 11,
       "package": "com.soulai.in",
       "googleServicesFile": "./google-services.json",
       "permissions": [
