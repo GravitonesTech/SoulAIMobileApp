@@ -134,36 +134,6 @@ export default function GroupChatRoomScreen() {
         }
 
         if (eventType === "WAITING_FOR_USERS") {
-          const state = payload.state || "";
-          const msgText = payload.message || payload.content || "";
-
-          if (msgText) {
-            const newMsg: GroupMessage = {
-              id: `state-${Date.now()}-${Math.random()}`,
-              sender_email: "system",
-              sender_name: "System",
-              text: msgText,
-              created_at: new Date().toISOString(),
-              is_me: false,
-              event_type: "WAITING_FOR_USERS",
-              state: state,
-            };
-
-            setMessages((prev) => {
-              // Prevent duplicate system messages
-              const isDuplicate = prev.some(
-                (m) => m.text === newMsg.text && m.event_type === "WAITING_FOR_USERS",
-              );
-              if (isDuplicate) {
-                return prev;
-              }
-              return [...prev, newMsg];
-            });
-
-            setTimeout(() => {
-              scrollViewRef.current?.scrollToEnd({ animated: true });
-            }, 100);
-          }
           return;
         }
 
