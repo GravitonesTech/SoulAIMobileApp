@@ -22,6 +22,7 @@ export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish 
   const exitScale = useRef(new Animated.Value(1)).current;
 
   const [breathText, setBreathText] = useState("Breathe In");
+  const [animationFinished, setAnimationFinished] = useState(false);
 
   // Scale interpolations (0: collapsed/normal, 1: fully expanded)
   const scale = breathScale.interpolate({
@@ -89,7 +90,11 @@ export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish 
                 duration: 600,
                 easing: Easing.out(Easing.quad),
                 useNativeDriver: true,
-              }).start();
+              }).start(({ finished: finishedFade }) => {
+                if (finishedFade) {
+                  setAnimationFinished(true);
+                }
+              });
             }
           });
         });
@@ -97,9 +102,9 @@ export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish 
     });
   }, []);
 
-  // Exit Portal Animation when isReady becomes true
+  // Exit Portal Animation when isReady and animationFinished are both true
   useEffect(() => {
-    if (isReady) {
+    if (isReady && animationFinished) {
       Animated.parallel([
         Animated.timing(exitOpacity, {
           toValue: 0,
@@ -117,7 +122,7 @@ export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish 
         onFinish();
       });
     }
-  }, [isReady, exitOpacity, exitScale, onFinish]);
+  }, [isReady, animationFinished, exitOpacity, exitScale, onFinish]);
 
   return (
     <Animated.View
