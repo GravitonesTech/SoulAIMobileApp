@@ -64,4 +64,6 @@ export interface Appointment {
   meeting_password?: string | null;
   meeting_provider?: string | null;
   sdk_signature?: string | null;
+  has_reviewed_therapist?: boolean;
+  therapist_rating?: number | null;
 }

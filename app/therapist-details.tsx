@@ -10,13 +10,13 @@ import { ReviewFromApi, Therapist } from "@/types/therapist";
 import { apiClient } from "@/utils/api";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
+import { Feather } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
 
 const formatReviewTime = (dateStr: string) => {
   try {
@@ -43,7 +43,11 @@ const formatReviewTime = (dateStr: string) => {
 
 export default function TherapistDetailsScreen() {
   const router = useRouter();
-  const { therapistJson } = useLocalSearchParams<{ therapistJson?: string }>();
+  const { therapistJson, showReview, bookingId } = useLocalSearchParams<{
+    therapistJson?: string;
+    showReview?: string;
+    bookingId?: string;
+  }>();
 
   const therapist = useMemo<Therapist | null>(() => {
     if (!therapistJson) return null;
@@ -221,77 +225,114 @@ export default function TherapistDetailsScreen() {
           {/* Specialties Section */}
           <SpecialtiesList specializations={displayTherapist.specialization} />
 
-          {/* Date Range Selector */}
-          <View style={styles.dateSelectorContainer}>
-            <Text style={styles.dateSelectorLabel}>CHOOSE DATE RANGE</Text>
-            <View style={styles.dateButtonsRow}>
+          {showReview === "true" && (
+            <View style={styles.reviewPromptCard}>
+              <View style={styles.reviewPromptHeader}>
+                <Feather name="star" size={normalize(20)} color="#FFC107" />
+                <Text style={styles.reviewPromptTitle}>Rate your recent session</Text>
+              </View>
+              <Text style={styles.reviewPromptText}>
+                Share your feedback to help others and improve our services.
+              </Text>
               <TouchableOpacity
-                style={styles.datePickerButton}
-                onPress={() => setShowPicker("start")}
-                activeOpacity={0.7}
+                style={styles.reviewPromptBtn}
+                onPress={() => {
+                  router.push({
+                    pathname: "/review-session",
+                    params: {
+                      therapistId: displayTherapist.id.toString(),
+                      therapistName: displayTherapist.full_name,
+                      therapistSpecialization: displayTherapist.specialization
+                        ? displayTherapist.specialization.join(", ")
+                        : "",
+                      therapistPhoto: displayTherapist.profile_photo || "",
+                      bookingId: bookingId || "",
+                    },
+                  } as any);
+                }}
               >
-                <Feather name="calendar" size={16} color="#3C61DD" />
-                <View style={styles.dateButtonTextContainer}>
-                  <Text style={styles.dateButtonSublabel}>Start Date</Text>
-                  <Text style={styles.dateButtonText}>
-                    {startDate.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.datePickerButton}
-                onPress={() => setShowPicker("end")}
-                activeOpacity={0.7}
-              >
-                <Feather name="calendar" size={16} color="#3C61DD" />
-                <View style={styles.dateButtonTextContainer}>
-                  <Text style={styles.dateButtonSublabel}>End Date</Text>
-                  <Text style={styles.dateButtonText}>
-                    {endDate.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </Text>
-                </View>
+                <Text style={styles.reviewPromptBtnText}>Write a Review</Text>
               </TouchableOpacity>
             </View>
-          </View>
-
-          {showPicker === "start" && (
-            <DateTimePicker
-              value={startDate}
-              mode="date"
-              display="default"
-              minimumDate={new Date()}
-              maximumDate={maxCustomDate}
-              onChange={onChangeStartDate}
-            />
           )}
 
-          {showPicker === "end" && (
-            <DateTimePicker
-              value={endDate}
-              mode="date"
-              display="default"
-              minimumDate={startDate}
-              maximumDate={maxCustomDate}
-              onChange={onChangeEndDate}
-            />
+          {/* Date Range Selector */}
+          {showReview !== "true" && (
+            <>
+              <View style={styles.dateSelectorContainer}>
+                <Text style={styles.dateSelectorLabel}>CHOOSE DATE RANGE</Text>
+                <View style={styles.dateButtonsRow}>
+                  <TouchableOpacity
+                    style={styles.datePickerButton}
+                    onPress={() => setShowPicker("start")}
+                    activeOpacity={0.7}
+                  >
+                    <Feather name="calendar" size={16} color="#3C61DD" />
+                    <View style={styles.dateButtonTextContainer}>
+                      <Text style={styles.dateButtonSublabel}>Start Date</Text>
+                      <Text style={styles.dateButtonText}>
+                        {startDate.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.datePickerButton}
+                    onPress={() => setShowPicker("end")}
+                    activeOpacity={0.7}
+                  >
+                    <Feather name="calendar" size={16} color="#3C61DD" />
+                    <View style={styles.dateButtonTextContainer}>
+                      <Text style={styles.dateButtonSublabel}>End Date</Text>
+                      <Text style={styles.dateButtonText}>
+                        {endDate.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {showPicker === "start" && (
+                <DateTimePicker
+                  value={startDate}
+                  mode="date"
+                  display="default"
+                  minimumDate={new Date()}
+                  maximumDate={maxCustomDate}
+                  onChange={onChangeStartDate}
+                />
+              )}
+
+              {showPicker === "end" && (
+                <DateTimePicker
+                  value={endDate}
+                  mode="date"
+                  display="default"
+                  minimumDate={startDate}
+                  maximumDate={maxCustomDate}
+                  onChange={onChangeEndDate}
+                />
+              )}
+            </>
           )}
 
           {/* Availability Slots Section */}
-          <AvailabilitySlots
-            availability={displayTherapist.availability}
-            selectedSlot={selectedSlot}
-            onChangeSlot={setSelectedSlot}
-            loading={loadingDetails && !displayTherapist.availability}
-          />
+          {showReview !== "true" && (
+            <AvailabilitySlots
+              availability={displayTherapist.availability}
+              selectedSlot={selectedSlot}
+              onChangeSlot={setSelectedSlot}
+              loading={loadingDetails && !displayTherapist.availability}
+            />
+          )}
 
           {/* Ratings Section */}
           <RatingsSummary
@@ -302,22 +343,24 @@ export default function TherapistDetailsScreen() {
         </ScrollView>
 
         {/* Floating/Sticky Action Button at Bottom Right */}
-        <BookingButton
-          text="Book Session"
-          onPress={() => {
-            if (!selectedSlot) {
-              toast.error("Slot Required", "Please select an availability slot first.");
-              return;
-            }
-            router.push({
-              pathname: "/book-session",
-              params: {
-                therapistJson: JSON.stringify(displayTherapist),
-                selectedSlotJson: JSON.stringify(selectedSlot),
-              },
-            });
-          }}
-        />
+        {showReview !== "true" && (
+          <BookingButton
+            text="Book Session"
+            onPress={() => {
+              if (!selectedSlot) {
+                toast.error("Slot Required", "Please select an availability slot first.");
+                return;
+              }
+              router.push({
+                pathname: "/book-session",
+                params: {
+                  therapistJson: JSON.stringify(displayTherapist),
+                  selectedSlotJson: JSON.stringify(selectedSlot),
+                },
+              });
+            }}
+          />
+        )}
       </SafeAreaView>
     </LinearGradient>
   );
@@ -395,5 +438,48 @@ const styles = StyleSheet.create({
     fontSize: normalize(12),
     color: "#333333",
     marginTop: hp(0.2),
+  },
+  reviewPromptCard: {
+    backgroundColor: "#FFF",
+    borderRadius: normalize(16),
+    padding: moderateScale(16),
+    marginBottom: hp(2.5),
+    borderWidth: 1,
+    borderColor: "#E2F4FF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  reviewPromptHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: hp(0.8),
+    gap: moderateScale(8),
+  },
+  reviewPromptTitle: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(15),
+    color: "#111111",
+  },
+  reviewPromptText: {
+    fontFamily: Typography.fonts.regular,
+    fontSize: normalize(13),
+    color: "#666666",
+    lineHeight: normalize(18),
+    marginBottom: hp(1.8),
+  },
+  reviewPromptBtn: {
+    backgroundColor: "#3C61DD",
+    borderRadius: normalize(10),
+    paddingVertical: hp(1.2),
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  reviewPromptBtnText: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: normalize(13),
+    color: "#FFFFFF",
   },
 });
