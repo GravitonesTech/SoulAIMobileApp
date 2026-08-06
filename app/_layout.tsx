@@ -1,3 +1,4 @@
+import "@/utils/polyfills";
 import GlobalBackHandler from "@/components/GlobalBackHandler";
 import { toastConfig } from "@/components/ToastConfig";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
