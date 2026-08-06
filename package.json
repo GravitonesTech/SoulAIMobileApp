@@ -1,6 +1,6 @@
 {
   "name": "soulai",
-  "main": "expo-router/entry",
+  "main": "index.js",
   "version": "1.0.2",
   "scripts": {
     "start": "expo start",
@@ -73,6 +73,7 @@
   "devDependencies": {
     "@types/react": "~19.1.0",
     "babel-plugin-module-resolver": "^5.0.3",
+    "babel-preset-expo": "^57.0.5",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "eslint-plugin-unused-imports": "^4.4.1",
