@@ -3,6 +3,7 @@ import { SplashOverlay } from "@/components/splash/SplashOverlay";
 import { AppButton } from "@/components/ui/AppButton";
 import { CallIcon } from "@/components/ui/Icons";
 import { Colors } from "@/constants/theme";
+import { EntryAnimations } from "@/constants/Animations";
 import { Typography } from "@/constants/Typography";
 import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { AuthService } from "@/utils/auth";
@@ -61,12 +62,12 @@ export default function AuthOptionsScreen() {
             <SafeAreaView style={styles.safeArea}>
               <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
                 {/* Header (same as first screen) */}
-                <View style={styles.header}>
+                <Animated.View entering={EntryAnimations.header} style={styles.header}>
                   <Text style={styles.titleText}>Welcome to Soul AI</Text>
-                </View>
+                </Animated.View>
 
                 {/* Buttons (acts like formContainer) */}
-                <View style={styles.formContainer}>
+                <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
                   <Text style={[styles.subtitleText, { marginBottom: hp(3.5) }]}>
                     Sign in to Personalize your{"\n"}Therapy AI Companion
                   </Text>
@@ -90,7 +91,7 @@ export default function AuthOptionsScreen() {
                   />
 
                   <SocialButtons />
-                </View>
+                </Animated.View>
 
                 {/* Divider (same position as first screen) */}
                 <View style={styles.dividerContainer}>
