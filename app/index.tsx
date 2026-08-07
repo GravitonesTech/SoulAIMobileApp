@@ -94,7 +94,7 @@ export default function AuthOptionsScreen() {
                 </Animated.View>
 
                 {/* Divider (same position as first screen) */}
-                <View style={styles.dividerContainer}>
+                <Animated.View entering={EntryAnimations.formContainer} style={styles.dividerContainer}>
                   <Text style={styles.termsText}>
                     By tapping Continue or logging into an existing Soul account, you agree to our{" "}
                     <Text style={styles.linkText} onPress={() => router.push("/terms" as any)}>
@@ -106,16 +106,16 @@ export default function AuthOptionsScreen() {
                     </Text>
                     , which explains how to opt out of our offers and promos.
                   </Text>
-                </View>
+                </Animated.View>
 
                 {/* Bottom Link (same as first screen) */}
-                <View style={styles.bottomLinkContainer}>
+                <Animated.View entering={EntryAnimations.formContainer} style={styles.bottomLinkContainer}>
                   <TouchableOpacity onPress={() => navigateWithFade("/signup")}>
                     <Text style={styles.bottomLinkText}>
                       Don{"'"}t have an account? <Text style={styles.boldText}>Create one</Text>
                     </Text>
                   </TouchableOpacity>
-                </View>
+                </Animated.View>
               </ScrollView>
             </SafeAreaView>
           </Animated.View>
