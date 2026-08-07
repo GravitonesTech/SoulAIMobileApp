@@ -18,6 +18,8 @@ function addSigningConfig(contents) {
                 storePassword SOULAI_RELEASE_STORE_PASSWORD
                 keyAlias SOULAI_RELEASE_KEY_ALIAS
                 keyPassword SOULAI_RELEASE_KEY_PASSWORD
+                v1SigningEnabled true
+                v2SigningEnabled true
             }
         }\n`;
 
