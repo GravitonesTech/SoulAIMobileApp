@@ -48,7 +48,7 @@ export const ChatInput = ({
   // ─── Speech Recognition ───────────────────────────────────────────────────
   const { isListening, isProcessing, volume, startListening, stopListening, cancelListening } =
     useSpeechRecognition({
-      locale: "auto",
+      locale: "en-US",
       onTranscript: (text) => {
         onChangeText(text);
       },
