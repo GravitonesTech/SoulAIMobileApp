@@ -1,9 +1,13 @@
 import { AppButton } from "@/components/ui/AppButton";
 import { OtpInput } from "@/components/ui/OtpInput";
+import { EntryAnimations } from "@/constants/Animations";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
+import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -13,14 +17,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { hp, moderateScale, normalize } from "@/utils/responsive";
-import { toast } from "@/utils/toast";
 
 const VALID_OTP = "2528";
 
 export default function VerifyScreen() {
-  const router = useRouter();
+  const { phone } = useLocalSearchParams<{ phone: string }>();
+  const { animatedStyle, navigateWithFade, goBackWithFade } = useFadeTransition(200);
   const [otp, setOtp] = useState("");
 
   const handleVerify = () => {
@@ -33,44 +37,64 @@ export default function VerifyScreen() {
       return;
     }
     // ✅ OTP correct → proceed
-    router.replace("/language");
+    navigateWithFade("/language", { replace: true });
+  };
+
+  const getMaskedPhone = () => {
+    if (!phone) return "+91 98*****205";
+    if (phone.length === 10) {
+      return `+91 ${phone.slice(0, 2)}*****${phone.slice(7)}`;
+    }
+    return phone;
   };
 
   return (
     <LinearGradient colors={[Colors.gradient.start, Colors.gradient.end]} style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <View style={styles.centerContainer}>
-            {/* Header */}
-            <View style={styles.header}>
-              <Text style={styles.titleText}>Verify Account</Text>
-              <Text style={styles.subtitleText}>Enter OTP Received{"\n"}on +91 98*****205</Text>
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <View style={styles.centerContainer}>
+              {/* Header */}
+              <Animated.View entering={EntryAnimations.header} style={styles.header}>
+                <Text style={styles.titleText}>Verify Account</Text>
+                <Text style={styles.subtitleText}>
+                  Enter OTP Received{"\n"}on {getMaskedPhone()}
+                </Text>
+              </Animated.View>
+
+              {/* OTP Input Form */}
+              <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
+                <OtpInput length={4} onChange={setOtp} />
+
+                <AppButton title="Verify" style={styles.verifyBtnMargin} onPress={handleVerify} />
+              </Animated.View>
+
+              {/* Resend Link */}
+              <Animated.View
+                entering={EntryAnimations.formContainer}
+                style={styles.resendContainer}
+              >
+                <TouchableOpacity activeOpacity={0.7}>
+                  <Text style={styles.resendText}>Resend Verification Code</Text>
+                </TouchableOpacity>
+              </Animated.View>
+
+              {/* Bottom Re-enter Phone Number Link */}
+              <Animated.View
+                entering={EntryAnimations.formContainer}
+                style={styles.bottomLinkContainer}
+              >
+                <TouchableOpacity activeOpacity={0.7} onPress={goBackWithFade}>
+                  <Text style={styles.bottomLinkText}>Re-enter Phone Number</Text>
+                </TouchableOpacity>
+              </Animated.View>
             </View>
-
-            {/* OTP Input Form */}
-            <View style={styles.formContainer}>
-              <OtpInput length={4} onChange={setOtp} />
-
-              <AppButton title="Verify" style={styles.verifyBtnMargin} onPress={handleVerify} />
-            </View>
-
-            {/* Resend Link */}
-            <TouchableOpacity activeOpacity={0.7} style={styles.resendContainer}>
-              <Text style={styles.resendText}>Resend Verification Code</Text>
-            </TouchableOpacity>
-
-            {/* Bottom Re-enter Phone Number Link */}
-            <View style={styles.bottomLinkContainer}>
-              <TouchableOpacity activeOpacity={0.7} onPress={() => router.back()}>
-                <Text style={styles.bottomLinkText}>Re-enter Phone Number</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Animated.View>
     </LinearGradient>
   );
 }
