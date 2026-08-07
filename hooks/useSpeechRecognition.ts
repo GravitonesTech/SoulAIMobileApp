@@ -1,7 +1,10 @@
 import { useCallback, useRef, useState } from "react";
 
 let ExpoSpeechRecognitionModule: any = null;
-let useSpeechRecognitionEvent: (eventName: string, handler: (event: any) => void) => void = () => {};
+let useSpeechRecognitionEvent: (
+  eventName: string,
+  handler: (event: any) => void,
+) => void = () => {};
 
 try {
   const speechModule = require("expo-speech-recognition");
@@ -10,7 +13,9 @@ try {
     useSpeechRecognitionEvent = speechModule.useSpeechRecognitionEvent;
   }
 } catch (e) {
-  console.warn("[useSpeechRecognition] Native module 'ExpoSpeechRecognition' is not linked in this build.");
+  console.warn(
+    "[useSpeechRecognition] Native module 'ExpoSpeechRecognition' is not linked in this build.",
+  );
 }
 
 export interface UseSpeechRecognitionOptions {
@@ -128,7 +133,10 @@ export function useSpeechRecognition(
     setVolume(0);
     isInitiatorRef.current = true;
 
-    if (!ExpoSpeechRecognitionModule || typeof ExpoSpeechRecognitionModule.requestPermissionsAsync !== "function") {
+    if (
+      !ExpoSpeechRecognitionModule ||
+      typeof ExpoSpeechRecognitionModule.requestPermissionsAsync !== "function"
+    ) {
       const msg = "Speech recognition is not supported in this build. Please rebuild native app.";
       setError(msg);
       onError?.(msg);
