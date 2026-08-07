@@ -4,11 +4,12 @@
     "slug": "soulai",
     "version": "1.0.10",
     "orientation": "portrait",
-    "icon": "./assets/images/adaptive_foreground.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "soulai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "icon": "./assets/images/icon.png",
       "buildNumber": "11",
       "supportsTablet": true,
       "bundleIdentifier": "com.soulai.in",
