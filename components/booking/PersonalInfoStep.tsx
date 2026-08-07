@@ -1,11 +1,11 @@
 import { AvailabilitySlots } from "@/components/therapist/AvailabilitySlots";
 import { AppInput } from "@/components/ui/AppInput";
 import { Typography } from "@/constants/Typography";
+import { AvailabilityDay } from "@/types/therapist";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { AvailabilityDay } from "@/types/therapist";
 
 interface PersonalInfoStepProps {
   fullName: string;
@@ -64,11 +64,17 @@ export const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
         <AppInput
           placeholder="Phone Number"
           value={phoneNumber}
-          onChangeText={setPhoneNumber}
+          onChangeText={(text) => setPhoneNumber(text.replace(/\D/g, ""))}
           keyboardType="phone-pad"
           inputStyle={styles.inputField}
           placeholderTextColor="#8A8A8E"
+          maxLength={10}
         />
+        {phoneNumber.length === 0 ? (
+          <Text style={styles.errorText}>Phone number is required</Text>
+        ) : phoneNumber.length < 10 ? (
+          <Text style={styles.errorText}>Phone number should be minimum 10 digits</Text>
+        ) : null}
       </View>
 
       {/* Session Slots Selector */}
@@ -192,5 +198,12 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fonts.bold,
     fontSize: normalize(15),
     color: "#FFF",
+  },
+  errorText: {
+    fontFamily: Typography.fonts.regular,
+    fontSize: normalize(12),
+    color: "#FF3B30",
+    marginTop: hp(-0.5),
+    marginLeft: normalize(4),
   },
 });

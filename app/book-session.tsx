@@ -367,7 +367,28 @@ export default function BookSessionScreen() {
         console.log("Razorpay Checkout Success:", razorpayResponse);
       } catch (razorpayError: any) {
         console.error("Razorpay Error:", razorpayError);
-        toast.error("Payment Failed", razorpayError.description || "Payment cancelled or failed.");
+        let errorMsg = "Payment cancelled or failed.";
+        if (razorpayError && typeof razorpayError.description === "string") {
+          if (
+            !razorpayError.description.startsWith("{") &&
+            !razorpayError.description.includes("BAD_REQUEST_ERROR") &&
+            razorpayError.description !== "undefined"
+          ) {
+            errorMsg = razorpayError.description;
+          } else {
+            try {
+              const parsed = JSON.parse(razorpayError.description);
+              if (parsed?.error?.description && parsed.error.description !== "undefined") {
+                errorMsg = parsed.error.description;
+              } else if (parsed?.error?.reason) {
+                errorMsg = "Payment failed due to " + parsed.error.reason.replace(/_/g, " ") + ".";
+              }
+            } catch (e) {
+              // Ignore and use default errorMsg
+            }
+          }
+        }
+        toast.error("Payment Failed", errorMsg);
         setIsSubmitting(false);
         router.push("/payment-failed");
         return;
