@@ -15,6 +15,7 @@ import {
   ActivityIndicator,
   BackHandler,
   Image,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -304,7 +305,10 @@ export default function NowPlayingScreen() {
             }}
           />
 
-          <View style={styles.contentContainer}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
             {/* Artwork */}
             <View style={styles.artworkContainer}>
               <Image
@@ -396,7 +400,7 @@ export default function NowPlayingScreen() {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
+          </ScrollView>
         </View>
       </SafeAreaView>
     </LinearGradient>
@@ -410,9 +414,11 @@ const styles = StyleSheet.create({
   flex1: {
     flex: 1,
   },
-  contentContainer: {
-    flex: 1,
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: moderateScale(24),
+    paddingBottom: moderateScale(30),
+    justifyContent: "space-between",
   },
   safeArea: {
     flex: 1,
@@ -444,7 +450,7 @@ const styles = StyleSheet.create({
   },
   artworkContainer: {
     alignItems: "center",
-    marginTop: moderateScale(50),
+    marginTop: moderateScale(20),
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
@@ -458,7 +464,7 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     alignItems: "center",
-    marginTop: moderateScale(40),
+    marginTop: moderateScale(24),
   },
   title: {
     fontFamily: Typography.fonts.medium,
@@ -472,7 +478,7 @@ const styles = StyleSheet.create({
     color: "rgba(255, 255, 255, 0.7)",
   },
   sliderContainer: {
-    marginTop: moderateScale(40),
+    marginTop: moderateScale(24),
   },
   sliderTrack: {
     height: 4,
@@ -513,8 +519,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: moderateScale(40),
+    marginTop: moderateScale(24),
     paddingHorizontal: moderateScale(10),
+    paddingBottom: moderateScale(10),
   },
   playButton: {
     width: moderateScale(70),
