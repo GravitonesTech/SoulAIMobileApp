@@ -2,8 +2,8 @@ import { SocialButtons } from "@/components/auth/SocialButtons";
 import { SplashOverlay } from "@/components/splash/SplashOverlay";
 import { AppButton } from "@/components/ui/AppButton";
 import { CallIcon } from "@/components/ui/Icons";
-import { Colors } from "@/constants/theme";
 import { EntryAnimations } from "@/constants/Animations";
+import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
 import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { AuthService } from "@/utils/auth";
@@ -67,7 +67,10 @@ export default function AuthOptionsScreen() {
                 </Animated.View>
 
                 {/* Buttons (acts like formContainer) */}
-                <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
+                <Animated.View
+                  entering={EntryAnimations.formContainer}
+                  style={styles.formContainer}
+                >
                   <Text style={[styles.subtitleText, { marginBottom: hp(3.5) }]}>
                     Sign in to Personalize your{"\n"}Therapy AI Companion
                   </Text>
@@ -94,7 +97,10 @@ export default function AuthOptionsScreen() {
                 </Animated.View>
 
                 {/* Divider (same position as first screen) */}
-                <Animated.View entering={EntryAnimations.formContainer} style={styles.dividerContainer}>
+                <Animated.View
+                  entering={EntryAnimations.formContainer}
+                  style={styles.dividerContainer}
+                >
                   <Text style={styles.termsText}>
                     By tapping Continue or logging into an existing Soul account, you agree to our{" "}
                     <Text style={styles.linkText} onPress={() => router.push("/terms" as any)}>
@@ -109,7 +115,10 @@ export default function AuthOptionsScreen() {
                 </Animated.View>
 
                 {/* Bottom Link (same as first screen) */}
-                <Animated.View entering={EntryAnimations.formContainer} style={styles.bottomLinkContainer}>
+                <Animated.View
+                  entering={EntryAnimations.formContainer}
+                  style={styles.bottomLinkContainer}
+                >
                   <TouchableOpacity onPress={() => navigateWithFade("/signup")}>
                     <Text style={styles.bottomLinkText}>
                       Don{"'"}t have an account? <Text style={styles.boldText}>Create one</Text>
@@ -203,6 +212,7 @@ const styles = StyleSheet.create({
 
   linkText: {
     textDecorationLine: "underline",
+    fontFamily: Typography.fonts.bold,
   },
 
   bottomLinkContainer: {
