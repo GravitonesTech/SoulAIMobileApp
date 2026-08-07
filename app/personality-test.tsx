@@ -127,7 +127,7 @@ export default function PersonalityTestScreen() {
 
       if (response.success) {
         toast.success("Success", "Assessments submitted successfully");
-        navigateWithFade("/chatstarter", { replace: true });
+        navigateWithFade("/chatstarter", { clearStack: true });
       } else {
         toast.error("Submission Failed", response.message || "Failed to submit assessments");
       }

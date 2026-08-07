@@ -36,12 +36,7 @@ export default function OnboardingThreeScreen() {
             <Animated.View entering={EntryAnimations.formContainer} style={styles.footer}>
               <AppButton
                 title="Let's Talk"
-                onPress={() => {
-                  if (router.canDismiss()) {
-                    router.dismissAll();
-                  }
-                  navigateWithFade("/chatstarter", { replace: true });
-                }}
+                onPress={() => navigateWithFade("/chatstarter", { clearStack: true })}
                 style={styles.primaryButton}
               />
 

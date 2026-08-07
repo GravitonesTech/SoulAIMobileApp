@@ -16,14 +16,26 @@ export function useFadeTransition(duration = 200) {
     opacity: screenOpacity.value,
   }));
 
-  const navigateWithFade = (path: string, options?: { replace?: boolean }) => {
+  const navigateWithFade = (
+    path: string,
+    options?: { replace?: boolean; clearStack?: boolean },
+  ) => {
+    const performNavigation = () => {
+      if (options?.clearStack) {
+        if (router.canDismiss()) {
+          router.dismissAll();
+        }
+        router.replace(path as any);
+      } else if (options?.replace) {
+        router.replace(path as any);
+      } else {
+        router.push(path as any);
+      }
+    };
+
     screenOpacity.value = withTiming(0, { duration }, (finished) => {
       if (finished) {
-        if (options?.replace) {
-          runOnJS(router.replace)(path as any);
-        } else {
-          runOnJS(router.push)(path as any);
-        }
+        runOnJS(performNavigation)();
       }
     });
   };
