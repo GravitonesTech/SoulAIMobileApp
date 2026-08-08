@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "95811060419-h1uufrtveqqi0k9huhs80v1tfh8ib54n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.soulai.in",
+            "certificate_hash": "85fecef1d65ad95e6d9d787a18534256aa3c000c"
+          }
+        },
+        {
           "client_id": "95811060419-6nhke0t0ahjrso6sm66oameeifqbomhr.apps.googleusercontent.com",
           "client_type": 3
         }
