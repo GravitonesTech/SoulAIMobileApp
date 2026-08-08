@@ -7,31 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:95811060419:android:d7fde900e96a54cd711876",
-        "android_client_info": {
-          "package_name": "com.anonymous.soulai"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBrt15Ab1q7bfYjL_prbc2fqPWdCvHPAi0"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:95811060419:android:389f61ba4885764b711876",
         "android_client_info": {
           "package_name": "com.soulai.in"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "95811060419-6nhke0t0ahjrso6sm66oameeifqbomhr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBrt15Ab1q7bfYjL_prbc2fqPWdCvHPAi0"
@@ -39,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "95811060419-6nhke0t0ahjrso6sm66oameeifqbomhr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "95811060419-vb1vj5n7smvv8pvg01ae7vcp4jh18atr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.soulai.in"
+              }
+            }
+          ]
         }
       }
     },
@@ -50,7 +48,12 @@
           "package_name": "com.soulai.therapist"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "95811060419-6nhke0t0ahjrso6sm66oameeifqbomhr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBrt15Ab1q7bfYjL_prbc2fqPWdCvHPAi0"
@@ -58,7 +61,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "95811060419-6nhke0t0ahjrso6sm66oameeifqbomhr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "95811060419-vb1vj5n7smvv8pvg01ae7vcp4jh18atr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.soulai.in"
+              }
+            }
+          ]
         }
       }
     }
