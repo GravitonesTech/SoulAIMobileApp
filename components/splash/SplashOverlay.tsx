@@ -46,62 +46,66 @@ export const SplashOverlay: React.FC<SplashOverlayProps> = ({ isReady, onFinish 
   });
 
   useEffect(() => {
-    // 1. Fade in rings/text quickly (750ms)
-    Animated.timing(ringsOpacity, {
-      toValue: 1,
-      duration: 750,
-      easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
-    }).start(({ finished }) => {
-      if (finished) {
-        // 2. Start the 3-second rings expansion animation (Breathe In)
-        Animated.timing(breathScale, {
-          toValue: 1,
-          duration: 3000,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }).start(({ finished: finishedIn }) => {
-          if (finishedIn) {
-            // Fade out text, change to Breathe Out, then fade in text while shrinking
-            Animated.timing(textOpacity, {
-              toValue: 0,
-              duration: 300,
-              useNativeDriver: true,
-            }).start(() => {
-              setBreathText("Breathe Out");
-              Animated.parallel([
-                Animated.timing(textOpacity, {
-                  toValue: 1,
-                  duration: 300,
-                  useNativeDriver: true,
-                }),
-                // Animate breathScale from 1 to 0 (Breathe Out / shrinking)
-                Animated.timing(breathScale, {
-                  toValue: 0,
-                  duration: 3000,
-                  easing: Easing.out(Easing.cubic),
-                  useNativeDriver: true,
-                }),
-              ]).start(({ finished: finishedOut }) => {
-                if (finishedOut) {
-                  // 3. After rings animation, fade out rings/text
-                  Animated.timing(ringsOpacity, {
-                    toValue: 0,
-                    duration: 600,
-                    easing: Easing.out(Easing.quad),
+    const delayTimer = setTimeout(() => {
+      // 1. Fade in rings/text quickly (750ms)
+      Animated.timing(ringsOpacity, {
+        toValue: 1,
+        duration: 750,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (finished) {
+          // 2. Start the 3-second rings expansion animation (Breathe In)
+          Animated.timing(breathScale, {
+            toValue: 1,
+            duration: 3000,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }).start(({ finished: finishedIn }) => {
+            if (finishedIn) {
+              // Fade out text, change to Breathe Out, then fade in text while shrinking
+              Animated.timing(textOpacity, {
+                toValue: 0,
+                duration: 300,
+                useNativeDriver: true,
+              }).start(() => {
+                setBreathText("Breathe Out");
+                Animated.parallel([
+                  Animated.timing(textOpacity, {
+                    toValue: 1,
+                    duration: 300,
                     useNativeDriver: true,
-                  }).start(({ finished: finishedFade }) => {
-                    if (finishedFade) {
-                      setAnimationFinished(true);
-                    }
-                  });
-                }
+                  }),
+                  // Animate breathScale from 1 to 0 (Breathe Out / shrinking)
+                  Animated.timing(breathScale, {
+                    toValue: 0,
+                    duration: 3000,
+                    easing: Easing.out(Easing.cubic),
+                    useNativeDriver: true,
+                  }),
+                ]).start(({ finished: finishedOut }) => {
+                  if (finishedOut) {
+                    // 3. After rings animation, fade out rings/text
+                    Animated.timing(ringsOpacity, {
+                      toValue: 0,
+                      duration: 600,
+                      easing: Easing.out(Easing.quad),
+                      useNativeDriver: true,
+                    }).start(({ finished: finishedFade }) => {
+                      if (finishedFade) {
+                        setAnimationFinished(true);
+                      }
+                    });
+                  }
+                });
               });
-            });
-          }
-        });
-      }
-    });
+            }
+          });
+        }
+      });
+    }, 2000);
+
+    return () => clearTimeout(delayTimer);
   }, []);
 
   // Exit Portal Animation when isReady and animationFinished are both true
