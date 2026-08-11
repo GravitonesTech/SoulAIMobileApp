@@ -126,7 +126,7 @@ async function logout() {
   if (router.canDismiss()) {
     router.dismissAll();
   }
-  router.replace("/login");
+  router.replace("/?from=logout");
 }
 
 export const AuthService = {

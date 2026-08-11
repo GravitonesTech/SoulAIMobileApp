@@ -10,7 +10,7 @@ import { AuthService } from "@/utils/auth";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated from "react-native-reanimated";
@@ -18,7 +18,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AuthOptionsScreen() {
   const router = useRouter();
-  const [showSplash, setShowSplash] = useState(true);
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const isFromLogout = from === "logout";
+  const [showSplash, setShowSplash] = useState(!isFromLogout);
   const [isSplashReady, setIsSplashReady] = useState(false);
   const [authedUser, setAuthedUser] = useState<any>(null);
 
