@@ -7,9 +7,13 @@ import { Image, StyleSheet, Text, View } from "react-native";
 
 interface TherapistHeaderInfoProps {
   therapist: Therapist;
+  hideSpecialization?: boolean;
 }
 
-export const TherapistHeaderInfo = ({ therapist }: TherapistHeaderInfoProps) => {
+export const TherapistHeaderInfo = ({
+  therapist,
+  hideSpecialization = false,
+}: TherapistHeaderInfoProps) => {
   return (
     <View style={styles.container}>
       {/* Rating and Experience Summary */}
@@ -20,11 +24,13 @@ export const TherapistHeaderInfo = ({ therapist }: TherapistHeaderInfoProps) => 
             : "No ratings yet"}{" "}
           • {therapist.experience_years}+ years experience
         </Text>
-        <Text style={styles.specializationText}>
-          {therapist.specialization && therapist.specialization.length > 0
-            ? `Specialized in ${therapist.specialization.join(", ")}`
-            : "General Practitioner"}
-        </Text>
+        {!hideSpecialization && (
+          <Text style={styles.specializationText}>
+            {therapist.specialization && therapist.specialization.length > 0
+              ? `Specialized in ${therapist.specialization.join(", ")}`
+              : "General Practitioner"}
+          </Text>
+        )}
       </View>
 
       {/* Large Therapist Image */}

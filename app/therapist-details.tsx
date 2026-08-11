@@ -223,10 +223,15 @@ export default function TherapistDetailsScreen() {
           contentContainerStyle={styles.scrollContent}
         >
           {/* Therapist Hero / Header Info */}
-          <TherapistHeaderInfo therapist={displayTherapist} />
+          <TherapistHeaderInfo
+            therapist={displayTherapist}
+            hideSpecialization={showReview === "true" || hasReviewed === "true"}
+          />
 
           {/* Specialties Section */}
-          <SpecialtiesList specializations={displayTherapist.specialization} />
+          {showReview !== "true" && hasReviewed !== "true" && (
+            <SpecialtiesList specializations={displayTherapist.specialization} />
+          )}
 
           {showReview === "true" && (
             <View style={styles.reviewPromptCard}>

@@ -372,9 +372,26 @@ export default function HumanTherapistsScreen() {
     navigateToTherapistDetails(fallbackTherapist, extra);
   };
 
-  const completedPastAppointment = pastAppointments.find(
+  const completedPastAppointments = pastAppointments.filter(
     (app) => app.appointment_status === "COMPLETED",
   );
+  const latestCompleted = completedPastAppointments.sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  )[0];
+
+  const completedPastAppointment =
+    latestCompleted &&
+    !(
+      latestCompleted.has_reviewed_therapist === true ||
+      (latestCompleted.has_reviewed_therapist as any) === 1 ||
+      (latestCompleted.has_reviewed_therapist as any) === "true" ||
+      (latestCompleted.has_reviewed_therapist as any) === "1" ||
+      (latestCompleted.therapist_rating !== null &&
+        latestCompleted.therapist_rating !== undefined &&
+        Number(latestCompleted.therapist_rating) > 0)
+    )
+      ? latestCompleted
+      : undefined;
   console.log("Completed Past Appointment:", completedPastAppointment);
 
   return (
@@ -538,7 +555,7 @@ export default function HumanTherapistsScreen() {
                 />
 
                 {/* Recent */}
-                {completedPastAppointment ? (
+                {completedPastAppointment && (
                   <RecentTherapistCard
                     therapistName={completedPastAppointment.therapist_name}
                     therapistPhoto={completedPastAppointment.therapist_photo}
@@ -549,8 +566,6 @@ export default function HumanTherapistsScreen() {
                     }
                     onPress={() => handleRecentTherapistPress(completedPastAppointment)}
                   />
-                ) : (
-                  <RecentTherapistCard isEmpty={true} />
                 )}
 
                 {/* Top Therapists */}
