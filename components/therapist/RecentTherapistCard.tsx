@@ -25,7 +25,7 @@ export const RecentTherapistCard = ({
   if (isEmpty) {
     return (
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>RECENT</Text>
+        <Text style={styles.sectionLabel}>RATE RECENT SESSION</Text>
         <View style={styles.recentEmptyCard}>
           <Text style={styles.emptyText}>No recent bookings found.</Text>
         </View>
@@ -35,7 +35,7 @@ export const RecentTherapistCard = ({
 
   return (
     <TouchableOpacity style={styles.section} onPress={onPress} activeOpacity={0.9}>
-      <Text style={styles.sectionLabel}>RECENT</Text>
+      <Text style={styles.sectionLabel}>RATE RECENT SESSION</Text>
       <View style={styles.recentCard}>
         <View style={styles.recentHeader}>
           <View style={{ flex: 1, paddingRight: moderateScale(10) }}>
