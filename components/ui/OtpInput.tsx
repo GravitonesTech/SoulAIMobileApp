@@ -12,14 +12,51 @@ export const OtpInput = ({ length = 4, onChange }: OtpInputProps) => {
   const inputRefs = useRef<TextInput[]>([]);
 
   const handleChange = (text: string, index: number) => {
-    const newOtp = [...otp];
-    newOtp[index] = text;
-    setOtp(newOtp);
-    onChange?.(newOtp.join(""));
+    const sanitized = text.replace(/[^0-9]/g, "");
+    if (sanitized.length === 0) {
+      const newOtp = [...otp];
+      newOtp[index] = "";
+      setOtp(newOtp);
+      onChange?.(newOtp.join(""));
+      return;
+    }
 
-    // Auto-focus next input
-    if (text.length === 1 && index < length - 1) {
-      inputRefs.current[index + 1]?.focus();
+    const newOtp = [...otp];
+    if (sanitized.length > 1) {
+      const oldValue = otp[index];
+      const isSingleDigitTypeOver =
+        sanitized.length === 2 && (sanitized.startsWith(oldValue) || sanitized.endsWith(oldValue));
+
+      if (isSingleDigitTypeOver) {
+        const newDigit = sanitized.startsWith(oldValue)
+          ? sanitized.slice(1)
+          : sanitized.slice(0, 1);
+        newOtp[index] = newDigit;
+        setOtp(newOtp);
+        onChange?.(newOtp.join(""));
+        if (index < length - 1) {
+          inputRefs.current[index + 1]?.focus();
+        }
+      } else {
+        const startIndex = sanitized.length === length ? 0 : index;
+        for (let i = 0; i < length - startIndex; i++) {
+          if (i < sanitized.length) {
+            newOtp[startIndex + i] = sanitized[i];
+          }
+        }
+        setOtp(newOtp);
+        onChange?.(newOtp.join(""));
+        const focusIndex = Math.min(startIndex + sanitized.length - 1, length - 1);
+        inputRefs.current[focusIndex]?.focus();
+      }
+    } else {
+      newOtp[index] = sanitized;
+      setOtp(newOtp);
+      onChange?.(newOtp.join(""));
+
+      if (index < length - 1) {
+        inputRefs.current[index + 1]?.focus();
+      }
     }
   };
 
@@ -56,7 +93,7 @@ export const OtpInput = ({ length = 4, onChange }: OtpInputProps) => {
                 if (ref) inputRefs.current[index] = ref;
               }}
               style={styles.input}
-              maxLength={1}
+              maxLength={length}
               keyboardType="number-pad"
               // placeholder=""
               placeholderTextColor="#8A8A8E"
