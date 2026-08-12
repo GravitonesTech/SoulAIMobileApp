@@ -41,9 +41,13 @@ export function useFadeTransition(duration = 200) {
   };
 
   const goBackWithFade = () => {
+    const performBack = () => {
+      router.back();
+    };
+
     screenOpacity.value = withTiming(0, { duration }, (finished) => {
       if (finished) {
-        runOnJS(router.back)();
+        runOnJS(performBack)();
       }
     });
   };

@@ -183,7 +183,7 @@ export default function ProfileScreen() {
   const personalityResults =
     Array.isArray(user?.personality_results) && user.personality_results.length > 0
       ? user.personality_results.map((r: any) =>
-          r && typeof r === "object" ? r.name || r.title || String(r) : String(r)
+          r && typeof r === "object" ? r.name || r.title || String(r) : String(r),
         )
       : [];
 
