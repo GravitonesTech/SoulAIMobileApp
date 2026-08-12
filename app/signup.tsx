@@ -1,17 +1,18 @@
 import { SocialButtons } from "@/components/auth/SocialButtons";
 import { AppButton } from "@/components/ui/AppButton";
 import { AppInput } from "@/components/ui/AppInput";
+import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
+import { EntryAnimations } from "@/constants/Animations";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { apiClient } from "@/utils/api";
-import { hp, normalize, moderateScale } from "@/utils/responsive";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
+import { validatePassword } from "@/utils/validation";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFadeTransition } from "@/hooks/useFadeTransition";
-import { EntryAnimations } from "@/constants/Animations";
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -21,19 +22,18 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
 } from "react-native";
 import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignupScreen() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
   const { animatedStyle, navigateWithFade } = useFadeTransition(200);
 
@@ -50,8 +50,9 @@ export default function SignupScreen() {
       return;
     }
 
-    if (!password) {
-      toast.error("Error", "Please enter a password.");
+    const pwdValidation = validatePassword(password);
+    if (!pwdValidation.isValid) {
+      toast.error("Invalid Password", pwdValidation.message);
       return;
     }
 
@@ -109,6 +110,8 @@ export default function SignupScreen() {
                   secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}
+                  onFocus={() => setIsPasswordFocused(true)}
+                  onBlur={() => setIsPasswordFocused(false)}
                   style={styles.inputMargin}
                   rightIcon={
                     <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
@@ -120,6 +123,8 @@ export default function SignupScreen() {
                     </TouchableOpacity>
                   }
                 />
+
+                {isPasswordFocused && <PasswordRequirements password={password} />}
 
                 <AppInput
                   iconName="lock"

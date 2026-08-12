@@ -1,16 +1,19 @@
+import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
 import { AppButton } from "@/components/ui/AppButton";
 import { AppInput } from "@/components/ui/AppInput";
 import { OtpInput } from "@/components/ui/OtpInput";
+import { EntryAnimations } from "@/constants/Animations";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
-import { AuthService } from "@/utils/auth";
-import { toast } from "@/utils/toast";
+import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { useResendOtpCooldown } from "@/hooks/useResendOtpCooldown";
+import { AuthService } from "@/utils/auth";
+import { hp, moderateScale, normalize } from "@/utils/responsive";
+import { toast } from "@/utils/toast";
+import { validatePassword } from "@/utils/validation";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFadeTransition } from "@/hooks/useFadeTransition";
-import { EntryAnimations } from "@/constants/Animations";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -20,14 +23,11 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
 } from "react-native";
 import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { hp, moderateScale, normalize } from "@/utils/responsive";
 
 export default function ResetPasswordScreen() {
-  const router = useRouter();
   const params = useLocalSearchParams();
 
   const { animatedStyle, navigateWithFade, goBackWithFade } = useFadeTransition(200);
@@ -42,6 +42,7 @@ export default function ResetPasswordScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
   const {
     resend,
@@ -62,8 +63,9 @@ export default function ResetPasswordScreen() {
       toast.error("Incomplete OTP", "Please enter the 4-digit OTP.");
       return;
     }
-    if (!newPassword) {
-      toast.error("Error", "Please enter a new password.");
+    const pwdValidation = validatePassword(newPassword);
+    if (!pwdValidation.isValid) {
+      toast.error("Invalid Password", pwdValidation.message);
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -128,6 +130,8 @@ export default function ResetPasswordScreen() {
                   secureTextEntry={!showPassword}
                   value={newPassword}
                   onChangeText={setNewPassword}
+                  onFocus={() => setIsPasswordFocused(true)}
+                  onBlur={() => setIsPasswordFocused(false)}
                   style={styles.inputMargin}
                   rightIcon={
                     <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
@@ -135,6 +139,8 @@ export default function ResetPasswordScreen() {
                     </TouchableOpacity>
                   }
                 />
+
+                {isPasswordFocused && <PasswordRequirements password={newPassword} />}
 
                 <AppInput
                   iconName="lock"
