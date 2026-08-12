@@ -1,13 +1,12 @@
 import { AppButton } from "@/components/ui/AppButton";
 import { OtpInput } from "@/components/ui/OtpInput";
-import { EntryAnimations } from "@/constants/Animations";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/Typography";
 import { useFadeTransition } from "@/hooks/useFadeTransition";
 import { hp, moderateScale, normalize } from "@/utils/responsive";
 import { toast } from "@/utils/toast";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -17,12 +16,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Animated from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const VALID_OTP = "2528";
 
 export default function VerifyScreen() {
+  const router = useRouter();
   const { phone } = useLocalSearchParams<{ phone: string }>();
   const { animatedStyle, navigateWithFade, goBackWithFade } = useFadeTransition(200);
   const [otp, setOtp] = useState("");
@@ -58,7 +58,7 @@ export default function VerifyScreen() {
           >
             <View style={styles.centerContainer}>
               {/* Header */}
-              <Animated.View entering={EntryAnimations.header} style={styles.header}>
+              <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
                 <Text style={styles.titleText}>Verify Account</Text>
                 <Text style={styles.subtitleText}>
                   Enter OTP Received{"\n"}on {getMaskedPhone()}
@@ -66,28 +66,28 @@ export default function VerifyScreen() {
               </Animated.View>
 
               {/* OTP Input Form */}
-              <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
+              <Animated.View entering={FadeIn.duration(400)} style={styles.formContainer}>
                 <OtpInput length={4} onChange={setOtp} />
 
                 <AppButton title="Verify" style={styles.verifyBtnMargin} onPress={handleVerify} />
               </Animated.View>
 
               {/* Resend Link */}
-              <Animated.View
-                entering={EntryAnimations.formContainer}
-                style={styles.resendContainer}
-              >
+              <Animated.View entering={FadeIn.duration(400)} style={styles.resendContainer}>
                 <TouchableOpacity activeOpacity={0.7}>
                   <Text style={styles.resendText}>Resend Verification Code</Text>
                 </TouchableOpacity>
               </Animated.View>
 
               {/* Bottom Re-enter Phone Number Link */}
-              <Animated.View
-                entering={EntryAnimations.formContainer}
-                style={styles.bottomLinkContainer}
-              >
-                <TouchableOpacity activeOpacity={0.7} onPress={goBackWithFade}>
+              <Animated.View entering={FadeIn.duration(400)} style={styles.bottomLinkContainer}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    console.log("CLicked re enter");
+                    router.back();
+                  }}
+                >
                   <Text style={styles.bottomLinkText}>Re-enter Phone Number</Text>
                 </TouchableOpacity>
               </Animated.View>
