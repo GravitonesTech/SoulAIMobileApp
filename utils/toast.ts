@@ -6,10 +6,10 @@ export const toast = {
       type: "success",
       text1: title,
       text2: message,
-      position: "bottom",
+      position: "top",
       visibilityTime: 2000,
       autoHide: true,
-      bottomOffset: 40,
+      topOffset: 60,
     });
   },
   error: (title: string, message?: string) => {
@@ -18,10 +18,10 @@ export const toast = {
       type: "error",
       text1: title,
       text2: message,
-      position: "bottom",
+      position: "top",
       visibilityTime: 2000,
       autoHide: true,
-      bottomOffset: 40,
+      topOffset: 60,
     });
   },
   info: (title: string, message?: string) => {
@@ -29,10 +29,10 @@ export const toast = {
       type: "info",
       text1: title,
       text2: message,
-      position: "bottom",
+      position: "top",
       visibilityTime: 2000,
       autoHide: true,
-      bottomOffset: 40,
+      topOffset: 60,
     });
   },
   inAppNotification: (title: string, message: string, onPress: () => void) => {
