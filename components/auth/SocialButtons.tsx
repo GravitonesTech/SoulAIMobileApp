@@ -1,4 +1,5 @@
 import { AppButton } from "@/components/ui/AppButton";
+import { AuthLoadingModal } from "@/components/ui/AuthLoadingModal";
 import { GoogleIcon } from "@/components/ui/Icons";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { normalize } from "@/utils/responsive";
@@ -39,6 +40,8 @@ export const SocialButtons = ({ style, buttonStyle }: SocialButtonsProps) => {
         onPress={googleSignIn}
         disabled={isGoogleLoading}
       />
+
+      <AuthLoadingModal visible={isGoogleLoading} provider="google" />
     </View>
   );
 };
