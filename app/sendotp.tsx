@@ -64,7 +64,7 @@ export default function LoginScreen() {
                   placeholder="Phone Number*"
                   keyboardType="number-pad"
                   value={phone}
-                  onChangeText={setPhone}
+                  onChangeText={(text) => setPhone(text.replace(/[^0-9]/g, ""))}
                   maxLength={10}
                   style={styles.inputMargin}
                 />
