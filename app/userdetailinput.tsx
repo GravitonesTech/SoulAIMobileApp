@@ -329,7 +329,10 @@ export default function GenderScreen() {
 
               {/* Input Field Form */}
               <Animated.View entering={EntryAnimations.formContainer} style={styles.formContainer}>
-                <View style={styles.inputWrapper}>
+                <View 
+                  style={[styles.inputWrapper, { zIndex: 1 }]} 
+                  pointerEvents={showGenderDropdown || showCountryDropdown ? "none" : "auto"}
+                >
                   <AppInput
                     placeholder="Full Name"
                     value={name}
@@ -338,7 +341,10 @@ export default function GenderScreen() {
                   />
                 </View>
 
-                <View style={[styles.inputWrapper, { zIndex: 10 }]}>
+                <View 
+                  style={[styles.inputWrapper, { zIndex: showGenderDropdown ? 100 : 2 }]} 
+                  pointerEvents={showCountryDropdown ? "none" : "auto"}
+                >
                   <TouchableOpacity
                     activeOpacity={0.8}
                     style={styles.fullWidth}
@@ -368,7 +374,10 @@ export default function GenderScreen() {
                   )}
                 </View>
 
-                <View style={styles.inputWrapper}>
+                <View 
+                  style={[styles.inputWrapper, { zIndex: 1 }]} 
+                  pointerEvents={showGenderDropdown || showCountryDropdown ? "none" : "auto"}
+                >
                   <AppInput
                     placeholder="Date of Birth (DD/MM/YYYY)"
                     value={dob}
@@ -383,7 +392,10 @@ export default function GenderScreen() {
                   )}
                 </View>
 
-                <View style={[styles.inputWrapper, { zIndex: 5 }]}>
+                <View 
+                  style={[styles.inputWrapper, { zIndex: showCountryDropdown ? 100 : 1 }]} 
+                  pointerEvents={showGenderDropdown ? "none" : "auto"}
+                >
                   <AppInput
                     placeholder="Country"
                     value={countrySearch}
