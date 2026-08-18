@@ -111,5 +111,7 @@ export const ENDPOINTS = {
     getAllFaqs: "/master/get-all-faqs",
     /** GET — Fetch all SOS contacts */
     getAllSosContacts: "/master/get-all-sos-contacts",
+    /** GET — Fetch Razorpay public key */
+    razorpayKey: "/master/settings/razorpay-key",
   },
 } as const;

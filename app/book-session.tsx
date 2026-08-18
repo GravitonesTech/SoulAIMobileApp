@@ -4,7 +4,6 @@ import { PaymentVerificationOverlay } from "@/components/booking/PaymentVerifica
 import { PersonalInfoStep } from "@/components/booking/PersonalInfoStep";
 import { TherapistSummaryCard } from "@/components/booking/TherapistSummaryCard";
 import { AppHeader } from "@/components/ui/AppHeader";
-import { RAZORPAY_KEY_ID } from "@/constants/Config";
 import { ENDPOINTS } from "@/constants/endpoints";
 import { Typography } from "@/constants/Typography";
 import { useAppSelector } from "@/store/hooks";
@@ -329,12 +328,28 @@ export default function BookSessionScreen() {
         return;
       }
 
+      // Fetch Razorpay key ID from backend dynamically
+      let razorpayKeyId = "";
+      try {
+        const keyResponse = await apiClient.get<any>(ENDPOINTS.master.razorpayKey);
+        if (keyResponse.success && keyResponse.data?.razorpay_key_id) {
+          razorpayKeyId = keyResponse.data.razorpay_key_id;
+        } else {
+          throw new Error(keyResponse.message || "Failed to fetch Razorpay key");
+        }
+      } catch (keyError) {
+        console.error("Error fetching Razorpay key:", keyError);
+        toast.error("Payment Error", "Unable to initialize payment gateway.");
+        setIsSubmitting(false);
+        return;
+      }
+
       // Open Razorpay checkout
       const options = {
         description: `Booking with ${therapist.full_name}`,
         image: therapist.profile_photo || undefined,
         currency: "INR",
-        key: RAZORPAY_KEY_ID,
+        key: razorpayKeyId,
         amount: String(Math.round(finalPayableAmount * 100)), // Convert to paise
         name: "Soul AI",
         order_id: orderId,
