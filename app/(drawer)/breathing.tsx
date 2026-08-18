@@ -37,7 +37,14 @@ type Message = {
   sender: "assistant" | "user";
 };
 
-const DURATION_OPTIONS = ["1 minute", "5 minutes", "10 minutes", "15 minutes"];
+const DURATION_OPTIONS = [
+  "1 minute",
+  "3 minutes",
+  "5 minutes",
+  "10 minutes",
+  "15 minutes",
+  "20 minutes",
+];
 const PATTERN_OPTIONS = ["Box Breathing", "Relaxing", "Coherent", "4-7-8"];
 const MUSIC_OPTIONS = ["No, I like silence", "Mindfulness", "Relaxing", "Nature"];
 
