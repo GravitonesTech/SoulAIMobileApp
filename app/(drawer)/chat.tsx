@@ -249,8 +249,8 @@ export default function ChatScreen() {
         toast.error("Error", response.message || "Failed to get response from AI");
       }
     } catch (error) {
-      if (isCancel(error)) {
-        console.log("[Chat] Request cancelled:", error.message);
+      if (isCancel(error) || controller.signal.aborted || (error as any)?.name === "AbortError" || (error as any)?.message === "canceled") {
+        console.log("[Chat] Request cancelled:", error);
         return;
       }
       console.error("[Chat] Error sending message:", error);
@@ -261,6 +261,20 @@ export default function ChatScreen() {
         abortControllerRef.current = null;
       }
     }
+  };
+
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsLoading(false);
+    setIsAnimating(false);
+    setMessages((prev) =>
+      prev.map((msg, index) =>
+        index === prev.length - 1 ? { ...msg, shouldAnimate: false } : msg
+      )
+    );
   };
 
   const handleNewChatPress = async () => {
@@ -427,8 +441,10 @@ export default function ChatScreen() {
               value={inputText}
               onChangeText={setInputText}
               onSend={handleSend}
+              isAnimating={isLoading || isAnimating}
+              onStop={handleStop}
               disabled={
-                isLoading || isAnimating || isHistoryLoading || isSoundHealingLoading || isStale
+                isHistoryLoading || isSoundHealingLoading || isStale
               }
             />
           </Animated.View>

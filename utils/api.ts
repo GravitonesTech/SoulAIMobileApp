@@ -225,7 +225,9 @@ async function request<T = any>(
         errorMsg;
     }
 
-    if (options.showToastOnError !== false) {
+    const isCancelled = axios.isCancel(error) || error?.name === "AbortError" || error?.message === "canceled";
+
+    if (options.showToastOnError !== false && !isCancelled) {
       const errorTitle = isNetworkError ? "Network Connection Error" : "Request Failed";
       toast.error(errorTitle, errorMsg);
     }

@@ -25,6 +25,8 @@ interface ChatInputProps {
   onSend: () => void;
   placeholder?: string;
   disabled?: boolean;
+  isAnimating?: boolean;
+  onStop?: () => void;
 }
 
 export const ChatInput = ({
@@ -33,6 +35,8 @@ export const ChatInput = ({
   onSend,
   placeholder = "Ask me anything...",
   disabled = false,
+  isAnimating = false,
+  onStop,
 }: ChatInputProps) => {
   // ─── Animations ───────────────────────────────────────────────────────────
   const sheetTranslateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -127,7 +131,7 @@ export const ChatInput = ({
 
   // ─── Trigger functions ────────────────────────────────────────────────────
   const handleMicPress = async () => {
-    if (disabled) return;
+    if (disabled || isAnimating) return;
     haptics.medium();
     await startListening();
   };
@@ -165,9 +169,9 @@ export const ChatInput = ({
             placeholder={placeholder}
             placeholderTextColor="#747474"
             style={styles.input}
-            onSubmitEditing={!disabled ? onSend : undefined}
+            onSubmitEditing={!disabled && !isAnimating ? onSend : undefined}
             returnKeyType="send"
-            editable={!isListening}
+            editable={!isListening && !disabled && !isAnimating}
           />
         </View>
 
@@ -176,26 +180,41 @@ export const ChatInput = ({
           style={styles.iconButton}
           activeOpacity={0.75}
           onPress={handleMicPress}
-          disabled={disabled}
+          disabled={disabled || isAnimating}
           accessibilityLabel="Start voice input"
           accessibilityRole="button"
         >
-          <Feather name="mic" size={normalize(22)} color="#1C1C1E" />
+          <Feather name="mic" size={normalize(22)} color={disabled || isAnimating ? "#8A8A8E" : "#1C1C1E"} />
         </TouchableOpacity>
 
-        {/* Send text button */}
-        <TouchableOpacity
-          style={styles.iconButton}
-          activeOpacity={0.7}
-          onPress={onSend}
-          disabled={disabled || value.trim().length === 0}
-        >
-          <Ionicons
-            name="paper-plane-outline"
-            size={normalize(26)}
-            color={disabled || value.trim().length === 0 ? "#1C1C1E" : "#3C61DD"}
-          />
-        </TouchableOpacity>
+        {/* Send or Stop button */}
+        {isAnimating ? (
+          <TouchableOpacity
+            style={styles.iconButton}
+            activeOpacity={0.7}
+            onPress={onStop}
+            disabled={disabled}
+          >
+            <Ionicons
+              name="stop"
+              size={normalize(24)}
+              color="#3C61DD"
+            />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={styles.iconButton}
+            activeOpacity={0.7}
+            onPress={onSend}
+            disabled={disabled || value.trim().length === 0}
+          >
+            <Ionicons
+              name="paper-plane-outline"
+              size={normalize(26)}
+              color={disabled || value.trim().length === 0 ? "#1C1C1E" : "#3C61DD"}
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* ─── ChatGPT-style Voice Recognition Sheet ─────────────────────────── */}
