@@ -83,6 +83,7 @@ export default function BreathingExerciseScreen() {
 
   const scrollViewRef = useRef<ScrollView>(null);
   const isKeyboardVisible = useKeyboardVisibility();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Breathing active state variables
   const [isExerciseActive, setIsExerciseActive] = useState(false);
@@ -295,6 +296,10 @@ export default function BreathingExerciseScreen() {
       breathScale.setValue(0);
       currentScaleVal.current = 0;
     } else {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
       setIsExerciseActive(false);
       setIsPaused(false);
       stopBreathAnimation(true);
@@ -302,6 +307,15 @@ export default function BreathingExerciseScreen() {
       setCycleSecondsRemaining(0);
     }
   }, [isFocused, paramSessionId]);
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -398,20 +412,46 @@ export default function BreathingExerciseScreen() {
     }
   };
 
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsLoading(false);
+    setIsAnimating(false);
+  };
+
   const handleOptionSelect = async (option: string) => {
     if (isLoading || isAnimating) return;
     setIsAnimating(false);
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     const userMessage: Message = { id: Date.now().toString(), text: option, sender: "user" };
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
     try {
-      const response = await apiClient.post<any>(ENDPOINTS.chat.send, {
-        session_id: sessionId || "",
-        user_input: option,
-        selected_therapy: "breathing_exercise",
-      });
+      const response = await apiClient.post<any>(
+        ENDPOINTS.chat.send,
+        {
+          session_id: sessionId || "",
+          user_input: option,
+          selected_therapy: "breathing_exercise",
+        },
+        {
+          signal: controller.signal,
+        }
+      );
+
+      if (controller.signal.aborted) {
+        return;
+      }
 
       if (response.success && response.data) {
         setIsAnimating(true);
@@ -441,10 +481,21 @@ export default function BreathingExerciseScreen() {
         toast.error("Error", response.message || "Failed to send message");
       }
     } catch (error) {
+      if (
+        (error as any)?.name === "AbortError" ||
+        (error as any)?.message === "canceled" ||
+        controller.signal.aborted
+      ) {
+        console.log("[Breathing] Request cancelled:", error);
+        return;
+      }
       console.error("[Breathing] Error sending message:", error);
       toast.error("Error", "Failed to send message");
     } finally {
-      setIsLoading(false);
+      if (abortControllerRef.current === controller) {
+        setIsLoading(false);
+        abortControllerRef.current = null;
+      }
     }
   };
 
@@ -585,7 +636,7 @@ export default function BreathingExerciseScreen() {
                       key={msg.id}
                       role={msg.sender === "user" ? "user" : "assistant"}
                       text={msg.text}
-                      shouldAnimate={index === messages.length - 1 && msg.sender !== "user"}
+                      shouldAnimate={index === messages.length - 1 && msg.sender !== "user" && isAnimating}
                       onAnimationComplete={
                         index === messages.length - 1 && msg.sender !== "user"
                           ? () => setIsAnimating(false)
@@ -645,7 +696,9 @@ export default function BreathingExerciseScreen() {
                 value={inputText}
                 onChangeText={setInputText}
                 onSend={handleSend}
-                disabled={isAnimating || isLoading}
+                isAnimating={isLoading || isAnimating}
+                onStop={handleStop}
+                disabled={false}
               />
             ))
           )}
