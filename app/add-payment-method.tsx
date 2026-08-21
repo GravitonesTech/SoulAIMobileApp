@@ -186,15 +186,6 @@ export default function AddPaymentMethodScreen() {
                 </View>
                 <View style={styles.cardFooterRight}>
                   <Text style={styles.cardExpiryText}>{expiryDate || "08/11"}</Text>
-                  <View style={styles.mcLogoContainer}>
-                    <View style={[styles.mcCircle, { backgroundColor: "#EB001B" }]} />
-                    <View
-                      style={[
-                        styles.mcCircle,
-                        { backgroundColor: "#F79E1B", marginLeft: -8, opacity: 0.85 },
-                      ]}
-                    />
-                  </View>
                 </View>
               </View>
             </LinearGradient>
@@ -216,14 +207,6 @@ export default function AddPaymentMethodScreen() {
               onChangeText={(t) => setCardNumber(formatCardNumber(t))}
               keyboardType="number-pad"
               style={styles.inputSpacing}
-              rightIcon={
-                <View style={styles.cardRightIconGroup}>
-                  <View style={styles.visaBadge}>
-                    <Text style={styles.visaText}>VISA</Text>
-                  </View>
-                  <Feather name="help-circle" size={normalize(18)} color="#A0A0A0" />
-                </View>
-              }
             />
 
             <View style={styles.rowInputs}>
@@ -291,7 +274,7 @@ export default function AddPaymentMethodScreen() {
                 style={styles.submitBtn}
               >
                 <Text style={styles.submitBtnText}>
-                  {isSubmitting ? "Processing..." : "Add Credit Card"}
+                  {isSubmitting ? "Processing..." : "Add Card"}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -367,15 +350,6 @@ const styles = StyleSheet.create({
     color: "#FFF",
     letterSpacing: 0.5,
   },
-  mcLogoContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  mcCircle: {
-    width: normalize(20),
-    height: normalize(20),
-    borderRadius: normalize(10),
-  },
   formSectionTitle: {
     fontFamily: Typography.fonts.bold,
     fontSize: normalize(12),
@@ -394,25 +368,6 @@ const styles = StyleSheet.create({
   },
   flexHalf: {
     flex: 1,
-  },
-  cardRightIconGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: moderateScale(6),
-  },
-  visaBadge: {
-    backgroundColor: "#F4F5F7",
-    paddingHorizontal: normalize(6),
-    paddingVertical: normalize(2),
-    borderRadius: normalize(4),
-    borderWidth: 1,
-    borderColor: "#E5E5EA",
-  },
-  visaText: {
-    fontFamily: Typography.fonts.bold,
-    fontSize: normalize(10),
-    color: "#1A1F71",
-    fontStyle: "italic",
   },
   submitBtnWrapper: {
     alignSelf: "flex-end",
