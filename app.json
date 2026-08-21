@@ -2,7 +2,7 @@
   "expo": {
     "name": "Soul AI",
     "slug": "soulai",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive_foreground.png",
     "scheme": "soulai",
@@ -34,7 +34,7 @@
       }
     },
     "android": {
-      "versionCode": 16,
+      "versionCode": 17,
       "package": "com.soulai.in",
       "googleServicesFile": "./google-services.json",
       "permissions": [
