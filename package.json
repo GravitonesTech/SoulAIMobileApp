@@ -29,6 +29,7 @@
     "@zoom/meetingsdk-react-native": "^7.0.5",
     "axios": "^1.15.2",
     "expo": "~54.0.33",
+    "expo-apple-authentication": "~8.0.8",
     "expo-audio": "~1.1.1",
     "expo-auth-session": "~7.0.10",
     "expo-build-properties": "^56.0.19",
