@@ -466,6 +466,7 @@ export default function BookSessionScreen() {
           leftIcon="arrow-left"
           onLeftPress={() => {
             if (currentStep === 2) {
+              setCouponCode("");
               setCurrentStep(1);
             } else {
               router.back();
