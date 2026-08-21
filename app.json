@@ -2,17 +2,21 @@
   "expo": {
     "name": "Soul AI",
     "slug": "soulai",
-    "version": "1.0.10",
+    "version": "1.0.7",
     "orientation": "portrait",
-    "icon": "./assets/images/adaptive_foreground.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "soulai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "buildNumber": "12",
+      "icon": "./assets/images/icon.png",
+      "buildNumber": "14",
       "supportsTablet": true,
       "bundleIdentifier": "com.soulai.in",
       "googleServicesFile": "./GoogleService-Info.plist",
+      "entitlements": {
+        "aps-environment": "production"
+      },
       "infoPlist": {
         "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use the microphone.",
@@ -59,6 +63,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-apple-authentication",
       [
         "expo-splash-screen",
         {

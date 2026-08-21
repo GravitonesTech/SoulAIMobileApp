@@ -2,6 +2,7 @@ import { Typography } from "@/constants/Typography";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { haptics } from "@/utils/haptics";
 import { normalize } from "@/utils/responsive";
+import { toast } from "@/utils/toast";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef } from "react";
 import {
@@ -48,7 +49,7 @@ export const ChatInput = ({
   // ─── Speech Recognition ───────────────────────────────────────────────────
   const { isListening, isProcessing, volume, startListening, stopListening, cancelListening } =
     useSpeechRecognition({
-      locale: "auto",
+      locale: "en-US",
       onTranscript: (text) => {
         onChangeText(text);
       },
@@ -59,6 +60,7 @@ export const ChatInput = ({
       onError: (msg) => {
         console.warn("[ChatInput STT Error]", msg);
         haptics.error();
+        toast.error("Speech Recognition", msg);
       },
     });
 

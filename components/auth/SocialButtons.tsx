@@ -1,6 +1,7 @@
 import { AppButton } from "@/components/ui/AppButton";
 import { AuthLoadingModal } from "@/components/ui/AuthLoadingModal";
 import { GoogleIcon } from "@/components/ui/Icons";
+import { useAppleAuth } from "@/hooks/useAppleAuth";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { normalize } from "@/utils/responsive";
 import { AntDesign } from "@expo/vector-icons";
@@ -14,21 +15,24 @@ interface SocialButtonsProps {
 
 export const SocialButtons = ({ style, buttonStyle }: SocialButtonsProps) => {
   const { signIn: googleSignIn, isLoading: isGoogleLoading } = useGoogleAuth();
+  const {
+    signIn: appleSignIn,
+    isLoading: isAppleLoading,
+    isAvailable: isAppleAvailable,
+  } = useAppleAuth();
 
-  const handleAppleSignIn = () => {
-    // Apple Sign In implementation would go here
-    console.log("Apple Sign In clicked");
-  };
+  const isAnyLoading = isGoogleLoading || isAppleLoading;
 
   return (
     <View style={[styles.container, style]}>
-      {Platform.OS === "ios" && (
+      {Platform.OS === "ios" && isAppleAvailable && (
         <AppButton
           title="Apple"
           variant="social"
           icon={<AntDesign name="apple" size={normalize(20)} color="#000" />}
           style={[styles.button, buttonStyle]}
-          onPress={handleAppleSignIn}
+          onPress={appleSignIn}
+          disabled={isAnyLoading}
         />
       )}
 
@@ -38,10 +42,10 @@ export const SocialButtons = ({ style, buttonStyle }: SocialButtonsProps) => {
         icon={<GoogleIcon size={normalize(20)} />}
         style={[styles.button, buttonStyle]}
         onPress={googleSignIn}
-        disabled={isGoogleLoading}
+        disabled={isAnyLoading}
       />
 
-      <AuthLoadingModal visible={isGoogleLoading} provider="google" />
+      <AuthLoadingModal visible={isAnyLoading} provider={isAppleLoading ? "apple" : "google"} />
     </View>
   );
 };

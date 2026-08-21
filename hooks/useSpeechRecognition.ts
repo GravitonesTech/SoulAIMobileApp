@@ -1,5 +1,22 @@
-import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from "expo-speech-recognition";
 import { useCallback, useRef, useState } from "react";
+
+let ExpoSpeechRecognitionModule: any = null;
+let useSpeechRecognitionEvent: (
+  eventName: string,
+  handler: (event: any) => void,
+) => void = () => {};
+
+try {
+  const speechModule = require("expo-speech-recognition");
+  ExpoSpeechRecognitionModule = speechModule?.ExpoSpeechRecognitionModule;
+  if (typeof speechModule?.useSpeechRecognitionEvent === "function") {
+    useSpeechRecognitionEvent = speechModule.useSpeechRecognitionEvent;
+  }
+} catch (e) {
+  console.warn(
+    "[useSpeechRecognition] Native module 'ExpoSpeechRecognition' is not linked in this build.",
+  );
+}
 
 export interface UseSpeechRecognitionOptions {
   /** BCP-47 locale tag. Defaults to "en-US" */
@@ -61,13 +78,13 @@ export function useSpeechRecognition(
     if (!isInitiatorRef.current) return;
     // Value ranges from -2 (inaudible) to 10 (maximum volume).
     // Normalize it to 0 to 1.
-    const normalized = Math.max(0, Math.min(1, (event.value + 2) / 12));
+    const normalized = Math.max(0, Math.min(1, (event?.value + 2) / 12));
     setVolume(normalized);
   });
 
   useSpeechRecognitionEvent("result", (event) => {
     if (!isInitiatorRef.current) return;
-    const result = event.results[0];
+    const result = event?.results?.[0];
     if (!result) return;
     const text = result.transcript;
 
@@ -100,7 +117,7 @@ export function useSpeechRecognition(
       aborted: null as unknown as string, // user-initiated, don't show error
     };
 
-    const msg = friendlyMessages[event.error] ?? `Speech error: ${event.message || event.error}`;
+    const msg = friendlyMessages[event?.error] ?? `Speech error: ${event?.message || event?.error}`;
 
     if (msg) {
       setError(msg);
@@ -115,6 +132,17 @@ export function useSpeechRecognition(
     lastPartialRef.current = "";
     setVolume(0);
     isInitiatorRef.current = true;
+
+    if (
+      !ExpoSpeechRecognitionModule ||
+      typeof ExpoSpeechRecognitionModule.requestPermissionsAsync !== "function"
+    ) {
+      const msg = "Speech recognition is not supported in this build. Please rebuild native app.";
+      setError(msg);
+      onError?.(msg);
+      isInitiatorRef.current = false;
+      return;
+    }
 
     // Check / request permissions first
     const permResult = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
@@ -141,7 +169,7 @@ export function useSpeechRecognition(
   }, [locale, onError]);
 
   const stopListening = useCallback(() => {
-    if (isListening && isInitiatorRef.current) {
+    if (isListening && isInitiatorRef.current && ExpoSpeechRecognitionModule?.stop) {
       setIsProcessing(true); // processing final result
       ExpoSpeechRecognitionModule.stop();
     }
@@ -149,7 +177,9 @@ export function useSpeechRecognition(
 
   const cancelListening = useCallback(() => {
     isInitiatorRef.current = false;
-    ExpoSpeechRecognitionModule.abort();
+    if (ExpoSpeechRecognitionModule?.abort) {
+      ExpoSpeechRecognitionModule.abort();
+    }
     setIsListening(false);
     setIsProcessing(false);
     setVolume(0);

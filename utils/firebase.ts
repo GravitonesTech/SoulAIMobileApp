@@ -3,9 +3,11 @@ import {
   getInitialNotification,
   getMessaging,
   getToken,
+  isDeviceRegisteredForRemoteMessages,
   onMessage as onFirebaseMessage,
   onTokenRefresh as onFirebaseTokenRefresh,
   onNotificationOpenedApp,
+  registerDeviceForRemoteMessages,
   setBackgroundMessageHandler,
 } from "@react-native-firebase/messaging";
 import { requestNotifications } from "react-native-permissions";
@@ -51,11 +53,21 @@ export const requestPermission = async (): Promise<boolean> => {
  */
 export const getFCMToken = async (_vapidKey?: string): Promise<string | null> => {
   try {
+    if (!isDeviceRegisteredForRemoteMessages(messaging)) {
+      await registerDeviceForRemoteMessages(messaging);
+    }
     const token = await getToken(messaging);
     console.log("🔑 [FCM Native] Token generated successfully.");
     return token;
-  } catch (error) {
-    console.error("❌ [FCM Native] Error getting token:", error);
+  } catch (error: any) {
+    const errorMessage = error?.message || error?.toString() || "";
+    if (errorMessage.includes("unregistered") || error?.code === "messaging/unregistered") {
+      console.log(
+        "ℹ️ [FCM Native] Remote notification token unavailable (expected on iOS Simulator without APNs entitlement).",
+      );
+    } else {
+      console.warn("⚠️ [FCM Native] Error getting token:", errorMessage);
+    }
     return null;
   }
 };

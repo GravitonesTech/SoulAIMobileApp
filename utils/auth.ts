@@ -56,11 +56,33 @@ function navigateToCorrectScreen(user: UserProfile) {
   }
 }
 
+export interface SocialLoginOptions {
+  fullName?: string;
+  givenName?: string;
+  familyName?: string;
+  email?: string;
+}
+
 /**
  * Generic handler to exchange a social provider token for an app token
  */
-async function loginWithSocialToken(provider: SocialProvider, token: string) {
-  const body = provider === "google" ? { id_token: token } : { token };
+async function loginWithSocialToken(
+  provider: SocialProvider,
+  token: string,
+  extraData?: SocialLoginOptions
+) {
+  const body: Record<string, any> = { id_token: token };
+
+  if (extraData) {
+    if (extraData.fullName) {
+      body.full_name = extraData.fullName;
+      body.name = extraData.fullName;
+    }
+    if (extraData.givenName) body.given_name = extraData.givenName;
+    if (extraData.familyName) body.family_name = extraData.familyName;
+    if (extraData.email) body.email = extraData.email;
+  }
+
   const result = await apiClient.post(ENDPOINTS.auth.social(provider), body);
 
   if (result.success && result.data) {

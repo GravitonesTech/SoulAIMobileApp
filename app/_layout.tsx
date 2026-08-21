@@ -1,3 +1,4 @@
+import "@/utils/polyfills";
 import GlobalBackHandler from "@/components/GlobalBackHandler";
 import { toastConfig } from "@/components/ToastConfig";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
@@ -12,6 +13,7 @@ import {
   NunitoSans_700Bold,
   useFonts,
 } from "@expo-google-fonts/nunito-sans";
+import { setAudioModeAsync } from "expo-audio";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -36,6 +38,13 @@ export default function RootLayout() {
   useEffect(() => {
     // Initialize push notifications (permissions, listeners, etc.)
     NotificationService.init();
+
+    // Enable audio playback when iPhone is in Silent Mode
+    setAudioModeAsync({
+      playsInSilentMode: true,
+    }).catch((err) => {
+      console.warn("Failed to set audio mode:", err);
+    });
   }, []);
 
   useEffect(() => {
